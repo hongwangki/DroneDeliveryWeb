@@ -49,5 +49,8 @@ public class Member {
         this.updateTime = LocalDateTime.now();
     }
 
+    @Enumerated(EnumType.STRING)
+    private MemberType memberType;
+
 
 }

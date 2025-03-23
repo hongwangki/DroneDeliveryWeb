@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사용자 정보</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      font-size: 18px;
+      color: #333;
+      margin: 10px 0;
+    }
+
+    .info span {
+      font-weight: bold;
+    }
+
+    .back-button, .edit-button {
+      display: block;
+      width: 200px;
+      margin: 20px auto;
+      padding: 10px;
+      text-align: center;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .back-button:hover, .edit-button:hover {
+      background-color: #0056b3;
+    }
+
+    /* 성공 메시지 스타일 */
+    .success-message {
+      color: green; /* 초록색 */
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 2px solid green; /* 초록색 테두리 */
+      background-color: #e6f9e6; /* 연한 초록색 배경 */
+      border-radius: 5px; /* 테두리 둥글게 */
+      width: 80%; /* 메시지 박스의 너비 */
+      margin-left: auto;
+      margin-right: auto; /* 중앙 정렬 */
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>사용자 정보</h2>
+
+  <!-- 성공 메시지 표시 -->
+  <div th:if="${successMessage}" class="success-message">
+    <p th:text="${successMessage}"></p>
+  </div>
+
+  <!-- 사용자 정보 표시 -->
+  <div class="info">
+    <span>이름:</span> <span th:text="${member.name}">John Doe</span>
+  </div>
+  <div class="info">
+    <span>이메일:</span> <span th:text="${member.email}">johndoe@example.com</span>
+  </div>
+  <div class="info">
+    <span>주소:</span> <span th:text="${member.address.street}">서울특별시 강남구 역삼동</span>
+  </div>
+  <div class="info">
+    <span>상세 주소:</span> <span th:text="${member.address.detailAddress}">123-45, 역삼동</span>
+  </div>
+  <div class="info">
+    <span>보유한 돈:</span> <span th:text="${member.money}">5000원</span> <!-- 수정할 수 없음 -->
+  </div>
+
+  <!-- 정보 수정 버튼 -->
+  <form action="/account/edit" method="GET">
+    <button class="edit-button" type="submit">정보 수정</button>
+  </form>
+
+  <button class="back-button" onclick="window.location.href='/home'">뒤로 가기</button>
+</div>
+
+</body>
+</html>

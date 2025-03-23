@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            padding: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 에러 메시지 */
+        .error-message {
+            color: red;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            input[type="text"], input[type="email"], input[type="password"], button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>회원가입</h2>
+
+    <!-- 에러 메시지 표시 -->
+    <div class="error-message" th:if="${errorMessage}">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <form action="/register" method="POST">
+        <div>
+            <label for="name">이름:</label>
+            <input type="text" id="name" name="name" required placeholder="이름을 입력하세요">
+        </div>
+
+        <div>
+            <label for="email">이메일:</label>
+            <input type="email" id="email" name="email" required placeholder="이메일을 입력하세요">
+        </div>
+
+        <div>
+            <label for="password">비밀번호:</label>
+            <input type="password" id="password" name="password" required placeholder="비밀번호를 입력하세요">
+        </div>
+
+        <div>
+            <label for="confirmPassword">비밀번호 확인:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="비밀번호를 다시 입력하세요">
+        </div>
+
+        <div>
+            <label for="street">주소:</label>
+            <input type="text" id="street" name="street" required placeholder="주소를 입력하세요">
+        </div>
+
+        <div>
+            <label for="city">도시:</label>
+            <input type="text" id="city" name="city" required placeholder="도시를 입력하세요">
+        </div>
+
+        <div>
+            <label for="zipcode">우편번호:</label>
+            <input type="text" id="zipcode" name="zipcode" required placeholder="우편번호를 입력하세요">
+        </div>
+
+        <div>
+            <label for="detailAddress">상세 주소:</label>
+            <input type="text" id="detailAddress" name="detailAddress" required placeholder="상세 주소를 입력하세요">
+        </div>
+
+        <div>
+            <button type="submit">회원가입</button>
+        </div>
+    </form>
+
+    <div class="footer">
+        <p>이미 계정이 있으신가요? <a href="/login">로그인</a></p>
+    </div>
+</div>
+
+</body>
+</html>

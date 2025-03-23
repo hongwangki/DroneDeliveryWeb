@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사용자 정보 수정</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    button {
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>사용자 정보 수정</h2>
+
+  <form action="/account/edit" method="POST">
+    <div>
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" th:value="${member.name}" required placeholder="Enter your name">
+    </div>
+
+    <div>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" th:value="${member.email}" required placeholder="Enter your email">
+    </div>
+
+    <div>
+      <label for="street">Street:</label>
+      <input type="text" id="street" name="street" th:value="${member.address.street}" required placeholder="Enter your street">
+    </div>
+
+    <div>
+      <label for="city">City:</label>
+      <input type="text" id="city" name="city" th:value="${member.address.city}" required placeholder="Enter your city">
+    </div>
+
+    <div>
+      <label for="zipcode">Zipcode:</label>
+      <input type="text" id="zipcode" name="zipcode" th:value="${member.address.zipcode}" required placeholder="Enter your zipcode">
+    </div>
+
+    <div>
+      <label for="detailAddress">Detail Address:</label>
+      <input type="text" id="detailAddress" name="detailAddress" th:value="${member.address.detailAddress}" required placeholder="Enter your detail address">
+    </div>
+
+    <div>
+      <label for="password">New Password:</label>
+      <input type="password" id="password" name="password" placeholder="Enter new password (leave empty to keep current)">
+    </div>
+
+    <button type="submit">Save Changes</button>
+  </form>
+</div>
+
+</body>
+</html>
