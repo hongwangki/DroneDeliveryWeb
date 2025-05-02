@@ -14,15 +14,27 @@ public class Product {
     @JoinColumn(name = "order_id")
     Order order;
 
+    private String foodName;
+    private int foodPrice;
     private int totalPrice; //food 가격 x 개수
     private int quantity;
 
-    @ManyToOne
-    @JoinColumn(name = "food_id")
-    private Food food;
 
 
+    //전체 가격 조회
     public int getTotalPrice() {
-        return food.getPrice() * quantity;
+        return foodPrice*quantity;
+    }
+
+    //상품 주문 메서드
+    public Product createProduct(String foodName, int foodPrice, int quantity) {
+
+
+        this.setFoodName(foodName);
+        this.setFoodPrice(foodPrice);
+        this.setQuantity(quantity);
+
+
+        return this;
     }
 }

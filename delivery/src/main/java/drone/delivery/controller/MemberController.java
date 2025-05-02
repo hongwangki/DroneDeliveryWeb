@@ -5,7 +5,6 @@ import drone.delivery.domain.Member;
 import drone.delivery.domain.MemberType;
 import drone.delivery.service.MemberService;
 import jakarta.servlet.http.HttpSession;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
