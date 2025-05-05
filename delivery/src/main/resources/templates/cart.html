@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>장바구니</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f8f9fc;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .success-msg {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 90%;
+      margin: 0 auto 30px auto;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    td {
+      font-size: 15px;
+    }
+
+    .total-row td {
+      font-weight: bold;
+      background-color: #f0f0f0;
+    }
+
+    .checkout-btn {
+      display: block;
+      margin: 0 auto;
+      padding: 12px 30px;
+      background-color: #28a745;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .checkout-btn:hover {
+      background-color: #218838;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: #777;
+      font-size: 18px;
+      margin-top: 50px;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: red;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🛒 장바구니</h1>
+
+<div th:if="${successMessage}" class="success-msg" th:text="${successMessage}"></div>
+
+<div th:if="${#lists.isEmpty(cart)}">
+  <p class="empty-msg">장바구니가 비어있습니다. 메뉴에서 상품을 추가해보세요!</p>
+</div>
+
+<div th:unless="${#lists.isEmpty(cart)}">
+  <table>
+    <thead>
+    <tr>
+      <th>상품명</th>
+      <th>단가</th>
+      <th>수량</th>
+      <th>총액</th>
+      <th>삭제</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${cart}">
+      <td th:text="${item.productName}">상품명</td>
+      <td th:text="${item.price} + '원'">단가</td>
+      <td th:text="${item.quantity}">수량</td>
+      <td th:text="${item.totalPrice} + '원'">총액</td>
+      <td>
+        <form method="post" action="/cart/remove" style="display:inline;">
+          <input type="hidden" name="productId" th:value="${item.productId}" />
+          <button type="submit" class="remove-btn">❌</button>
+        </form>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr class="total-row">
+      <td colspan="4">총합</td>
+      <td th:text="${totalPrice != null ? totalPrice + '원' : '0원'}">합계</td>
+    </tr>
+    </tfoot>
+  </table>
+
+  <form method="post" action="/cart/checkout">
+    <button type="submit" class="checkout-btn">✅ 결제하기</button>
+  </form>
+</div>
+
+</body>
+</html>

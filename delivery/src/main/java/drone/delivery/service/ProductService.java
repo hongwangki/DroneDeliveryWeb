@@ -11,8 +11,16 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductService {
     private final ProductRepository productRepository;
+
+    //상품 생성 메서드
+    public Long createProduct(String name, int price, int quantity) {
+        Product product = Product.createProduct(name, price, quantity);
+        return productRepository.save(product).getId();
+    }
+
 
     @Transactional
     //상품 저장 메서드
@@ -21,13 +29,14 @@ public class ProductService {
     }
 
     //상품 한 개 검색 메서드
-    public Long findProductById(Long id) {
+    public Product findProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("상품이 존재하지 않습니다. id=" + id))
-                .getId();
+                .orElseThrow(() -> new EntityNotFoundException("상품이 존재하지 않습니다. id=" + id));
     }
 
+
     //상품 전체 검색 메서드
+    @Transactional(readOnly = true)
     public List<Product> findAll() {
         return productRepository.findAll();
     }
@@ -38,6 +47,13 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("상품이 존재하지 않습니다. id=" + id));
 
         productRepository.delete(product);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Product findById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. id=" + id));
     }
 
 

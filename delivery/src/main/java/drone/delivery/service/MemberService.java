@@ -4,6 +4,7 @@ import drone.delivery.GeoService;
 import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
 import drone.delivery.repository.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,5 +135,19 @@ public class MemberService {
         return memberRepository.findByEmail(email).orElse(null);
     }
 
+
+
+    @Transactional
+    public void chargeMoney(Long memberId, int amount) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
+        member.setMoney(member.getMoney() + amount);
+    }
+
+
+    public Member findById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다. id=" + id));
+    }
 
 }

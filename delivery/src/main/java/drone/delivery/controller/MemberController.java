@@ -3,7 +3,9 @@ package drone.delivery.controller;
 import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
 import drone.delivery.domain.MemberType;
+import drone.delivery.repository.MemberRepository;
 import drone.delivery.service.MemberService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,12 +13,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class MemberController {
 
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private MemberRepository memberRepository;
 
     // 로그인 화면
     @GetMapping("/")
@@ -216,6 +221,36 @@ public class MemberController {
         return "account";  // 수정된 정보를 바로 표시하는 페이지로 리디렉션
     }
 
+
+    @GetMapping("/recharge")
+    public String showRechargeForm(HttpSession session, Model model) {
+        Member member = (Member) session.getAttribute("loggedInMember");
+        model.addAttribute("member", member);
+        return "recharge"; // templates/recharge.html
+    }
+
+    @PostMapping("/recharge")
+    public String rechargeMoney(@RequestParam int money,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        if (money < 0) {
+            redirectAttributes.addFlashAttribute("errorMessage", "충전 금액은 0 이상이어야 합니다.");
+            return "redirect:/recharge";
+        }
+
+        // 세션에서 로그인한 회원 정보 가져오기
+        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+
+        // 충전 로직 위임 (DB 반영)
+        memberService.chargeMoney(sessionMember.getId(), money);
+
+        // 최신 정보로 세션 갱신
+        Member updated = memberService.findById(sessionMember.getId());
+        session.setAttribute("loggedInMember", updated);
+
+        redirectAttributes.addFlashAttribute("successMessage", "충전이 완료되었습니다!");
+        return "redirect:/recharge";
+    }
 
 
 

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>실시간 주문 현황</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 90%;
+      background-color: white;
+    }
+
+    th, td {
+      padding: 12px 20px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #eee;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+<h1>📦 실시간 주문 현황</h1>
+
+<table>
+  <thead>
+  <tr>
+    <th>주문 번호</th>
+    <th>주문자</th>
+    <th>상품 내역</th>
+    <th>총 가격</th>
+    <th>상태</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="order : ${orders}">
+    <td th:text="${order.id}">1</td>
+    <td th:text="${order.member.name}">홍길동</td>
+    <td>
+      <ul>
+        <li th:each="item : ${order.orderItems}">
+          <span th:text="${item.product.foodName} + ' x ' + ${item.quantity}"></span>
+        </li>
+      </ul>
+    </td>
+    <td th:text="${order.totalPrice} + '원'">20000원</td>
+    <td th:text="${order.orderStatus}">PENDING</td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>

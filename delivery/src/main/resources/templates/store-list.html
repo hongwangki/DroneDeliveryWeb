@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>가게 목록</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fc;
+            padding: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .category-bar {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .category-bar a {
+            padding: 10px 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            background-color: #eee;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .category-bar a.active {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .store-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .store-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            padding: 20px;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .store-card:hover {
+            transform: scale(1.03);
+        }
+
+        .store-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .store-category {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .store-description {
+            font-size: 14px;
+            color: #777;
+        }
+
+        a.store-link {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🏬 가게 목록</h2>
+
+<!-- 카테고리 버튼 -->
+<div class="category-bar">
+    <a th:href="@{/delivery(category='전체')}" th:classappend="${selectedCategory == '전체'} ? ' active'">전체</a>
+    <a th:href="@{/delivery(category='치킨')}" th:classappend="${selectedCategory == '치킨'} ? ' active'">치킨</a>
+    <a th:href="@{/delivery(category='한식')}" th:classappend="${selectedCategory == '한식'} ? ' active'">한식</a>
+    <a th:href="@{/delivery(category='중식')}" th:classappend="${selectedCategory == '중식'} ? ' active'">중식</a>
+    <a th:href="@{/delivery(category='피자')}" th:classappend="${selectedCategory == '피자'} ? ' active'">피자</a>
+    <a th:href="@{/delivery(category='족발')}" th:classappend="${selectedCategory == '족발'} ? ' active'">족발</a>
+    <a th:href="@{/delivery(category='카페')}" th:classappend="${selectedCategory == '카페'} ? ' active'">카페</a>
+    <a th:href="@{/delivery(category='햄버거')}" th:classappend="${selectedCategory == '햄버거'} ? ' active'">햄버거</a>
+    <a th:href="@{/delivery(category='분식')}" th:classappend="${selectedCategory == '분식'} ? ' active'">분식</a>
+    <a th:href="@{/delivery(category='일식')}" th:classappend="${selectedCategory == '일식'} ? ' active'">일식</a>
+    <a th:href="@{/delivery(category='디저트')}" th:classappend="${selectedCategory == '디저트'} ? ' active'">디저트</a>
+</div>
+
+<!-- 가게 카드 리스트 -->
+<div class="store-grid">
+    <a th:each="store : ${stores}" th:href="@{'/delivery/' + ${store.id}}" class="store-link">
+        <div class="store-card">
+            <div class="store-name" th:text="${store.name}">가게 이름</div>
+            <div class="store-category" th:text="'카테고리: ' + ${store.category}">카테고리</div>
+            <div class="store-description" th:text="${store.description}">가게 설명</div>
+        </div>
+    </a>
+</div>
+
+</body>
+</html>

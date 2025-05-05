@@ -16,8 +16,8 @@ public class Order {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "member_id") //Member FK
-    Member member;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
@@ -26,38 +26,56 @@ public class Order {
     @JoinColumn(name = "drone_id")
     private Drone drone;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
-    private List<Product> products=new ArrayList<>();
+
+
+
+    private int totalPrice;  // 주문 전체 금액
+    private String summary;  // "짜장면 x 2, 짬뽕 x 1" 형식
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
-    int totalPrice;
-
-    //주문 생성 메서드
-    public Order createOrder(Member member, Product... products) {
+    @PrePersist
+    public void prePersist() {
         this.createTime = LocalDateTime.now();
-        this.member = member;
-        this.orderStatus = OrderStatus.PENDING;
-        this.drone = null; // 추후 드론 설정
-
-        //양방향 설정
-        for (Product product : products) {
-            product.setOrder(this);
-            this.products.add(product);
-        }
-        return this;
+        this.updateTime = LocalDateTime.now();
     }
 
+    @PreUpdate
+    public void preUpdate() {
+        this.updateTime = LocalDateTime.now();
+    }
 
-    //주문 총 가격 메서드
-    public int getTotalPrice() {
-        int sum = 0;
-        for (Product product : products) {
-            sum += product.getTotalPrice();
+    //주문 생성
+    public static Order createOrder(Member member, List<OrderItem> orderItems) {
+        Order order = new Order();
+        order.setMember(member);
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setCreateTime(LocalDateTime.now());
+
+        int total = 0;
+        StringBuilder summary = new StringBuilder();
+
+        for (OrderItem item : orderItems) {
+            item.setOrder(order); // 양방향 설정
+            order.getOrderItems().add(item);
+
+            total += item.getOrderPrice() * item.getQuantity();
+
+            summary.append("• ")
+                    .append(item.getProduct().getFoodName())
+                    .append(" x ")
+                    .append(item.getQuantity())
+                    .append("\n");
         }
-        return sum;
+
+        order.setTotalPrice(total);
+        order.setSummary(summary.toString());
+
+        return order;
     }
 
 }

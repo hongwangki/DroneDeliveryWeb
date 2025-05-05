@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+      <html xmlns:th="http://www.thymeleaf.org">
+      <head>
+      <meta charset="UTF-8">
+      <title>충전하기</title>
+  <style>
+    body {
+      font-family: "Noto Sans KR", sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 30px;
+    }
+    .container {
+      background-color: white;
+      display: inline-block;
+      padding: 30px 50px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .message {
+      color: red;
+      margin: 15px 0;
+    }
+    .success {
+      color: green;
+    }
+    .quick-amounts button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    input[type="number"], select {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 200px;
+    }
+    .summary {
+      margin-top: 20px;
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>💰 충전하기</h1>
+
+  <p>현재 잔액: <strong th:text="${member.money}">0</strong>원</p>
+
+  <div class="message" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+  <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+  <form method="post" action="/recharge">
+    <!-- 빠른 금액 선택 -->
+    <div class="quick-amounts">
+      <p>금액 선택:</p>
+      <button type="button" onclick="setAmount(1000)">1,000원</button>
+      <button type="button" onclick="setAmount(5000)">5,000원</button>
+      <button type="button" onclick="setAmount(10000)">10,000원</button>
+      <button type="button" onclick="setAmount(20000)">20,000원</button>
+    </div>
+
+    <!-- 사용자 입력 -->
+    <input type="number" name="money" id="moneyInput" min="0" placeholder="직접 입력도 가능" required><br>
+
+    <!-- 결제 수단 -->
+    <select name="paymentType">
+      <option value="card">💳 신용카드</option>
+      <option value="kakao">🟡 카카오페이</option>
+      <option value="toss">🔵 토스</option>
+    </select>
+
+    <!-- 결제 요약 -->
+    <div class="summary">
+      <p><strong>충전 금액:</strong> <span id="summaryAmount">-</span> 원</p>
+      <p><strong>결제 수단:</strong> <span id="summaryMethod">-</span></p>
+    </div>
+
+    <!-- 충전 버튼 -->
+    <button type="submit" class="btn">결제하기</button>
+  </form>
+
+  <div style="margin-top: 30px;">
+    <a href="/home" class="btn">🏠 홈으로</a>
+  </div>
+</div>
+
+<script>
+  function setAmount(amount) {
+    document.getElementById("moneyInput").value = amount;
+    updateSummary();
+  }
+
+  document.getElementById("moneyInput").addEventListener("input", updateSummary);
+  document.querySelector("select[name='paymentType']").addEventListener("change", updateSummary);
+
+  function updateSummary() {
+    const amount = document.getElementById("moneyInput").value;
+    const method = document.querySelector("select[name='paymentType']").selectedOptions[0].textContent;
+
+    document.getElementById("summaryAmount").textContent = amount ? amount : "-";
+    document.getElementById("summaryMethod").textContent = method;
+  }
+
+  // 초기 호출
+  updateSummary();
+</script>
+
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>
