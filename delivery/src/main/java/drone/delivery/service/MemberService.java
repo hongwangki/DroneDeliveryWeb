@@ -29,13 +29,13 @@ public class MemberService {
         validateDuplicateEmail(member);
         memberRepository.save(member);
 
-//        // 회원가입 시 주소에 따른 위도, 경도 업데이트
-//        try {
-//            geoService.updateMemberCoordinates(member);  // 주소를 기반으로 위도, 경도 업데이트
-//        } catch (Exception e) {
-//            // 위도, 경도 업데이트 실패 시 예외 처리 로직 (선택 사항)
-//            e.printStackTrace();
-//        }
+        // 회원가입 시 주소에 따른 위도, 경도 업데이트
+        try {
+            geoService.updateMemberCoordinates(member);  // 주소를 기반으로 위도, 경도 업데이트
+        } catch (Exception e) {
+            // 위도, 경도 업데이트 실패 시 예외 처리 로직 (선택 사항)
+            e.printStackTrace();
+        }
 
         return member.getId();
     }
@@ -114,8 +114,7 @@ public class MemberService {
         member.setLongitude(longitude);
         member.setEmail(email);
 
-        // 이메일 수정은 회원 객체의 속성으로 반영되며, 이 후 데이터베이스에 저장됩니다.
-        memberRepository.save(member);  // save() 호출 시 데이터베이스 업데이트가 이루어집니다.
+        memberRepository.save(member);  // db에 업데이트
     }
 
     /**
@@ -136,7 +135,9 @@ public class MemberService {
     }
 
 
-
+    /**
+     * 회원 Money 충전 함수
+     */
     @Transactional
     public void chargeMoney(Long memberId, int amount) {
         Member member = memberRepository.findById(memberId)
@@ -145,6 +146,9 @@ public class MemberService {
     }
 
 
+    /**
+     * 회원을 찾는 함수
+     */
     public Member findById(Long id) {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다. id=" + id));

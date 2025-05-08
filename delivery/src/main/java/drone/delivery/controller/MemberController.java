@@ -97,12 +97,6 @@ public class MemberController {
             return "register"; // 중복된 이름인 경우 다시 회원가입 페이지로 돌아가도록 처리
         }
 
-        // 이메일 중복 체크
-        if (memberService.isEmailExist(email)) {
-            model.addAttribute("errorMessage", "이미 존재하는 이메일입니다."); // 이메일 중복 시 경고 메시지
-            return "register"; // 중복된 이메일인 경우 다시 회원가입 페이지로 돌아가도록 처리
-        }
-
         // 새로운 Member 객체 생성
         Member member = new Member();
         member.setName(name);

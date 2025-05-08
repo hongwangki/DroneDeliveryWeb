@@ -23,6 +23,7 @@ public class CartController {
     private final ProductService productService;
     private final OrderService orderService;
 
+    //장바구니에 음식을 넣는 로직
     @PostMapping("/cart/add")
     public String addToCart(@RequestParam Long productId,
                             @RequestParam(defaultValue = "1") int quantity,
@@ -54,13 +55,14 @@ public class CartController {
         // 세션 저장 + flash 메시지 전달
         int total = cart.stream().mapToInt(CartItem::getTotalPrice).sum();
         session.setAttribute("cart", cart);
-        session.setAttribute("totalPrice", total); // ✅ 총액 저장
+        session.setAttribute("totalPrice", total); // 총액 저장
         redirectAttributes.addFlashAttribute("cart", cart);
         redirectAttributes.addFlashAttribute("success", product.getFoodName() + "이(가) 장바구니에 담겼습니다.");
 
         return "redirect:/delivery/" + product.getStore().getId();
     }
 
+    //주문 확인 전 실제로 원하는 주문이 맞는지 확인하는 로직
     @PostMapping("/cart/checkout")
     public String checkout(HttpSession session, RedirectAttributes redirectAttributes) {
         Member member = (Member) session.getAttribute("loggedInMember");
@@ -68,7 +70,7 @@ public class CartController {
 
         Long storeId = (cart != null && !cart.isEmpty())
                 ? productService.findById(cart.get(0).getProductId()).getStore().getId()
-                : (Long) session.getAttribute("lastStoreId");  // ✅ 추가
+                : (Long) session.getAttribute("lastStoreId");
 
         // 로그인/세션 확인
         if (member == null || cart == null || cart.isEmpty()) {
@@ -89,7 +91,7 @@ public class CartController {
             return "redirect:/delivery/" + (storeId != null ? storeId : "");
         }
 
-        orderService.order(member, cart);
+        orderService.order(member, cart); //실제 주문
         member.setMoney(member.getMoney() - totalAmount);
         session.removeAttribute("cart");
 
@@ -98,9 +100,7 @@ public class CartController {
     }
 
 
-
-
-
+    //장바구니에서 제외하는 로직
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam Long productId,
                                  HttpSession session,

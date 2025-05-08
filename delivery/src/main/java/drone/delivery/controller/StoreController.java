@@ -40,6 +40,7 @@ public class StoreController {
         return "store-list";
     }
 
+    //해당 가게 접속 로직
     @GetMapping("/{storeId}")
     public String showStoreMenu(@PathVariable Long storeId, Model model, HttpSession session) {
         Store store = storeService.findById(storeId);

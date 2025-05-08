@@ -13,6 +13,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+
+    //실제 주문이 이루어진 후 메서드
     @GetMapping("/realtime")
     public String realtime(Model model) {
         List<Order> orders = orderService.findAll();

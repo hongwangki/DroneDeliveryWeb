@@ -28,6 +28,7 @@ public class OrderItem {
         return orderPrice * quantity;
     }
 
+    //주문 상품을 만드는 함수
     public static OrderItem createOrderItem(Product product, int quantity, int orderPrice) {
         OrderItem item = new OrderItem();
         item.setProduct(product);

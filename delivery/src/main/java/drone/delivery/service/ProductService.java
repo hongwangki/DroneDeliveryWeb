@@ -49,7 +49,7 @@ public class ProductService {
         productRepository.delete(product);
     }
 
-
+    //상품 한개를 찾는 메서드
     @Transactional(readOnly = true)
     public Product findById(Long id) {
         return productRepository.findById(id)

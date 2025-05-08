@@ -24,14 +24,22 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
 
+
+    /**
+     * 주문 메서드
+     */
     public void order(Member sessionMember, List<CartItem> cart) {
+        //회원 검색
         Member member = memberRepository.findById(sessionMember.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
 
+        //회원에 대한 아이템 리스트
         List<OrderItem> orderItems = new ArrayList<>();
         int totalPrice = 0;
         StringBuilder summary = new StringBuilder();
 
+
+        //매개 인자로 넘어온 장바구니를 order_item에 넣는 과정
         for (CartItem item : cart) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("상품 없음"));
@@ -49,23 +57,29 @@ public class OrderService {
             totalPrice += itemTotal;
         }
 
+        //주문 상품을 order에 저장
         Order order = Order.createOrder(member, orderItems);
         order.setSummary(summary.toString());
         order.setTotalPrice(totalPrice);
         order.setCreateTime(LocalDateTime.now());
         order.setOrderStatus(OrderStatus.PENDING);
 
-        orderRepository.save(order);
-        member.setMoney(member.getMoney() - totalPrice);
+        orderRepository.save(order); //DB에 order 저장
+        member.setMoney(member.getMoney() - totalPrice); //변경감지를 통해 member 보유금액 자동 저장
+
+        //json으로 쏴주기
     }
 
-
-
-
+    //주문 취소 메서드
     @Transactional
     public void cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
+
+        //만약 준비중이 아닌 이미 배송을 시작했다면 취소 불가.
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            throw new IllegalStateException("이미 처리 중인 주문은 취소할 수 없습니다.");
+        }
 
         order.setOrderStatus(OrderStatus.CANCELED); // 논리 삭제
     }
