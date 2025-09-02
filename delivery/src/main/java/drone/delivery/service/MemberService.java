@@ -3,6 +3,9 @@ package drone.delivery.service;
 import drone.delivery.GeoService;
 import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
+import drone.delivery.domain.MemberType;
+import drone.delivery.dto.RegisterRequestDTO;
+import drone.delivery.dto.UpdateMemberDTO;
 import drone.delivery.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +44,17 @@ public class MemberService {
     }
 
 
-    public boolean validateLogin(String email, String password) {
-        // 이메일로 회원을 찾고, 비밀번호가 일치하는지 확인
-        Optional<Member> member = memberRepository.findByEmail(email);
-        return member.isPresent() && member.get().getPassword().equals(password);
+    // 로그인 검증 + Member 반환
+    public Member validateLogin(String email, String password) {
+        Optional<Member> memberOpt = memberRepository.findByEmail(email);
+
+        if (memberOpt.isPresent() && memberOpt.get().getPassword().equals(password)) {
+            return memberOpt.get();  // 로그인 성공 시 Member 반환
+        }
+
+        return null;  // 로그인 실패
     }
+
 
     // 이메일 중복 확인
     public boolean isEmailExist(String email) {
@@ -102,20 +111,19 @@ public class MemberService {
      * 회원 정보 수정 로직
      */
     @Transactional
-    public void updateMember(Long memberId,String email, String name, String password, Address address, int money, Double latitude, Double longitude) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원입니다."));
+    public void updateMember(Long memberId, UpdateMemberDTO dto) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 회원입니다."));
 
-        // 이메일 수정
-        member.setName(name);
-        member.setPassword(password);
-        member.setAddress(address);
-        member.setMoney(money);
-        member.setLatitude(latitude);
-        member.setLongitude(longitude);
-        member.setEmail(email);
+        member.setName(dto.getName());
+        member.setEmail(dto.getEmail());
+        member.setPassword(dto.getPassword());
+        member.setAddress(new Address(dto.getStreet(), dto.getCity(), dto.getZipcode(), dto.getDetailAddress()));
+        member.setLatitude(dto.getLatitude());
+        member.setLongitude(dto.getLongitude());
 
-        memberRepository.save(member);  // db에 업데이트
     }
+
 
     /**
      * 회원 탈퇴 로직
@@ -152,6 +160,43 @@ public class MemberService {
     public Member findById(Long id) {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다. id=" + id));
+    }
+
+    public void registerMember(RegisterRequestDTO request) {
+        // 비밀번호 확인
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 이름 중복 체크
+        if (memberRepository.existsByName(request.getName())) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+
+        // 이메일 중복 체크 (권장)
+        if (memberRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+
+        // 새로운 Member 객체 생성
+        Member member = new Member();
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
+
+        // 비밀번호 암호화 (권장)
+        // BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        // member.setPassword(passwordEncoder.encode(request.getPassword()));
+        member.setPassword(request.getPassword());
+
+        // Address 설정
+        Address address = new Address(request.getStreet(), request.getCity(), request.getZipcode(), request.getDetailAddress());
+        member.setAddress(address);
+
+        // 기본 회원 타입
+        member.setMemberType(MemberType.USER);
+
+        // 회원 저장
+        memberRepository.save(member);
     }
 
 }

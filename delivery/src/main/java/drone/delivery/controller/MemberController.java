@@ -1,16 +1,17 @@
 package drone.delivery.controller;
 
-import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
-import drone.delivery.domain.MemberType;
+import drone.delivery.dto.MemberDTO;
+import drone.delivery.dto.RegisterRequestDTO;
+import drone.delivery.dto.UpdateMemberDTO;
 import drone.delivery.repository.MemberRepository;
 import drone.delivery.service.MemberService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -35,19 +36,21 @@ public class MemberController {
                         @RequestParam("password") String password,
                         HttpSession session,
                         Model model) {
-        // 로그인 검증
-        if (memberService.validateLogin(email, password)) {
-            // 로그인 성공 시 사용자 정보 세션에 저장
-            Member loggedInMember = memberService.findByEmail(email); // 이메일로 회원을 찾음
-            session.setAttribute("loggedInMember", loggedInMember);  // 세션에 회원 정보 저장
-            return "redirect:/home";  // 홈 화면으로 리디렉션
+
+        // 로그인 검증 + Member 객체 가져오기
+        Member loggedInMember = memberService.validateLogin(email, password);
+
+        if (loggedInMember != null) {
+            // 로그인 성공 시 세션에 저장
+            session.setAttribute("loggedInMember", loggedInMember);
+            return "redirect:/delivery";  // 홈 화면으로
         }
 
         // 로그인 실패 시 모델에 에러 메시지 추가
         model.addAttribute("errorMessage", "이메일 또는 비밀번호가 틀렸습니다.");
-
         return "login";  // 로그인 페이지로 돌아감
     }
+
 
     // 메인 화면 (홈 화면)
     @GetMapping("/home")
@@ -75,48 +78,14 @@ public class MemberController {
 
     // 회원가입 처리 (이메일 중복 체크 및 성공/실패 처리)
     @PostMapping("/register")
-    public String register(@RequestParam("name") String name,
-                           @RequestParam("email") String email,
-                           @RequestParam("password") String password,
-                           @RequestParam("confirmPassword") String confirmPassword,
-                           @RequestParam("street") String street,
-                           @RequestParam("city") String city,
-                           @RequestParam("zipcode") String zipcode,
-                           @RequestParam("detailAddress") String detailAddress,
-                           Model model) {
-
-        // 비밀번호 확인
-        if (!password.equals(confirmPassword)) {
-            model.addAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");  // 비밀번호 불일치 시 에러 메시지
-            return "register"; // 비밀번호 불일치 시 다시 register 페이지로 돌아감
+    public String register(@ModelAttribute RegisterRequestDTO request, Model model) {
+        try {
+            memberService.registerMember(request);
+            return "redirect:/login?success=true"; // 회원가입 성공 후 로그인 페이지로
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "register"; // 실패 시 회원가입 페이지로
         }
-
-        // 이름 중복 체크
-        if (memberService.isNameExist(name)) {
-            model.addAttribute("errorMessage", "이미 존재하는 이름입니다."); // 이름 중복 시 경고 메시지
-            return "register"; // 중복된 이름인 경우 다시 회원가입 페이지로 돌아가도록 처리
-        }
-
-        // 새로운 Member 객체 생성
-        Member member = new Member();
-        member.setName(name);
-        member.setEmail(email);
-        member.setPassword(password);
-
-        // Address 객체 설정
-        Address address = new Address(street, city, zipcode,detailAddress);
-        member.setAddress(address);
-
-
-        // 기본 타입은 USER
-        member.setMemberType(MemberType.USER);
-
-
-        // 회원가입 처리
-        memberService.join(member);
-
-        // 회원가입 후 로그인 페이지로 리디렉션하면서 success 파라미터를 전달
-        return "redirect:/login?success=true";  // 로그인 페이지로 리디렉션, success=true 전달
     }
 
     // 로그인 화면 (회원가입 후 로그인 화면으로 리디렉션 시 성공 메시지 전달)
@@ -145,8 +114,8 @@ public class MemberController {
         }
 
         // 모델에 사용자 정보를 추가하여 HTML로 전달
-        model.addAttribute("member", member);
-
+        MemberDTO memberDTO= new MemberDTO(member);
+        model.addAttribute("member", memberDTO);
         return "account";  // account.html 페이지로 이동
     }
 
@@ -163,63 +132,48 @@ public class MemberController {
         }
 
         // 사용자 정보를 모델에 추가하여 수정 폼에 전달
-        model.addAttribute("member", member);
+        MemberDTO memberDTO= new MemberDTO(member);
+        model.addAttribute("member", memberDTO);
 
         return "editAccount";  // editAccount.html 페이지로 이동
     }
 
-    //정보 수정 페이지
     @PostMapping("/account/edit")
-    public String updateAccountInfo(@RequestParam("name") String name,
-                                    @RequestParam("email") String email,
-                                    @RequestParam("street") String street,
-                                    @RequestParam("city") String city,
-                                    @RequestParam("zipcode") String zipcode,
-                                    @RequestParam("detailAddress") String detailAddress,
-                                    @RequestParam("password") String password, // 비밀번호 수정 가능
+    public String updateAccountInfo(@ModelAttribute UpdateMemberDTO dto,
                                     HttpSession session,
                                     Model model) {
-        // 세션에서 로그인한 사용자 정보를 가져옵니다.
-        Member member = (Member) session.getAttribute("loggedInMember");
-        member.setEmail(email);
 
+        // 1. 세션에서 현재 로그인한 회원 가져오기
+        Member member = (Member) session.getAttribute("loggedInMember");
         if (member == null) {
             model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
-            return "error";  // 에러 페이지로 리디렉션
+            return "error";
         }
 
+        // 2. DB에 회원 정보 업데이트
+        memberService.updateMember(member.getId(), dto);
 
+        // 3. DB에서 최신 회원 정보 다시 가져오기
+         Member updatedMember = memberRepository.findById(member.getId())
+                                 .orElseThrow(() -> new IllegalStateException("회원이 존재하지 않습니다."));
 
-        // 사용자 정보 업데이트 (돈은 수정하지 않음)
-        member.setName(name);
-        Address address = new Address(street, city, zipcode, detailAddress);
-        member.setAddress(address);
-        if (!password.isEmpty()) {
-            member.setPassword(password); // 비밀번호만 수정
-        }
+        // 4. 세션과 모델에 최신 정보 반영
+        session.setAttribute("loggedInMember", updatedMember);
 
-        // 서비스 레이어에서 업데이트 처리
-        memberService.updateMember(member.getId(), email, name,member.getPassword(), address, member.getMoney(), member.getLatitude(), member.getLongitude());
-
-
-        // 수정된 정보를 세션에 다시 저장
-        session.setAttribute("loggedInMember", member);
-
-        // 성공 메시지를 모델에 추가
+        MemberDTO memberDTO = new MemberDTO(updatedMember);
+        model.addAttribute("member", memberDTO);
         model.addAttribute("successMessage", "정보가 성공적으로 수정되었습니다.");
 
-        // 수정된 정보를 모델에 다시 추가하여 페이지에 전달
-        model.addAttribute("member", member);
-
-        // 수정된 정보 페이지로 리디렉션
-        return "account";  // 수정된 정보를 바로 표시하는 페이지로 리디렉션
+        return "account";
     }
+
 
 
     @GetMapping("/recharge")
     public String showRechargeForm(HttpSession session, Model model) {
         Member member = (Member) session.getAttribute("loggedInMember");
-        model.addAttribute("member", member);
+        MemberDTO memberDTO= new MemberDTO(member);
+        model.addAttribute("member", memberDTO);
         return "recharge"; // templates/recharge.html
     }
 

@@ -1,5 +1,6 @@
 package drone.delivery.domain;
 
+import drone.delivery.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +12,8 @@ import java.util.List;
 @Entity
 @Getter @Setter
 @Table(name = "orders")
-public class Order {
-    @Id @GeneratedValue
+public class Order extends BaseEntity {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -35,26 +36,12 @@ public class Order {
     private int totalPrice;  // 주문 전체 금액
     private String summary;  // "짜장면 x 2, 짬뽕 x 1" 형식
 
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-
-    @PrePersist
-    public void prePersist() {
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updateTime = LocalDateTime.now();
-    }
 
     //주문 생성
     public static Order createOrder(Member member, List<OrderItem> orderItems) {
         Order order = new Order();
         order.setMember(member);
         order.setOrderStatus(OrderStatus.PENDING);
-        order.setCreateTime(LocalDateTime.now());
 
         int total = 0;
         StringBuilder summary = new StringBuilder();

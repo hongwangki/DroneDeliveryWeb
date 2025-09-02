@@ -7,17 +7,47 @@
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8f9fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header nav a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+        }
+
+        header nav a.logout {
+            color: red;
+        }
+
+        main {
             padding: 30px;
         }
 
         h2 {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .category-bar {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .category-bar a {
@@ -77,37 +107,70 @@
             text-decoration: none;
             color: inherit;
         }
+
+        /* 실시간 주문 버튼 */
+        .realtime-btn {
+            display: block;
+            width: 220px;
+            margin: 0 auto 40px auto;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .realtime-btn:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
 
-<h2>🏬 가게 목록</h2>
+<header>
+    <h1>배달앱</h1>
+    <nav>
+        <a th:href="@{/account}">정보보기</a>
+        <a th:href="@{/recharge}">돈충전</a>
+        <a th:href="@{/settings}">설정</a>
+        <a th:href="@{/logout}" class="logout">로그아웃</a>
+    </nav>
+</header>
 
-<!-- 카테고리 버튼 -->
-<div class="category-bar">
-    <a th:href="@{/delivery(category='전체')}" th:classappend="${selectedCategory == '전체'} ? ' active'">전체</a>
-    <a th:href="@{/delivery(category='치킨')}" th:classappend="${selectedCategory == '치킨'} ? ' active'">치킨</a>
-    <a th:href="@{/delivery(category='한식')}" th:classappend="${selectedCategory == '한식'} ? ' active'">한식</a>
-    <a th:href="@{/delivery(category='중식')}" th:classappend="${selectedCategory == '중식'} ? ' active'">중식</a>
-    <a th:href="@{/delivery(category='피자')}" th:classappend="${selectedCategory == '피자'} ? ' active'">피자</a>
-    <a th:href="@{/delivery(category='족발')}" th:classappend="${selectedCategory == '족발'} ? ' active'">족발</a>
-    <a th:href="@{/delivery(category='카페')}" th:classappend="${selectedCategory == '카페'} ? ' active'">카페</a>
-    <a th:href="@{/delivery(category='햄버거')}" th:classappend="${selectedCategory == '햄버거'} ? ' active'">햄버거</a>
-    <a th:href="@{/delivery(category='분식')}" th:classappend="${selectedCategory == '분식'} ? ' active'">분식</a>
-    <a th:href="@{/delivery(category='일식')}" th:classappend="${selectedCategory == '일식'} ? ' active'">일식</a>
-    <a th:href="@{/delivery(category='디저트')}" th:classappend="${selectedCategory == '디저트'} ? ' active'">디저트</a>
-</div>
+<main>
+    <h2>🏬 가게 목록</h2>
 
-<!-- 가게 카드 리스트 -->
-<div class="store-grid">
-    <a th:each="store : ${stores}" th:href="@{'/delivery/' + ${store.id}}" class="store-link">
-        <div class="store-card">
-            <div class="store-name" th:text="${store.name}">가게 이름</div>
-            <div class="store-category" th:text="'카테고리: ' + ${store.category}">카테고리</div>
-            <div class="store-description" th:text="${store.description}">가게 설명</div>
-        </div>
-    </a>
-</div>
+    <!-- 실시간 주문 현황 버튼 -->
+    <a th:href="@{/realtime}" class="realtime-btn">📦 실시간 주문 현황 보기</a>
+
+    <!-- 카테고리 버튼 -->
+    <div class="category-bar">
+        <a th:href="@{/delivery(category='전체')}" th:classappend="${selectedCategory == '전체'} ? ' active'">전체</a>
+        <a th:href="@{/delivery(category='치킨')}" th:classappend="${selectedCategory == '치킨'} ? ' active'">치킨</a>
+        <a th:href="@{/delivery(category='한식')}" th:classappend="${selectedCategory == '한식'} ? ' active'">한식</a>
+        <a th:href="@{/delivery(category='중식')}" th:classappend="${selectedCategory == '중식'} ? ' active'">중식</a>
+        <a th:href="@{/delivery(category='피자')}" th:classappend="${selectedCategory == '피자'} ? ' active'">피자</a>
+        <a th:href="@{/delivery(category='족발')}" th:classappend="${selectedCategory == '족발'} ? ' active'">족발</a>
+        <a th:href="@{/delivery(category='카페')}" th:classappend="${selectedCategory == '카페'} ? ' active'">카페</a>
+        <a th:href="@{/delivery(category='햄버거')}" th:classappend="${selectedCategory == '햄버거'} ? ' active'">햄버거</a>
+        <a th:href="@{/delivery(category='분식')}" th:classappend="${selectedCategory == '분식'} ? ' active'">분식</a>
+        <a th:href="@{/delivery(category='일식')}" th:classappend="${selectedCategory == '일식'} ? ' active'">일식</a>
+        <a th:href="@{/delivery(category='디저트')}" th:classappend="${selectedCategory == '디저트'} ? ' active'">디저트</a>
+    </div>
+
+    <!-- 가게 카드 리스트 -->
+    <div class="store-grid">
+        <a th:each="store : ${stores}" th:href="@{'/delivery/' + ${store.id}}" class="store-link">
+            <div class="store-card">
+                <div class="store-name" th:text="${store.name}">가게 이름</div>
+                <div class="store-category" th:text="'카테고리: ' + ${store.category}">카테고리</div>
+                <div class="store-description" th:text="${store.description}">가게 설명</div>
+            </div>
+        </a>
+    </div>
+</main>
 
 </body>
 </html>

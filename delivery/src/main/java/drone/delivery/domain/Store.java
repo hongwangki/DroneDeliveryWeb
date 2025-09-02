@@ -11,7 +11,7 @@ import java.util.List;
 @Getter @Setter
 public class Store {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;          // 식당 이름

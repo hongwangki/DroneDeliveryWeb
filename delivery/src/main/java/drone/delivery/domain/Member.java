@@ -1,6 +1,7 @@
 package drone.delivery.domain;
 
 
+import drone.delivery.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +12,8 @@ import java.util.List;
 
 @Entity
 @Getter @Setter
-public class Member {
-    @Id @GeneratedValue
+public class Member extends BaseEntity {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
@@ -31,23 +32,10 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Order> orders=new ArrayList<>();
 
-    LocalDateTime createTime;
-    LocalDateTime updateTime;
-
 
     private Double latitude;  // 위도
     private Double longitude; // 경도
 
-    @PrePersist
-    public void prePersist() {
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updateTime = LocalDateTime.now();
-    }
 
     @Enumerated(EnumType.STRING)
     private MemberType memberType;

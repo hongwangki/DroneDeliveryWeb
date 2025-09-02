@@ -1,4 +1,4 @@
-package drone.delivery;
+package drone.delivery.domain;
 
 import lombok.Getter;
 import lombok.Setter;
