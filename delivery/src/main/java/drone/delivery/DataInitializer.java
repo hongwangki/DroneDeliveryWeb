@@ -24,6 +24,7 @@ public class DataInitializer {
         chickenStore.setCategory("치킨");
         chickenStore.addProduct(Product.createProduct("싸이순살", 18000, 100));
         chickenStore.addProduct(Product.createProduct("불싸이순살", 19000, 100));
+        chickenStore.setMinOrderPrice(25900);
         storeService.save(chickenStore);
 
         // 한식
@@ -33,6 +34,7 @@ public class DataInitializer {
         koreanStore.setCategory("한식");
         koreanStore.addProduct(Product.createProduct("제육볶음", 9000, 50));
         koreanStore.addProduct(Product.createProduct("된장찌개", 8000, 50));
+        koreanStore.setMinOrderPrice(15000);
         storeService.save(koreanStore);
 
         // 중식
@@ -42,6 +44,7 @@ public class DataInitializer {
         chineseStore.setCategory("중식");
         chineseStore.addProduct(Product.createProduct("짜장면", 7000, 70));
         chineseStore.addProduct(Product.createProduct("짬뽕", 8000, 70));
+        chineseStore.setMinOrderPrice(16000);
         storeService.save(chineseStore);
 
         // 피자
@@ -51,6 +54,7 @@ public class DataInitializer {
         pizzaStore.setCategory("피자");
         pizzaStore.addProduct(Product.createProduct("페퍼로니 피자", 15000, 40));
         pizzaStore.addProduct(Product.createProduct("고르곤졸라 피자", 16000, 40));
+        pizzaStore.setMinOrderPrice(20000);
         storeService.save(pizzaStore);
 
         // 족발
@@ -60,6 +64,7 @@ public class DataInitializer {
         jokbalStore.setCategory("족발");
         jokbalStore.addProduct(Product.createProduct("마늘족발", 25000, 70));
         jokbalStore.addProduct(Product.createProduct("보쌈세트", 23000, 60));
+        jokbalStore.setMinOrderPrice(25000);
         storeService.save(jokbalStore);
 
         // 카페
@@ -69,6 +74,7 @@ public class DataInitializer {
         cafeStore.setCategory("카페");
         cafeStore.addProduct(Product.createProduct("아메리카노", 4000, 100));
         cafeStore.addProduct(Product.createProduct("카페라떼", 4500, 90));
+        cafeStore.setMinOrderPrice(10000);
         storeService.save(cafeStore);
 
         // 햄버거
@@ -78,6 +84,7 @@ public class DataInitializer {
         burgerStore.setCategory("햄버거");
         burgerStore.addProduct(Product.createProduct("불고기버거", 5500, 80));
         burgerStore.addProduct(Product.createProduct("치즈버거", 6000, 70));
+        burgerStore.setMinOrderPrice(12000);
         storeService.save(burgerStore);
 
         // 분식
@@ -87,6 +94,7 @@ public class DataInitializer {
         bunsikStore.setCategory("분식");
         bunsikStore.addProduct(Product.createProduct("떡볶이", 5000, 90));
         bunsikStore.addProduct(Product.createProduct("순대세트", 6000, 85));
+        bunsikStore.setMinOrderPrice(10000);
         storeService.save(bunsikStore);
 
         // 일식
@@ -96,6 +104,7 @@ public class DataInitializer {
         japaneseStore.setCategory("일식");
         japaneseStore.addProduct(Product.createProduct("연어덮밥", 12000, 50));
         japaneseStore.addProduct(Product.createProduct("규동", 11000, 50));
+        japaneseStore.setMinOrderPrice(20000);
         storeService.save(japaneseStore);
 
         // 디저트
@@ -105,7 +114,7 @@ public class DataInitializer {
         dessertStore.setCategory("디저트");
         dessertStore.addProduct(Product.createProduct("티라미수", 6500, 40));
         dessertStore.addProduct(Product.createProduct("치즈케이크", 7000, 35));
+        dessertStore.setMinOrderPrice(8000);
         storeService.save(dessertStore);
-
     }
 }

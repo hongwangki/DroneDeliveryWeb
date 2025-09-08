@@ -1,10 +1,195 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>배달의 드론 | 가게 등록</title>
+
+  <style>
+    :root{
+      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --ink:#0f172a; --muted:#6b7280;
+      --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
+      --radius:20px; --shadow:0 14px 38px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
+      --glass:rgba(255,255,255,.75);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--ink);
+      background:
+              radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.10), transparent 60%),
+              radial-gradient(900px 500px at 120% 110%, rgba(42,193,188,.08), transparent 55%),
+              linear-gradient(180deg,#f8fafc 0%, #f3f7fb 100%);
+      min-height:100vh;
+      display:grid; place-items:center;
+    }
+
+    .wrap{ width:100%; max-width:1100px; padding:24px;
+      display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center; }
+
+    .hero{ position:relative; min-height:520px; border-radius:28px; overflow:hidden;
+      background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow); }
+    .hero::before{ content:""; position:absolute; inset:0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,.06) 1px, rgba(255,255,255,0) 1px);
+      background-size:28px 28px; opacity:.6; }
+    .hero::after{ content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
+      background: radial-gradient(closest-side, rgba(42,193,188,.35), rgba(42,193,188,0) 70%),
+      conic-gradient(from 210deg, rgba(42,193,188,.20), rgba(255,255,255,0) 60%);
+      filter:blur(20px) saturate(1.05); }
+    .brand{ position:relative; padding:48px clamp(20px,5vw,60px); color:#063a38; max-width:560px; }
+    .brand-badge{ width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
+      background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35); }
+    .brand h1{ margin:0 0 8px; font-size:clamp(2.0rem,4.4vw,3.2rem); font-weight:900 }
+    .brand p{ margin:0; color:#0b2b29; opacity:.85; font-weight:700 }
+
+    .card{ backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
+      border:1px solid rgba(2,6,23,.08); border-radius:24px; box-shadow:var(--shadow);
+      padding:clamp(20px,3vw,32px); }
+    .card h2{ margin:0 0 10px; text-align:center; font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:900 }
+    .sub{ text-align:center; color:var(--muted); font-weight:600; margin-bottom:8px }
+
+    .msg.err{ background:#fef2f2; color:#991b1b; border:1px solid #fecaca;
+      text-align:center; margin:10px 0; font-weight:700; padding:10px 12px; border-radius:12px; }
+
+    form{ margin-top:8px; display:grid; gap:14px; }
+    label{ display:block; font-size:13px; font-weight:800; color:#334155; margin-bottom:6px }
+    .input,.select{
+      width:100%; height:52px; border-radius:12px; border:1px solid var(--line);
+      background:#f9fafb; padding:0 14px; font-size:15px;
+      transition:border-color .15s, box-shadow .15s, background .15s;
+    }
+    .input:focus,.select:focus{ outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15) }
+
+    .hint{ font-size:12px; color:var(--muted); margin-top:4px }
+
+    .preview{ display:none; gap:12px; align-items:center; margin-top:6px;
+      background:#f9fafb; border:1px dashed var(--line); border-radius:12px; padding:10px 12px; }
+    .thumb{ width:56px; height:56px; border-radius:12px; background:#e8f7f6;
+      display:grid; place-items:center; font-weight:900; color:#0b2b29 }
+
+    .actions{ display:flex; gap:10px; margin-top:6px }
+    .btn{ flex:1; height:54px; border:none; border-radius:12px; font-weight:900; cursor:pointer }
+    .btn-primary{ background:var(--brand); color:#fff; box-shadow:0 10px 24px rgba(42,193,188,.35); }
+    .btn-primary:hover{ background:var(--brand-d) }
+    .btn-ghost{ background:#fff; border:1px solid var(--line); color:#111827 }
+    .btn-ghost:hover{ box-shadow:0 8px 20px rgba(2,6,23,.06) }
+
+    @media (max-width:1024px){
+      .wrap{ grid-template-columns:1fr; gap:22px }
+      .hero{ min-height:240px }
+      .brand{ padding:32px 28px }
+    }
+    @media (max-width:480px){
+      .card{ border-radius:18px; padding:18px }
+      .input,.select{ height:50px }
+      .btn{ height:50px }
+    }
+  </style>
 </head>
 <body>
-$END$
+
+<main class="wrap">
+  <!-- Left -->
+  <section class="hero">
+    <div class="brand">
+      <div class="brand-badge">드</div>
+      <h1>가게 등록</h1>
+      <p>브랜드 정보와 최소 주문 금액을 입력해 첫 가게를 만들어 보세요.</p>
+    </div>
+  </section>
+
+  <!-- Right -->
+  <section>
+    <div class="card">
+      <h2>가게 등록</h2>
+      <p class="sub">필수 정보를 입력하세요</p>
+
+      <div class="msg err" th:if="${error}" th:text="${error}">에러 메시지</div>
+
+      <form th:action="@{/owner/create}" method="post" th:object="${storeDTO}" novalidate>
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <div>
+          <label for="name">가게 이름</label>
+          <input class="input" type="text" id="name" th:field="*{name}" placeholder="예) 왕기네 가게" required>
+        </div>
+
+        <div>
+          <label for="description">설명</label>
+          <input class="input" type="text" id="description" th:field="*{description}" placeholder="예) 수제버거 전문점" required>
+        </div>
+
+        <div>
+          <label for="category">카테고리</label>
+          <select class="select" id="category" th:field="*{category}" required>
+            <option value="">-- 카테고리 선택 --</option>
+            <option value="치킨">치킨</option>
+            <option value="한식">한식</option>
+            <option value="중식">중식</option>
+            <option value="피자">피자</option>
+            <option value="족발">족발</option>
+            <option value="카페">카페</option>
+            <option value="햄버거">햄버거</option>
+            <option value="분식">분식</option>
+            <option value="일식">일식</option>
+            <option value="디저트">디저트</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="imageUrl">이미지 URL</label>
+          <input class="input" type="text" id="imageUrl" th:field="*{imageUrl}" placeholder="예: https://example.com/store.jpg">
+          <div class="preview" id="previewBox">
+            <div class="thumb" id="previewThumb">드</div>
+            <div style="font-size:13px;color:#334155">
+              <div style="font-weight:800">미리보기</div>
+              <div id="previewUrl" style="color:var(--muted)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="minOrderPrice">최소 주문 금액</label>
+          <input class="input" type="number" id="minOrderPrice" th:field="*{minOrderPrice}" min="0" step="1000" placeholder="예: 15000" required>
+          <div class="hint">원(₩) 단위, 0 입력 시 최소주문 제한 없음</div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">등록하기</button>
+          <a href="/owner" class="btn btn-ghost" style="text-decoration:none; display:grid; place-items:center;">홈으로</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<script>
+  const urlInput = document.getElementById('imageUrl');
+  const box = document.getElementById('previewBox');
+  const thumb = document.getElementById('previewThumb');
+  const urlTxt = document.getElementById('previewUrl');
+
+  function updatePreview(){
+    const v = (urlInput?.value || '').trim();
+    if(v){
+      box.style.display = 'flex';
+      urlTxt.textContent = v;
+      thumb.style.backgroundImage = `url('${v}')`;
+      thumb.style.backgroundSize = 'cover';
+      thumb.style.backgroundPosition = 'center';
+      thumb.textContent = '';
+    }else{
+      box.style.display = 'none';
+      thumb.style.backgroundImage = 'none';
+      thumb.textContent = '드';
+    }
+  }
+  urlInput && urlInput.addEventListener('input', updatePreview);
+  updatePreview();
+</script>
+
 </body>
 </html>

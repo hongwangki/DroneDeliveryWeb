@@ -1,141 +1,340 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title><!DOCTYPE html>
-      <html xmlns:th="http://www.thymeleaf.org">
-      <head>
-      <meta charset="UTF-8">
-      <title>충전하기</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>배달의 드론 | 충전하기</title>
+
   <style>
-    body {
-      font-family: "Noto Sans KR", sans-serif;
-      background-color: #f4f4f4;
-      text-align: center;
-      padding: 30px;
+    :root{
+      --brand:#2AC1BC;
+      --brand-d:#1fa6a1;
+      --ink:#0f172a;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f6f8fb;
+      --line:#e5e7eb;
+      --radius:16px;
+      --shadow:0 12px 30px rgba(2,6,23,.06);
+      --action-h:78px;
     }
-    .container {
-      background-color: white;
-      display: inline-block;
-      padding: 30px 50px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--ink);
+      background:
+              radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.08), transparent 60%),
+              radial-gradient(1000px 500px at 120% 10%, rgba(42,193,188,.06), transparent 55%),
+              var(--bg);
     }
-    h1 {
-      color: #333;
-      margin-bottom: 20px;
+
+    /* App bar (옵션) */
+    .appbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.7);backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid rgba(15,23,42,.06)}
+    .appbar-inner{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;font-weight:900;box-shadow:0 6px 14px rgba(42,193,188,.35)}
+    .app-actions a{text-decoration:none;color:var(--muted);font-weight:700;margin-left:14px}
+    .app-actions a:hover{color:#111827}
+
+    /* Page */
+    .wrap{max-width:760px;margin:26px auto 120px;padding:0 20px}
+    .hero h1{margin:0 0 6px;font-size:28px;font-weight:900}
+    .hero p{margin:0;color:var(--muted);font-weight:600}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px}
+
+    /* Card */
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .section-title{margin:0 0 12px;font-weight:900}
+
+    /* Balance */
+    .balance{display:flex;align-items:center;gap:10px;color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 12px;border-radius:12px;font-weight:800}
+
+    /* Amount chips */
+    .chip-group{display:flex;flex-wrap:wrap;gap:10px}
+    .chip{
+      appearance:none;border:1px solid var(--line);background:#fff;color:#111827;
+      padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 0 #e8eaee;
+      transition:transform .05s ease, box-shadow .15s ease, border-color .15s ease;
     }
-    .btn {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      margin: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
+    .chip:active{transform:translateY(1px)}
+    .chip[aria-pressed="true"]{border-color:var(--brand);box-shadow:0 0 0 4px rgba(42,193,188,.15) inset}
+
+    /* Input with suffix */
+    .input-row{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .input-group{position:relative;flex:1}
+    .input{
+      width:100%;padding:14px 50px 14px 14px;border:1px solid var(--line);border-radius:12px;background:#f9fafb;font-size:16px;
+      transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
     }
-    .btn:hover {
-      background-color: #45a049;
-    }
-    .message {
-      color: red;
-      margin: 15px 0;
-    }
-    .success {
-      color: green;
-    }
-    .quick-amounts button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 5px;
-    }
-    input[type="number"], select {
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px;
-      width: 200px;
-    }
-    .summary {
-      margin-top: 20px;
-      background: #f1f1f1;
-      padding: 10px;
-      border-radius: 5px;
+    .input:focus{outline:none;border-color:#8ee2df;background:#fff;box-shadow:0 0 0 4px rgba(42,193,188,.15)}
+    .suffix{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#6b7280;font-weight:800}
+
+    /* Payment methods */
+    .pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .pay{position:relative;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:#fff;transition:border-color .15s, box-shadow .15s}
+    .pay:hover{border-color:#c9ced6}
+    .pay input{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .pay.active{border-color:var(--brand);box-shadow:0 0 0 4px rgba(42,193,188,.18)}
+    .pay .logo{height:24px;width:auto;margin-bottom:10px;display:inline-block}
+    .pay .title{font-weight:900}
+    .pay .sub{font-size:12px;color:var(--muted)}
+
+    /* Summary */
+    .summary{background:#f9fafb;border:1px solid var(--line);border-radius:14px;padding:16px}
+    .summary-row{display:flex;justify-content:space-between;margin:6px 0;font-weight:800}
+    .summary-row .label{color:#475569;font-weight:900}
+    .summary .total{font-size:20px}
+
+    /* Messages */
+    .msg{padding:12px;border-radius:12px;font-weight:700}
+    .msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .msg.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+
+    /* Bottom action */
+    .actions{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;
+      padding:14px 16px max(14px, env(safe-area-inset-bottom));background:
+            linear-gradient(180deg, rgba(246,248,251,0), rgba(246,248,251,.92) 40%, rgba(246,248,251,.98));
+      border-top:1px solid rgba(15,23,42,.06);backdrop-filter: blur(6px);min-height:var(--action-h)}
+    .actions-inner{width:100%;max-width:760px;display:flex;gap:10px}
+    .btn{appearance:none;border:none;border-radius:12px;padding:14px 18px;font-weight:900;cursor:pointer;transition:transform .05s ease, box-shadow .15s ease, background .15s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn-ghost{background:#fff;border:1px solid var(--line);color:#111827}
+    .btn-brand{background:var(--brand);color:#fff;min-width:200px;box-shadow:0 8px 22px rgba(42,193,188,.35)}
+    .btn-brand:hover{background:var(--brand-d)}
+    .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+    /* Footer space so content not hidden */
+    .wrap{padding-bottom:calc(var(--action-h) + 30px)}
+
+    @media (max-width: 640px){
+      .pay-grid{grid-template-columns:1fr 1fr}
+      .btn-brand{flex:1}
+      .actions-inner{flex-direction:column}
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>💰 충전하기</h1>
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand">
+      <div class="brand-badge">드</div><span>배달의 드론</span>
+    </div>
+    <nav class="app-actions">
+      <a href="/delivery">가게목록</a>
+      <a href="/realtime">실시간주문</a>
+    </nav>
+  </div>
+</header>
 
-  <p>현재 잔액: <strong th:text="${member.money}">0</strong>원</p>
+<main class="wrap">
+  <div class="hero">
+    <h1>충전하기</h1>
+    <p>안전하고 편리한 결제 수단으로 즉시 충전하세요.</p>
+  </div>
 
-  <div class="message" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-  <div class="message success" th:if="${successMessage}" th:text="${successMessage}"></div>
-
-  <form method="post" action="/recharge">
-    <!-- 빠른 금액 선택 -->
-    <div class="quick-amounts">
-      <p>금액 선택:</p>
-      <button type="button" onclick="setAmount(1000)">1,000원</button>
-      <button type="button" onclick="setAmount(5000)">5,000원</button>
-      <button type="button" onclick="setAmount(10000)">10,000원</button>
-      <button type="button" onclick="setAmount(20000)">20,000원</button>
+  <div class="grid">
+    <div class="card">
+      <div class="balance">
+        <span>💰 현재 잔액</span>
+        <span style="margin-left:auto"><strong th:text="${#numbers.formatInteger(member.money,3,'COMMA')}">0</strong>원</span>
+      </div>
     </div>
 
-    <!-- 사용자 입력 -->
-    <input type="number" name="money" id="moneyInput" min="0" placeholder="직접 입력도 가능" required><br>
+    <div class="card">
+      <h3 class="section-title">금액 선택</h3>
+      <div class="chip-group" id="chipGroup">
+        <button type="button" class="chip" data-amt="1000">1,000원</button>
+        <button type="button" class="chip" data-amt="5000">5,000원</button>
+        <button type="button" class="chip" data-amt="10000">10,000원</button>
+        <button type="button" class="chip" data-amt="20000">20,000원</button>
+        <button type="button" class="chip" data-amt="50000">50,000원</button>
+      </div>
 
-    <!-- 결제 수단 -->
-    <select name="paymentType">
-      <option value="card">💳 신용카드</option>
-      <option value="kakao">🟡 카카오페이</option>
-      <option value="toss">🔵 토스</option>
-    </select>
-
-    <!-- 결제 요약 -->
-    <div class="summary">
-      <p><strong>충전 금액:</strong> <span id="summaryAmount">-</span> 원</p>
-      <p><strong>결제 수단:</strong> <span id="summaryMethod">-</span></p>
+      <div class="input-row">
+        <div class="input-group">
+          <input class="input" type="number" min="0" id="moneyInput" name="money" placeholder="직접 입력" inputmode="numeric" />
+          <span class="suffix">원</span>
+        </div>
+        <button type="button" class="chip" id="btnAllClear">지우기</button>
+      </div>
     </div>
 
-    <!-- 충전 버튼 -->
-    <button type="submit" class="btn">결제하기</button>
+    <div class="card">
+      <h3 class="section-title">결제 수단</h3>
+      <div class="pay-grid" id="payGrid">
+        <!-- 신용/체크카드 -->
+        <label class="pay" data-method="card">
+          <input type="radio" name="paymentType" value="card">
+          <img class="logo" alt="" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' width='120' height='24' viewBox='0 0 120 24'>
+              <rect x='0' y='2' width='36' height='20' rx='4' fill='%232AC1BC'/>
+              <rect x='42' y='2' width='36' height='20' rx='4' fill='%230f172a'/>
+              <rect x='84' y='2' width='36' height='20' rx='4' fill='%236b7280'/>
+            </svg>">
+          <div class="title">신용/체크카드</div>
+          <div class="sub">국내 모든 카드사</div>
+        </label>
+
+        <!-- 카카오페이 -->
+        <label class="pay" data-method="kakao">
+          <input type="radio" name="paymentType" value="kakao">
+          <img class="logo" alt="" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' width='120' height='24' viewBox='0 0 120 24'>
+              <rect x='0' y='2' width='120' height='20' rx='10' fill='%23FEE500'/>
+              <circle cx='20' cy='12' r='5' fill='%23000000'/>
+              <circle cx='40' cy='12' r='5' fill='%23000000'/>
+              <circle cx='60' cy='12' r='5' fill='%23000000'/>
+            </svg>">
+          <div class="title">카카오페이</div>
+          <div class="sub">간편결제 · 송금</div>
+        </label>
+
+        <!-- 토스 -->
+        <label class="pay" data-method="toss">
+          <input type="radio" name="paymentType" value="toss">
+          <img class="logo" alt="" src="data:image/svg+xml;utf8,
+            <svg xmlns='http://www.w3.org/2000/svg' width='120' height='24' viewBox='0 0 120 24'>
+              <circle cx='18' cy='12' r='9' fill='%230066FF'/>
+              <rect x='32' y='5' width='76' height='14' rx='7' fill='%230066FF' />
+            </svg>">
+          <div class="title">토스</div>
+          <div class="sub">앱에서 바로 결제</div>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">결제 요약</h3>
+      <div class="summary">
+        <div class="summary-row"><span class="label">충전 금액</span><span id="sumAmount">- 원</span></div>
+        <div class="summary-row"><span class="label">결제 수단</span><span id="sumMethod">-</span></div>
+        <hr style="border:none;border-top:1px dashed #d1d5db;margin:10px 0">
+        <div class="summary-row total"><span class="label">결제 금액</span><span id="sumTotal">0 원</span></div>
+      </div>
+      <div class="msg error" id="errBox" style="display:none"></div>
+      <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- 실제 전송 폼 (requestSubmit 이용) -->
+  <form id="chargeForm" method="post" action="/recharge" style="display:none">
+    <input type="hidden" name="money" id="formMoney">
+    <input type="hidden" name="paymentType" id="formPay">
+    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
   </form>
+</main>
 
-  <div style="margin-top: 30px;">
-    <a href="/delivery" class="btn">🏠 홈으로</a>
+<!-- Bottom Action -->
+<div class="actions">
+  <div class="actions-inner">
+    <a class="btn btn-ghost" href="/delivery">홈으로</a>
+    <button class="btn btn-brand" id="payBtn" disabled>결제하기</button>
   </div>
 </div>
 
 <script>
-  function setAmount(amount) {
-    document.getElementById("moneyInput").value = amount;
+  const moneyInput = document.getElementById('moneyInput');
+  const chipGroup = document.getElementById('chipGroup');
+  const payGrid = document.getElementById('payGrid');
+  const payBtn = document.getElementById('payBtn');
+  const errBox = document.getElementById('errBox');
+
+  const sumAmount = document.getElementById('sumAmount');
+  const sumMethod = document.getElementById('sumMethod');
+  const sumTotal  = document.getElementById('sumTotal');
+
+  const form = document.getElementById('chargeForm');
+  const formMoney = document.getElementById('formMoney');
+  const formPay = document.getElementById('formPay');
+
+  const btnAllClear = document.getElementById('btnAllClear');
+
+  function fmt(n){
+    if(n===null || n===undefined || n==='') return '-';
+    const v = Number(n);
+    if(Number.isNaN(v)) return '-';
+    return v.toLocaleString('ko-KR');
+  }
+
+  function currentMethod(){
+    const checked = payGrid.querySelector('input[name="paymentType"]:checked');
+    return checked ? checked.value : '';
+  }
+
+  function updateSummary(){
+    const amount = Number(moneyInput.value || 0);
+    const method = currentMethod();
+
+    sumAmount.textContent = (amount>0) ? `${fmt(amount)} 원` : '- 원';
+    sumMethod.textContent = method ? ({
+      card:'신용/체크카드', kakao:'카카오페이', toss:'토스'
+    }[method]) : '-';
+    sumTotal.textContent  = `${fmt(amount)} 원`;
+
+    // 유효성 & 버튼 상태
+    const ok = amount>0 && method;
+    payBtn.disabled = !ok;
+    errBox.style.display = 'none';
+  }
+
+  // 금액 칩 클릭
+  chipGroup.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.chip');
+    if(!btn || !btn.dataset.amt) return;
+    // 칩 active 상태
+    chipGroup.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    btn.setAttribute('aria-pressed','true');
+
+    moneyInput.value = btn.dataset.amt;
     updateSummary();
-  }
+  });
 
-  document.getElementById("moneyInput").addEventListener("input", updateSummary);
-  document.querySelector("select[name='paymentType']").addEventListener("change", updateSummary);
+  // 입력 변경
+  moneyInput.addEventListener('input', ()=>{
+    // 칩 선택 해제
+    chipGroup.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    updateSummary();
+  });
 
-  function updateSummary() {
-    const amount = document.getElementById("moneyInput").value;
-    const method = document.querySelector("select[name='paymentType']").selectedOptions[0].textContent;
+  // 지우기
+  btnAllClear.addEventListener('click', ()=>{
+    moneyInput.value = '';
+    chipGroup.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    updateSummary();
+  });
 
-    document.getElementById("summaryAmount").textContent = amount ? amount : "-";
-    document.getElementById("summaryMethod").textContent = method;
-  }
+  // 결제수단 타일 선택
+  payGrid.addEventListener('change', (e)=>{
+    if(e.target.name==='paymentType'){
+      payGrid.querySelectorAll('.pay').forEach(p=>p.classList.remove('active'));
+      e.target.closest('.pay').classList.add('active');
+      updateSummary();
+    }
+  });
 
-  // 초기 호출
+  // 결제 버튼
+  payBtn.addEventListener('click', ()=>{
+    const amount = Number(moneyInput.value || 0);
+    const method = currentMethod();
+
+    if(!(amount>0) || !method){
+      errBox.textContent = '충전 금액과 결제 수단을 선택해주세요.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    formMoney.value = String(amount);
+    formPay.value = method;
+    form.requestSubmit(); // 실제 POST
+  });
+
+  // 초기 상태
   updateSummary();
 </script>
-
-</body>
-</html>
-</title>
-</head>
-<body>
 
 </body>
 </html>

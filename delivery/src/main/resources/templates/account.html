@@ -1,110 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>사용자 정보</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>배달의 드론 | 사용자 정보</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 0;
+    :root{
+      --mint:#2AC1BC;
+      --mint-d:#21a7a2;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+      --radius:18px;
+      --radius-lg:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--ink);
+      background:
+              radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+              linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
+      background-size:18px 18px, auto;
+      background-attachment:fixed;
     }
 
-    .container {
-      max-width: 800px;
-      margin: 50px auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* App Bar */
+    .appbar{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:blur(6px);
+      background:rgba(255,255,255,.8);
+      border-bottom:1px solid var(--border);
+    }
+    .appbar-inner{
+      max-width:1000px; margin:0 auto; padding:12px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b;}
+    .logo{
+      width:32px; height:32px; display:grid; place-items:center;
+      background:var(--mint); color:#fff; border-radius:10px; font-weight:900;
+      box-shadow:0 6px 14px rgba(42,193,188,.25);
+    }
+    .nav a{ color:var(--muted); text-decoration:none; margin-left:16px; font-weight:700; }
+    .nav a:hover{ color:#0b3d3b; }
+
+    /* Page */
+    .wrap{ max-width:1000px; margin:26px auto 64px; padding:0 20px; }
+
+    .page-title{
+      margin:0 0 16px;
+      font-size:28px; letter-spacing:-.3px;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .success{
+      display:flex; align-items:center; gap:10px;
+      background:#e6f9f6; color:#056e6a;
+      border:1px solid #c9f4ef;
+      padding:12px 14px; border-radius:12px;
+      box-shadow:0 6px 14px rgba(6,95,91,.06);
+      font-weight:800; margin-bottom:16px;
     }
 
-    .info {
-      font-size: 18px;
-      color: #333;
-      margin: 10px 0;
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius-lg); box-shadow:var(--shadow);
+      padding:20px;
     }
 
-    .info span {
-      font-weight: bold;
+    .grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    }
+    @media (max-width:700px){ .grid{ grid-template-columns:1fr; } }
+
+    .item{
+      background:#fbfcfe; border:1px solid #edf0f5; border-radius:14px;
+      padding:14px 16px;
+    }
+    .label{ color:var(--muted); font-weight:700; font-size:13px; margin-bottom:6px; }
+    .value{ font-weight:900; font-size:16px; letter-spacing:-.2px; }
+
+    .money{
+      display:inline-flex; align-items:center; gap:8px;
+      background:#fff6e6; color:#8a5a00; border:1px solid #ffe4b3;
+      padding:8px 10px; border-radius:999px; font-weight:900; font-size:14px;
     }
 
-    .back-button, .edit-button {
-      display: block;
-      width: 200px;
-      margin: 20px auto;
-      padding: 10px;
-      text-align: center;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
+    .actions{
+      display:flex; gap:12px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap;
     }
-
-    .back-button:hover, .edit-button:hover {
-      background-color: #0056b3;
+    .btn{
+      appearance:none; border:none; cursor:pointer; text-decoration:none;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      height:46px; padding:0 16px; border-radius:12px; font-weight:900;
+      box-shadow:0 10px 18px rgba(42,193,188,.16);
     }
-
-    /* 성공 메시지 스타일 */
-    .success-message {
-      color: green; /* 초록색 */
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 20px;
-      padding: 15px;
-      border: 2px solid green; /* 초록색 테두리 */
-      background-color: #e6f9e6; /* 연한 초록색 배경 */
-      border-radius: 5px; /* 테두리 둥글게 */
-      width: 80%; /* 메시지 박스의 너비 */
-      margin-left: auto;
-      margin-right: auto; /* 중앙 정렬 */
-    }
+    .btn-primary{ background:var(--mint); color:#fff; }
+    .btn-primary:hover{ background:var(--mint-d); }
+    .btn-secondary{ background:#eef2f7; color:#0b3d3b; box-shadow:none; }
+    .btn-secondary:hover{ background:#e6ebf3; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>사용자 정보</h2>
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand"><span class="logo">드</span>배달의 드론</div>
+    <nav class="nav">
+      <a th:href="@{/delivery}">가게목록</a>
+      <a th:href="@{/logout}">로그아웃</a>
+    </nav>
+  </div>
+</header>
 
-  <!-- 성공 메시지 표시 -->
-  <div th:if="${successMessage}" class="success-message">
-    <p th:text="${successMessage}"></p>
-  </div>
+<main class="wrap">
+  <h1 class="page-title">사용자 정보</h1>
 
-  <!-- 사용자 정보 표시 -->
-  <div class="info">
-    <span>이름:</span> <span th:text="${member.name}">John Doe</span>
-  </div>
-  <div class="info">
-    <span>이메일:</span> <span th:text="${member.email}">johndoe@example.com</span>
-  </div>
-  <div class="info">
-    <span>주소:</span> <span th:text="${member.address.street}">서울특별시 강남구 역삼동</span>
-  </div>
-  <div class="info">
-    <span>상세 주소:</span> <span th:text="${member.address.detailAddress}">123-45, 역삼동</span>
-  </div>
-  <div class="info">
-    <span>보유한 돈:</span> <span th:text="${member.money}">5000원</span> <!-- 수정할 수 없음 -->
-  </div>
+  <!-- 성공 메시지 -->
+  <div th:if="${successMessage}" class="success" th:text="${successMessage}">변경이 저장되었습니다.</div>
 
-  <!-- 정보 수정 버튼 -->
-  <form action="/account/edit" method="GET">
-    <button class="edit-button" type="submit">정보 수정</button>
-  </form>
+  <section class="card">
+    <div class="grid">
+      <div class="item">
+        <div class="label">이름</div>
+        <div class="value" th:text="${member.name}">홍길동</div>
+      </div>
 
-  <button class="back-button" onclick="window.location.href='/delivery'">뒤로 가기</button>
-</div>
+      <div class="item">
+        <div class="label">이메일</div>
+        <div class="value" th:text="${member.email}">user@example.com</div>
+      </div>
+
+      <div class="item">
+        <div class="label">도로명 주소</div>
+        <div class="value" th:text="${member.address.street}">서울특별시 강남구 테헤란로 123</div>
+      </div>
+
+      <div class="item">
+        <div class="label">상세 주소</div>
+        <div class="value" th:text="${member.address.detailAddress}">101동 1001호</div>
+      </div>
+
+      <div class="item">
+        <div class="label">도시</div>
+        <div class="value" th:text="${member.address.city}">서울</div>
+      </div>
+
+      <div class="item">
+        <div class="label">우편번호</div>
+        <div class="value" th:text="${member.address.zipcode}">06236</div>
+      </div>
+
+      <div class="item" style="grid-column:1 / -1;">
+        <div class="label">보유한 돈</div>
+        <span class="money" th:text="${#numbers.formatInteger(member.money,0,'COMMA')} + ' 원'">5,000 원</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <form action="/account/edit" method="get">
+        <button type="submit" class="btn btn-primary">정보 수정</button>
+      </form>
+      <a class="btn btn-secondary" th:href="@{/delivery}">뒤로 가기</a>
+    </div>
+  </section>
+</main>
 
 </body>
 </html>

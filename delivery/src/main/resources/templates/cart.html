@@ -8,6 +8,7 @@
       font-family: 'Noto Sans KR', sans-serif;
       background-color: #f8f9fc;
       padding: 40px;
+      margin: 0;
     }
 
     h1 {
@@ -16,12 +17,18 @@
       margin-bottom: 30px;
     }
 
-    .success-msg {
-      text-align: center;
-      color: green;
-      font-weight: bold;
-      margin-bottom: 20px;
+    /* 알림 메시지 */
+    .alert {
+      width: 90%;
+      margin: 0 auto 20px auto;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-weight: 600;
     }
+    .alert-success { background: #e6f4ea; border-color: #c7e8d0; color: #1e7d3b; }
+    .alert-error   { background: #fde7e7; border-color: #f7c2c2; color: #a11313; }
+    .alert-warn    { background: #fff7e6; border-color: #ffe4b3; color: #8a5a00; }
 
     table {
       width: 90%;
@@ -42,30 +49,32 @@
       color: white;
     }
 
-    td {
-      font-size: 15px;
-    }
+    td { font-size: 15px; }
 
     .total-row td {
       font-weight: bold;
       background-color: #f0f0f0;
     }
 
-    .checkout-btn {
-      display: block;
-      margin: 0 auto;
+    .btn {
+      display: inline-block;
       padding: 12px 30px;
-      background-color: #28a745;
-      color: white;
-      font-size: 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      text-align: center;
     }
 
-    .checkout-btn:hover {
-      background-color: #218838;
+    .checkout-btn {
+      display: block;
+      width: fit-content;
+      margin: 0 auto;
+      background-color: #28a745;
+      color: white;
     }
+    .checkout-btn:hover { background-color: #218838; }
 
     .empty-msg {
       text-align: center;
@@ -80,6 +89,8 @@
       color: red;
       cursor: pointer;
       font-weight: bold;
+      font-size: 18px;
+      line-height: 1;
     }
   </style>
 </head>
@@ -87,7 +98,16 @@
 
 <h1>🛒 장바구니</h1>
 
-<div th:if="${successMessage}" class="success-msg" th:text="${successMessage}"></div>
+<!-- ✅ 에러/경고/성공 메시지 표시 -->
+<div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}">
+  재고 부족: 싸이순살 (남은 2개, 요청 3개)
+</div>
+<div th:if="${warnMessage}" class="alert alert-warn" th:text="${warnMessage}">
+  최소 주문 금액은 25,900원입니다.
+</div>
+<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
+  주문이 성공적으로 완료되었습니다!
+</div>
 
 <div th:if="${#lists.isEmpty(cart)}">
   <p class="empty-msg">장바구니가 비어있습니다. 메뉴에서 상품을 추가해보세요!</p>
@@ -107,13 +127,17 @@
     <tbody>
     <tr th:each="item : ${cart}">
       <td th:text="${item.productName}">상품명</td>
-      <td th:text="${item.price} + '원'">단가</td>
-      <td th:text="${item.quantity}">수량</td>
-      <td th:text="${item.totalPrice} + '원'">총액</td>
+      <td th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')} + '원'">1,000원</td>
+      <td th:text="${item.quantity}">1</td>
+      <td th:text="${#numbers.formatInteger(item.totalPrice, 3, 'COMMA')} + '원'">1,000원</td>
       <td>
         <form method="post" action="/cart/remove" style="display:inline;">
+          <!-- CSRF (있을 때만 렌더) -->
+          <th:block th:if="${_csrf != null}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          </th:block>
           <input type="hidden" name="productId" th:value="${item.productId}" />
-          <button type="submit" class="remove-btn">❌</button>
+          <button type="submit" class="remove-btn" title="삭제">❌</button>
         </form>
       </td>
     </tr>
@@ -121,15 +145,5 @@
     <tfoot>
     <tr class="total-row">
       <td colspan="4">총합</td>
-      <td th:text="${totalPrice != null ? totalPrice + '원' : '0원'}">합계</td>
-    </tr>
-    </tfoot>
-  </table>
-
-  <form method="post" action="/cart/checkout">
-    <button type="submit" class="checkout-btn">✅ 결제하기</button>
-  </form>
-</div>
-
-</body>
-</html>
+      <td th:text="${totalPrice != null ? #numbers.formatInteger(totalPrice, 3, 'COMMA') + '원' : '0원'}">0원</td>
+    </tr

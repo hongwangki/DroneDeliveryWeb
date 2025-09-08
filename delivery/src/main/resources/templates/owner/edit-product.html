@@ -1,10 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>상품 수정</title>
+  <style>
+    :root {
+      --bg:#f8fafc; --card:#ffffff; --border:#e5e7eb; --fg:#0f172a;
+      --muted:#64748b; --brand:#2563eb; --brand-hover:#1d4ed8; --danger:#b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji; color:var(--fg); background:var(--bg); }
+    main { max-width: 720px; margin: 40px auto; padding: 0 20px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 4px 14px rgba(2,6,23,0.04); padding: 24px; }
+    h1 { margin: 0 0 18px; font-size: 22px; }
+
+    form .field { margin-top: 14px; }
+    label { display:block; font-weight:600; margin-bottom: 6px; }
+    input[type="text"], input[type="number"] {
+      width:100%; padding:12px 12px; border:1px solid var(--border); border-radius:10px; font-size:16px;
+      outline:none; background:#fff;
+    }
+    input:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(37,99,235,0.15); }
+
+    .error { margin-top:6px; color:var(--danger); font-size:13px; }
+    .error-global { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px 12px; border-radius:10px; margin-bottom:12px; }
+
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+
+    .actions { display:flex; gap:10px; margin-top: 20px; }
+    button, .btn {
+      appearance:none; border:none; padding:12px 16px; border-radius:10px; cursor:pointer; font-weight:600; font-size:15px;
+      background:var(--brand); color:#fff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+    }
+    button:hover, .btn:hover { background:var(--brand-hover); }
+    .btn-secondary { background:#fff; color:var(--fg); border:1px solid var(--border); }
+    .btn-secondary:hover { background:#f8fafc; }
+  </style>
 </head>
 <body>
-$END$
+<main>
+  <section id="edit-menu" class="card">
+    <h1>상품 수정</h1>
+
+    <form th:action="@{/owner/stores/{storeId}/products/{productId}/edit(storeId=${storeId}, productId=${productId})}"
+          th:object="${foodDTO}" method="post">
+
+      <!-- 전역 에러 요약: form 내부에서만 사용 -->
+      <div class="error-global" th:if="${#fields.hasAnyErrors()}">
+        입력값을 다시 확인해주세요. 아래 항목의 오류를 수정 후 저장하세요.
+      </div>
+
+      <!-- CSRF 토큰 -->
+      <input type="hidden" th:if="${_csrf != null}"
+             th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+      <div class="field">
+        <label for="foodName">상품명</label>
+        <input id="foodName" type="text" th:field="*{foodName}" placeholder="예) 돼지고기 김치찌개" />
+        <div class="error" th:if="${#fields.hasErrors('foodName')}" th:errors="*{foodName}">오류</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="foodPrice">가격(원)</label>
+          <input id="foodPrice" type="number" min="0" step="1" th:field="*{foodPrice}" placeholder="예) 8900" />
+          <div class="error" th:if="${#fields.hasErrors('foodPrice')}" th:errors="*{foodPrice}">오류</div>
+        </div>
+
+        <div class="field">
+          <label for="quantity">수량</label>
+          <input id="quantity" type="number" min="1" step="1" th:field="*{quantity}" placeholder="예) 1" />
+          <div class="error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}">오류</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit">수정하기</button>
+        <a class="btn btn-secondary" th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">가게 상세로</a>
+      </div>
+    </form>
+  </section>
+</main>
 </body>
 </html>

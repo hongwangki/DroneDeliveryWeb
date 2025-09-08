@@ -1,172 +1,208 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>배달의 드론 | 회원가입</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        :root{
+            --brand:#2AC1BC; --brand-d:#1fa6a1;
+            --ink:#0f172a; --muted:#6b7280;
+            --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
+            --radius:20px; --shadow:0 14px 38px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
+            --glass:rgba(255,255,255,.75);
         }
 
-        .container {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family:"Noto Sans KR","Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            color:var(--ink);
+            background:
+                    radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.10), transparent 60%),
+                    radial-gradient(900px 500px at 120% 110%, rgba(42,193,188,.08), transparent 55%),
+                    linear-gradient(180deg,#f8fafc 0%, #f3f7fb 100%);
+            min-height:100vh;
+            display:grid; place-items:center;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+        /* Layout */
+        .wrap{ width:100%; max-width:1100px; padding:24px;
+            display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center; }
+
+        /* Left: hero (로그인과 동일) */
+        .hero{ position:relative; min-height:520px; border-radius:28px; overflow:hidden;
+            background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow); }
+        .hero::before{ content:""; position:absolute; inset:0;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,.06) 1px, rgba(255,255,255,0) 1px);
+            background-size:28px 28px; opacity:.6; }
+        .hero::after{ content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
+            background: radial-gradient(closest-side, rgba(42,193,188,.35), rgba(42,193,188,0) 70%),
+            conic-gradient(from 210deg, rgba(42,193,188,.20), rgba(255,255,255,0) 60%);
+            filter:blur(20px) saturate(1.05); }
+        .brand{ position:relative; padding:48px clamp(20px,5vw,60px); color:#063a38; max-width:560px; }
+        .brand-badge{ width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
+            background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35); }
+        .brand h1{ margin:0 0 8px; font-size:clamp(2.2rem,4.8vw,3.6rem); font-weight:900; letter-spacing:.4px }
+        .brand p{ margin:0; color:#0b2b29; opacity:.85; font-weight:700 }
+
+        /* Right: Register glass card */
+        .card{ backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
+            border:1px solid rgba(2,6,23,.08); border-radius:24px; box-shadow:var(--shadow);
+            padding:clamp(20px,3vw,32px); }
+        .card h2{ margin:0 0 8px; text-align:center; font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:900 }
+        .sub{ text-align:center; color:var(--muted); font-weight:600; margin-bottom:8px }
+
+        /* Messages */
+        .msg{ text-align:center; margin:10px 0; font-weight:700; padding:10px 12px; border-radius:12px; border:1px solid }
+        .msg.ok{ background:#ecfdf5; color:#065f46; border-color:#a7f3d0 }
+        .msg.err{ background:#fef2f2; color:#991b1b; border-color:#fecaca }
+
+        form{ margin-top:8px }
+        .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .grid-1{ grid-column:1/-1; }
+        .field{ position:relative; }
+
+        /* 입력/아이콘 정렬 (로그인과 동일) */
+        .input,.select{
+            width:100%; height:52px;
+            border-radius:12px; border:1px solid var(--line); background:#f9fafb;
+            padding:0 14px 0 46px; font-size:15px;
+            transition:border-color .15s, box-shadow .15s, background .15s;
+        }
+        .select{ padding-left:14px }
+        .input:focus,.select:focus{ outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15) }
+
+        .ico{
+            position:absolute; left:14px; top:0; height:100%;
+            display:flex; align-items:center; font-size:18px; opacity:.6; pointer-events:none;
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
+        .btn{
+            width:100%; height:54px; border:none; border-radius:12px;
+            background:var(--brand); color:#fff; font-weight:900; font-size:1rem;
+            margin-top:6px; cursor:pointer; box-shadow:0 10px 24px rgba(42,193,188,.35);
+            transition:background .15s, transform .05s;
         }
+        .btn:hover{ background:var(--brand-d) }
+        .btn:active{ transform:translateY(1px) }
 
-        label {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: #333;
+        .foot{ text-align:center; margin-top:12px; color:var(--muted); font-weight:600 }
+        .foot a{ color:#0f766e; text-decoration:none; font-weight:900 }
+        .foot a:hover{ text-decoration:underline }
+
+        @media (max-width:1024px){
+            .wrap{ grid-template-columns:1fr; gap:22px }
+            .hero{ min-height:240px }
+            .brand{ padding:32px 28px }
+            .grid{ grid-template-columns:1fr }
         }
-
-        input[type="text"], input[type="email"], input[type="password"] {
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        button {
-            padding: 14px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* 에러 메시지 */
-        .error-message {
-            color: red;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* 반응형 디자인 */
-        @media (max-width: 500px) {
-            .container {
-                padding: 20px;
-            }
-
-            h2 {
-                font-size: 20px;
-            }
-
-            input[type="text"], input[type="email"], input[type="password"], button {
-                font-size: 14px;
-            }
+        @media (max-width:480px){
+            .card{ border-radius:18px; padding:18px }
+            .input,.select{ height:50px }
+            .btn{ height:50px }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>회원가입</h2>
-
-    <!-- 에러 메시지 표시 -->
-    <div class="error-message" th:if="${errorMessage}">
-        <p th:text="${errorMessage}"></p>
-    </div>
-
-    <form action="/register" method="POST">
-        <div>
-            <label for="name">이름:</label>
-            <input type="text" id="name" name="name" required placeholder="이름을 입력하세요">
+<main class="wrap">
+    <!-- Left: Brand -->
+    <section class="hero" aria-hidden="true">
+        <div class="brand">
+            <div class="brand-badge">드</div>
+            <h1>배달의 드론</h1>
+            <p>회원가입 후 드론 배달을 쉽고 빠르게 이용해보세요.</p>
         </div>
+    </section>
 
-        <div>
-            <label for="email">이메일:</label>
-            <input type="email" id="email" name="email" required placeholder="이메일을 입력하세요">
+    <!-- Right: Register -->
+    <section>
+        <div class="card">
+            <h2>회원가입</h2>
+            <p class="sub">필수 정보를 입력해 주세요</p>
+
+            <!-- 서버 메시지 -->
+            <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}">가입이 완료되었습니다.</div>
+            <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}">에러 메시지</div>
+
+            <form action="/register" method="post" novalidate>
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="grid">
+                    <div class="field grid-1">
+                        <span class="ico">👤</span>
+                        <label for="name" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">이름</label>
+                        <input class="input" type="text" id="name" name="name" placeholder="홍길동" required>
+                    </div>
+
+                    <div class="field grid-1">
+                        <span class="ico">📧</span>
+                        <label for="email" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">이메일</label>
+                        <input class="input" type="email" id="email" name="email" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="field">
+                        <span class="ico">🔒</span>
+                        <label for="password" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">비밀번호</label>
+                        <input class="input" type="password" id="password" name="password" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="field">
+                        <span class="ico">🔐</span>
+                        <label for="confirmPassword" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">비밀번호 확인</label>
+                        <input class="input" type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="field grid-1">
+                        <span class="ico">🛣️</span>
+                        <label for="street" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">도로명 주소</label>
+                        <input class="input" type="text" id="street" name="street" placeholder="예) 서울특별시 중구 세종대로 110" required>
+                    </div>
+
+                    <div class="field">
+                        <span class="ico">🏙️</span>
+                        <label for="city" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">도시</label>
+                        <input class="input" type="text" id="city" name="city" placeholder="예) 서울특별시" required>
+                    </div>
+
+                    <div class="field">
+                        <span class="ico">📮</span>
+                        <label for="zipcode" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">우편번호</label>
+                        <input class="input" type="text" id="zipcode" name="zipcode" placeholder="우편번호" required>
+                    </div>
+
+                    <div class="field grid-1">
+                        <span class="ico">📍</span>
+                        <label for="detailAddress" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">상세 주소</label>
+                        <input class="input" type="text" id="detailAddress" name="detailAddress" placeholder="예) 무슨아파트 101동 1004호" required>
+                    </div>
+
+                    <div class="field grid-1">
+                        <label for="memberType" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">회원 유형</label>
+                        <select class="select" id="memberType" name="memberType" required>
+                            <option value="" disabled selected>회원 유형 선택</option>
+                            <option value="USER">일반 사용자</option>
+                            <option value="OWNER">사장님</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn" type="submit">가입하기</button>
+            </form>
+
+            <div class="foot">
+                이미 계정이 있으신가요?
+                <a href="/login">로그인</a>
+            </div>
         </div>
-
-        <div>
-            <label for="password">비밀번호:</label>
-            <input type="password" id="password" name="password" required placeholder="비밀번호를 입력하세요">
-        </div>
-
-        <div>
-            <label for="confirmPassword">비밀번호 확인:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="비밀번호를 다시 입력하세요">
-        </div>
-
-        <div>
-            <label for="street">도로명 주소:</label>
-            <input type="text" id="street" name="street" required placeholder="주소를 입력하세요">
-        </div>
-
-        <div>
-            <label for="city">도시:</label>
-            <input type="text" id="city" name="city" required placeholder="도시를 입력하세요">
-        </div>
-
-        <div>
-            <label for="zipcode">우편번호:</label>
-            <input type="text" id="zipcode" name="zipcode" required placeholder="우편번호를 입력하세요">
-        </div>
-
-        <div>
-            <label for="detailAddress">상세 주소:</label>
-            <input type="text" id="detailAddress" name="detailAddress" required placeholder="상세 주소를 입력하세요">
-        </div>
-
-        <div>
-            <button type="submit">회원가입</button>
-        </div>
-    </form>
-
-    <div class="footer">
-        <p>이미 계정이 있으신가요? <a href="/login">로그인</a></p>
-    </div>
-</div>
+    </section>
+</main>
 
 </body>
 </html>

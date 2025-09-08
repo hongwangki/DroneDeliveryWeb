@@ -11,9 +11,9 @@ public class Product extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    Order order;
+//    @ManyToOne
+//    @JoinColumn(name = "order_id")
+//    Order order;
 
     @ManyToOne
     @JoinColumn(name = "store_id")

@@ -1,5 +1,6 @@
 package drone.delivery.dto;
 
+import drone.delivery.domain.MemberType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,4 +14,5 @@ public class RegisterRequestDTO {
     private String city;
     private String zipcode;
     private String detailAddress;
+    private MemberType memberType;
 }

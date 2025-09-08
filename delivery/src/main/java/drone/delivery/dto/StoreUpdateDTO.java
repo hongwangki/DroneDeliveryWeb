@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class StoreUpdateForm {
+public class StoreUpdateDTO {
     @NotBlank(message = "가게 이름을 입력하세요.")
     private String name;
 

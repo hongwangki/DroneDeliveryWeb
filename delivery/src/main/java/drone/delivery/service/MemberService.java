@@ -27,7 +27,40 @@ public class MemberService {
     /**
      * 회원가입 로직
      */
-    public Long join(Member member) {
+    public void registerMember(RegisterRequestDTO request) {
+        // 비밀번호 확인
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 이름 중복 체크
+        if (memberRepository.existsByName(request.getName())) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+
+        // 이메일 중복 체크 (권장)
+        if (memberRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+
+        // 새로운 Member 객체 생성
+        Member member = new Member();
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
+
+        // 비밀번호 암호화
+        // BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        // member.setPassword(passwordEncoder.encode(request.getPassword()));
+        member.setPassword(request.getPassword());
+
+        // Address 설정
+        Address address = new Address(request.getStreet(), request.getCity(), request.getZipcode(), request.getDetailAddress());
+        member.setAddress(address);
+
+        // 기본 회원 타입
+        member.setMemberType(request.getMemberType());
+
+
         validateDuplicateMember(member);
         validateDuplicateEmail(member);
         memberRepository.save(member);
@@ -40,7 +73,6 @@ public class MemberService {
             e.printStackTrace();
         }
 
-        return member.getId();
     }
 
 
@@ -162,41 +194,6 @@ public class MemberService {
                 .orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다. id=" + id));
     }
 
-    public void registerMember(RegisterRequestDTO request) {
-        // 비밀번호 확인
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
 
-        // 이름 중복 체크
-        if (memberRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
-        }
-
-        // 이메일 중복 체크 (권장)
-        if (memberRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-        }
-
-        // 새로운 Member 객체 생성
-        Member member = new Member();
-        member.setName(request.getName());
-        member.setEmail(request.getEmail());
-
-        // 비밀번호 암호화 (권장)
-        // BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        // member.setPassword(passwordEncoder.encode(request.getPassword()));
-        member.setPassword(request.getPassword());
-
-        // Address 설정
-        Address address = new Address(request.getStreet(), request.getCity(), request.getZipcode(), request.getDetailAddress());
-        member.setAddress(address);
-
-        // 기본 회원 타입
-        member.setMemberType(MemberType.USER);
-
-        // 회원 저장
-        memberRepository.save(member);
-    }
 
 }

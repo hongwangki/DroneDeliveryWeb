@@ -1,6 +1,8 @@
 package drone.delivery.controller;
 
+import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
+import drone.delivery.domain.MemberType;
 import drone.delivery.dto.MemberDTO;
 import drone.delivery.dto.RegisterRequestDTO;
 import drone.delivery.dto.UpdateMemberDTO;
@@ -41,10 +43,18 @@ public class MemberController {
         Member loggedInMember = memberService.validateLogin(email, password);
 
         if (loggedInMember != null) {
-            // 로그인 성공 시 세션에 저장
             session.setAttribute("loggedInMember", loggedInMember);
-            return "redirect:/delivery";  // 홈 화면으로
+
+            switch (loggedInMember.getMemberType()) {
+                case USER:
+                    return "redirect:/delivery";
+                case OWNER:
+                    return "redirect:/owner";
+                default:
+                    return "redirect:/";
+            }
         }
+
 
         // 로그인 실패 시 모델에 에러 메시지 추가
         model.addAttribute("errorMessage", "이메일 또는 비밀번호가 틀렸습니다.");
@@ -52,15 +62,15 @@ public class MemberController {
     }
 
 
-    // 메인 화면 (홈 화면)
-    @GetMapping("/home")
-    public String showHomePage(HttpSession session) {
-        Member loggedInMember = (Member) session.getAttribute("loggedInMember");
-        if (loggedInMember == null) {
-            return "redirect:/";  // 로그인되지 않은 사용자라면 로그인 화면으로 리디렉션
-        }
-        return "home"; // home.html을 렌더링
-    }
+//    // 메인 화면 (홈 화면)
+//    @GetMapping("/home")
+//    public String showHomePage(HttpSession session) {
+//        Member loggedInMember = (Member) session.getAttribute("loggedInMember");
+//        if (loggedInMember == null) {
+//            return "redirect:/";  // 로그인되지 않은 사용자라면 로그인 화면으로 리디렉션
+//        }
+//        return "home"; // home.html을 렌더링
+//    }
 
     // 로그아웃 처리
     @GetMapping("/logout")
@@ -87,6 +97,7 @@ public class MemberController {
             return "register"; // 실패 시 회원가입 페이지로
         }
     }
+
 
     // 로그인 화면 (회원가입 후 로그인 화면으로 리디렉션 시 성공 메시지 전달)
     @GetMapping("/login")

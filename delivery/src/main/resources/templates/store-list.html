@@ -2,174 +2,226 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>가게 목록</title>
+    <title>배달의 드론 | 가게 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- 한글 가독성 좋은 폰트 -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fc;
-            margin: 0;
-            padding: 0;
+        :root{
+            --mint:#2AC1BC;            /* 메인 민트 */
+            --mint-d:#21a7a2;
+            --ink:#0f172a;
+            --muted:#64748b;
+            --bg:#f6f7fb;
+            --card:#ffffff;
+            --chip:#eef6f6;
+            --border:#e5e7eb;
+            --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+            --radius:18px;
+            --radius-lg:22px;
+            --gap:18px;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            color:var(--ink);
+            background:
+                    radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+                    linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+            background-size: 18px 18px, auto;
+            background-attachment: fixed;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        /* 헤더 */
+        .appbar{
+            position: sticky; top:0; z-index:50;
+            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,.8);
+            border-bottom: 1px solid var(--border);
+        }
+        .appbar-inner{
+            max-width: 1200px; margin: 0 auto; padding: 12px 20px;
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .brand{
+            display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px;
+            color:#0b3d3b;
+        }
+        .logo{
+            width:32px; height:32px; display:grid; place-items:center;
+            background:var(--mint); color:#fff; border-radius:10px; font-weight:900;
+            box-shadow: 0 6px 14px rgba(42,193,188,.25);
+        }
+        .nav a{
+            text-decoration:none; color:var(--muted); margin-left:16px; font-weight:600;
+        }
+        .nav a:hover{ color:#0b3d3b }
+
+        /* 컨텐트 프레임 */
+        .wrap{ max-width:1200px; margin: 26px auto 80px; padding: 0 20px; }
+
+        .page-head{
+            background: linear-gradient(180deg,#e9fbfa, #f7fffe);
+            border:1px solid #dbf5f2;
+            padding:22px; border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+        .page-head h1{
+            margin:0 0 6px; font-size: 32px; letter-spacing:-.3px;
+        }
+        .page-head p{ margin:0; color:var(--muted); }
+
+        /* 즉시 버튼 */
+        .realtime{
+            margin:18px 0;
+            display:inline-flex; align-items:center; gap:10px;
+            background: #e6fffb; color:#065f5b; font-weight:800;
+            border:1px solid #c9f4ef; padding:10px 14px; border-radius:12px;
+            text-decoration:none;
+            box-shadow: 0 6px 14px rgba(6,95,91,.08);
+        }
+        .realtime:hover{ background:#dff7f3 }
+
+        /* 카테고리 탭 (가로 스크롤) */
+        .cats{
+            display:flex; gap:10px; overflow:auto; padding:6px 2px 8px;
+            scrollbar-width: none;
+        }
+        .cats::-webkit-scrollbar{ display:none }
+        .cat{
+            flex:0 0 auto; text-decoration:none; color:#0b3d3b; font-weight:700;
+            background:#eef7f7; border:1px solid #e4f0f0; padding:10px 14px;
+            border-radius:999px; transition:.15s ease;
+        }
+        .cat:hover{ background:#e3f2f2 }
+        .cat.active{
+            background:var(--mint); color:#fff; border-color:var(--mint);
+            box-shadow: 0 6px 14px rgba(42,193,188,.28);
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 24px;
+        /* 가게 그리드 */
+        .grid{
+            display:grid; gap: var(--gap);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 14px;
+        }
+        @media (max-width: 1100px){ .grid{ grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 640px){ .grid{ grid-template-columns: 1fr; } }
+
+        .card{
+            position:relative; background:var(--card); border:1px solid var(--border);
+            border-radius: var(--radius-lg); padding:18px; box-shadow: var(--shadow);
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+            text-decoration:none; color:inherit; display:block;
+        }
+        .card:hover{
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(15,23,42,.10), 0 4px 10px rgba(15,23,42,.06);
+            border-color:#dfe3ea;
         }
 
-        header nav a {
-            margin-left: 15px;
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
+        .card-head{ display:flex; align-items:center; justify-content:space-between; }
+        .name{ font-weight:900; font-size:18px; letter-spacing:-.2px; }
+        .badge{
+            background: var(--chip); color:#0b3d3b; font-weight:800; font-size:12px;
+            padding:6px 10px; border-radius:999px; border:1px solid #dceeee;
         }
 
-        header nav a.logout {
-            color: red;
-        }
+        .meta{ margin-top:6px; color:var(--muted); font-size:14px; }
+        .desc{ margin-top:12px; color:#3b475a; font-size:14px; }
 
-        main {
-            padding: 30px;
+        /* 하단 액션(hover 시 강조) */
+        .cta{
+            margin-top:14px; display:flex; justify-content:space-between; align-items:center;
+            opacity:.85; transition:.15s ease;
         }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
+        .card:hover .cta{ opacity:1 }
+        .go{
+            background:var(--mint); color:#fff; border:none;
+            padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer;
+            text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+            box-shadow: 0 10px 18px rgba(42,193,188,.22);
         }
-
-        .category-bar {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .category-bar a {
-            padding: 10px 15px;
-            margin: 0 5px;
-            border-radius: 5px;
-            background-color: #eee;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .category-bar a.active {
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-
-        .store-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 25px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .store-card {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            padding: 20px;
-            transition: transform 0.2s ease;
-            cursor: pointer;
-        }
-
-        .store-card:hover {
-            transform: scale(1.03);
-        }
-
-        .store-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .store-category {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 8px;
-        }
-
-        .store-description {
-            font-size: 14px;
-            color: #777;
-        }
-
-        a.store-link {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* 실시간 주문 버튼 */
-        .realtime-btn {
-            display: block;
-            width: 220px;
-            margin: 0 auto 40px auto;
-            padding: 12px;
-            background-color: #28a745;
-            color: white;
-            text-align: center;
-            font-weight: bold;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-
-        .realtime-btn:hover {
-            background-color: #218838;
-        }
+        .go:hover{ background: var(--mint-d) }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>배달앱</h1>
-    <nav>
-        <a th:href="@{/account}">정보보기</a>
-        <a th:href="@{/recharge}">돈충전</a>
-        <a th:href="@{/settings}">설정</a>
-        <a th:href="@{/logout}" class="logout">로그아웃</a>
-    </nav>
+<!-- Top App Bar -->
+<header class="appbar">
+    <div class="appbar-inner">
+        <div class="brand">
+            <span class="logo">드</span>
+            배달의 드론
+        </div>
+        <nav class="nav">
+            <a th:href="@{/account}">정보보기</a>
+            <a th:href="@{/recharge}">돈충전</a>
+            <a th:href="@{/settings}">설정</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
 </header>
 
-<main>
-    <h2>🏬 가게 목록</h2>
+<main class="wrap">
+    <!-- Page head -->
+    <section class="page-head">
+        <h1>가게 목록</h1>
+        <p>가볍게 고르고, 드론으로 빠르게 받아보세요.</p>
+    </section>
 
-    <!-- 실시간 주문 현황 버튼 -->
-    <a th:href="@{/realtime}" class="realtime-btn">📦 실시간 주문 현황 보기</a>
+    <!-- 실시간 -->
+    <a class="realtime" th:href="@{/realtime}">📦 실시간 주문 현황 보기</a>
 
-    <!-- 카테고리 버튼 -->
-    <div class="category-bar">
-        <a th:href="@{/delivery(category='전체')}" th:classappend="${selectedCategory == '전체'} ? ' active'">전체</a>
-        <a th:href="@{/delivery(category='치킨')}" th:classappend="${selectedCategory == '치킨'} ? ' active'">치킨</a>
-        <a th:href="@{/delivery(category='한식')}" th:classappend="${selectedCategory == '한식'} ? ' active'">한식</a>
-        <a th:href="@{/delivery(category='중식')}" th:classappend="${selectedCategory == '중식'} ? ' active'">중식</a>
-        <a th:href="@{/delivery(category='피자')}" th:classappend="${selectedCategory == '피자'} ? ' active'">피자</a>
-        <a th:href="@{/delivery(category='족발')}" th:classappend="${selectedCategory == '족발'} ? ' active'">족발</a>
-        <a th:href="@{/delivery(category='카페')}" th:classappend="${selectedCategory == '카페'} ? ' active'">카페</a>
-        <a th:href="@{/delivery(category='햄버거')}" th:classappend="${selectedCategory == '햄버거'} ? ' active'">햄버거</a>
-        <a th:href="@{/delivery(category='분식')}" th:classappend="${selectedCategory == '분식'} ? ' active'">분식</a>
-        <a th:href="@{/delivery(category='일식')}" th:classappend="${selectedCategory == '일식'} ? ' active'">일식</a>
-        <a th:href="@{/delivery(category='디저트')}" th:classappend="${selectedCategory == '디저트'} ? ' active'">디저트</a>
+    <!-- Category tabs -->
+    <div class="cats" aria-label="카테고리">
+        <a class="cat" th:classappend="${selectedCategory == '전체'} ? ' active'"
+           th:href="@{/delivery(category='전체')}">전체</a>
+        <a class="cat" th:classappend="${selectedCategory == '치킨'} ? ' active'"
+           th:href="@{/delivery(category='치킨')}">치킨</a>
+        <a class="cat" th:classappend="${selectedCategory == '한식'} ? ' active'"
+           th:href="@{/delivery(category='한식')}">한식</a>
+        <a class="cat" th:classappend="${selectedCategory == '중식'} ? ' active'"
+           th:href="@{/delivery(category='중식')}">중식</a>
+        <a class="cat" th:classappend="${selectedCategory == '피자'} ? ' active'"
+           th:href="@{/delivery(category='피자')}">피자</a>
+        <a class="cat" th:classappend="${selectedCategory == '족발'} ? ' active'"
+           th:href="@{/delivery(category='족발')}">족발</a>
+        <a class="cat" th:classappend="${selectedCategory == '카페'} ? ' active'"
+           th:href="@{/delivery(category='카페')}">카페</a>
+        <a class="cat" th:classappend="${selectedCategory == '햄버거'} ? ' active'"
+           th:href="@{/delivery(category='햄버거')}">햄버거</a>
+        <a class="cat" th:classappend="${selectedCategory == '분식'} ? ' active'"
+           th:href="@{/delivery(category='분식')}">분식</a>
+        <a class="cat" th:classappend="${selectedCategory == '일식'} ? ' active'"
+           th:href="@{/delivery(category='일식')}">일식</a>
+        <a class="cat" th:classappend="${selectedCategory == '디저트'} ? ' active'"
+           th:href="@{/delivery(category='디저트')}">디저트</a>
     </div>
 
-    <!-- 가게 카드 리스트 -->
-    <div class="store-grid">
-        <a th:each="store : ${stores}" th:href="@{'/delivery/' + ${store.id}}" class="store-link">
-            <div class="store-card">
-                <div class="store-name" th:text="${store.name}">가게 이름</div>
-                <div class="store-category" th:text="'카테고리: ' + ${store.category}">카테고리</div>
-                <div class="store-description" th:text="${store.description}">가게 설명</div>
+    <!-- Store grid -->
+    <section class="grid">
+        <a th:each="store : ${stores}"
+           th:href="@{'/delivery/' + ${store.id}}"
+           class="card">
+            <div class="card-head">
+                <div class="name" th:text="${store.name}">가게 이름</div>
+                <span class="badge" th:text="${store.category}">카테고리</span>
+            </div>
+            <div class="meta" th:text="'카테고리 · ' + ${store.category}">카테고리</div>
+            <p class="desc" th:text="${store.description}">가게 설명</p>
+
+            <div class="cta">
+                <span style="color:var(--muted); font-weight:700;">바로 주문하기</span>
+                <span class="go">가게 보기 →</span>
             </div>
         </a>
-    </div>
+    </section>
 </main>
 
 </body>

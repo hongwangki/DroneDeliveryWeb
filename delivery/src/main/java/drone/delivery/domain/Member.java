@@ -32,6 +32,8 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Order> orders=new ArrayList<>();
 
+    @OneToMany(mappedBy = "member",cascade = CascadeType.ALL)
+    private List<Store> stores=new ArrayList<>();
 
     private Double latitude;  // 위도
     private Double longitude; // 경도

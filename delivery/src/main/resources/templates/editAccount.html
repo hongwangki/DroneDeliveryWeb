@@ -1,113 +1,221 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>사용자 정보 수정</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>배달의 드론 | 사용자 정보 수정</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 0;
+    :root{
+      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --ink:#0f172a; --muted:#6b7280;
+      --card:#ffffff; --bg:#f6f8fb;
+      --line:#e5e7eb; --radius:16px;
+      --shadow:0 12px 30px rgba(2,6,23,.06);
+      --action-h:76px;
     }
 
-    .container {
-      max-width: 800px;
-      margin: 50px auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Noto Sans KR",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--ink);
+      background:
+              radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.08), transparent 60%),
+              radial-gradient(1000px 500px at 120% 10%, rgba(42,193,188,.06), transparent 55%),
+              var(--bg);
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    /* Top App Bar */
+    .appbar{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter:saturate(1.1) blur(6px);
+      background:rgba(255,255,255,.7);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar-inner{
+      max-width:1100px; margin:0 auto; padding:14px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b2b29;}
+    .brand-badge{
+      width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-weight:800;
+      background:var(--brand); color:#fff; box-shadow:0 6px 14px rgba(42,193,188,.35);
+    }
+    .brand span{ font-size:18px }
+    .app-actions a{ text-decoration:none; color:#ef4444; font-weight:800; }
+
+    /* Page Hero */
+    .hero{
+      max-width:1100px; margin:26px auto 0; padding:0 20px 6px;
+      display:flex; align-items:end; justify-content:space-between;
+      border-bottom:1px solid var(--line);
+    }
+    .hero h1{ margin:0; font-size:28px; font-weight:900; letter-spacing:.2px }
+    .hero p{ margin:6px 0 16px; color:var(--muted); font-weight:500 }
+
+    /* Layout */
+    .wrap{
+      max-width:1100px; margin:18px auto; padding:0 20px;
+      display:grid; grid-template-columns:280px 1fr; gap:22px;
+      padding-bottom:calc(var(--action-h) + 30px);
     }
 
-    form {
-      display: flex;
-      flex-direction: column;
+    /* Profile */
+    .profile{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+    .avatar{
+      width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,#c8f1ef,#e6fffd);
+      border:3px solid #fff; box-shadow:0 8px 20px rgba(42,193,188,.25);
+      display:grid; place-items:center; font-weight:900; color:#0b2b29; font-size:28px; margin-bottom:12px;
+    }
+    .profile .name{ font-size:20px; font-weight:800; margin:6px 0 2px }
+    .profile .email{ color:var(--muted); font-size:14px }
+    .profile hr{ border:none; border-top:1px solid var(--line); margin:16px 0 }
+    .profile .tip{ font-size:13px; color:var(--muted); line-height:1.6 }
+
+    /* Form Card */
+    .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+    .section-title{ font-weight:800; margin:4px 0 14px; }
+    form{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 20px }
+    .col-2{ grid-column:span 2 }
+    label{ display:block; font-size:13px; font-weight:700; color:#334155; margin:4px 0 6px }
+    input{
+      width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px;
+      background:#f9fafb; font-size:15px; transition:border-color .15s, box-shadow .15s, background .15s;
+    }
+    input:focus{ outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15) }
+
+    /* Bottom Actions */
+    .actions{
+      position:fixed; left:0; right:0; bottom:0; z-index:15;
+      display:flex; justify-content:center;
+      padding:14px 16px max(14px, env(safe-area-inset-bottom));
+      background:linear-gradient(180deg, rgba(246,248,251,0), rgba(246,248,251,.92) 40%, rgba(246,248,251,.98));
+      border-top:1px solid rgba(15,23,42,.06); backdrop-filter: blur(6px);
+      min-height:var(--action-h);
+    }
+    .actions-inner{ width:100%; max-width:1100px; display:flex; gap:10px; justify-content:flex-end; }
+    .btn{ appearance:none; border:none; border-radius:12px; padding:12px 18px; font-weight:800; cursor:pointer; transition:transform .05s, box-shadow .15s, background .15s; }
+    .btn:active{ transform:translateY(1px) }
+    .btn-ghost{ background:#fff; border:1px solid var(--line); color:#111827 }
+    .btn-ghost:hover{ box-shadow:0 8px 20px rgba(2,6,23,.06) }
+    .btn-brand{ background:var(--brand); color:#fff; min-width:190px; box-shadow:0 8px 22px rgba(42,193,188,.35); }
+    .btn-brand:hover{ background:var(--brand-d) }
+
+    .badge-ok{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px;
+      background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; font-weight:700; font-size:14px;
     }
 
-    label {
-      font-size: 16px;
-      margin-bottom: 8px;
-      color: #333;
-    }
-
-    input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus {
-      border-color: #007bff;
-      outline: none;
-    }
-
-    button {
-      padding: 12px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
+    @media (max-width:960px){
+      .wrap{ grid-template-columns:1fr }
+      .actions-inner{ justify-content:stretch }
+      .btn-brand{ flex:1 }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>사용자 정보 수정</h2>
-
-  <form action="/account/edit" method="POST">
-    <div>
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" th:value="${member.name}" required placeholder="Enter your name">
+<!-- App Bar -->
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand">
+      <div class="brand-badge">드</div>
+      <span>배달의 드론</span>
     </div>
+    <nav class="app-actions">
+      <a href="/logout">로그아웃</a>
+    </nav>
+  </div>
+</header>
 
-    <div>
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" th:value="${member.email}" required placeholder="Enter your email">
-    </div>
+<!-- Page Hero -->
+<section class="hero">
+  <div>
+    <h1>사용자 정보 수정</h1>
+    <p>내 정보와 배송지를 최신 상태로 유지하세요.</p>
+  </div>
+  <div th:if="${successMessage}" class="badge-ok" th:text="${successMessage}">변경이 저장되었습니다.</div>
+</section>
 
-    <div>
-      <label for="street">Street:</label>
-      <input type="text" id="street" name="street" th:value="${member.address.street}" required placeholder="Enter your street">
-    </div>
+<!-- Page Body -->
+<main class="wrap">
+  <!-- Left: profile summary -->
+  <aside class="profile">
+    <div class="avatar" th:text="${#strings.substring(member.name,0,1)}">드</div>
+    <div class="name" th:text="${member.name}">홍길동</div>
+    <div class="email" th:text="${member.email}">hong@example.com</div>
+    <hr>
+    <p class="tip">
+      비밀번호를 변경하지 않으려면 빈 칸으로 두세요.<br/>
+      주소는 배달 가능 지역 산정에 사용됩니다.
+    </p>
+    <hr>
+    <button class="btn btn-ghost" type="button" onclick="location.href='/account'">내 정보로 돌아가기</button>
+  </aside>
 
-    <div>
-      <label for="city">City:</label>
-      <input type="text" id="city" name="city" th:value="${member.address.city}" required placeholder="Enter your city">
-    </div>
+  <!-- Right: editable form -->
+  <section class="card">
+    <h3 class="section-title">기본 정보</h3>
 
-    <div>
-      <label for="zipcode">Zipcode:</label>
-      <input type="text" id="zipcode" name="zipcode" th:value="${member.address.zipcode}" required placeholder="Enter your zipcode">
-    </div>
+    <form action="/account/edit" method="POST">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-    <div>
-      <label for="detailAddress">Detail Address:</label>
-      <input type="text" id="detailAddress" name="detailAddress" th:value="${member.address.detailAddress}" required placeholder="Enter your detail address">
-    </div>
+      <div class="col-2">
+        <label for="name">이름</label>
+        <input id="name" name="name" type="text" th:value="${member.name}" placeholder="이름을 입력하세요" required>
+      </div>
 
-    <div>
-      <label for="password">New Password:</label>
-      <input type="password" id="password" name="password" placeholder="Enter new password (leave empty to keep current)">
-    </div>
+      <div class="col-2">
+        <label for="email">이메일</label>
+        <input id="email" name="email" type="email" th:value="${member.email}" placeholder="이메일을 입력하세요" required>
+      </div>
 
-    <button type="submit">Save Changes</button>
-  </form>
+      <h3 class="section-title col-2" style="margin-top:6px">주소 정보</h3>
+
+      <div class="col-2">
+        <label for="street">도로명 주소</label>
+        <input id="street" name="street" type="text" th:value="${member.address.street}" placeholder="예) 서울특별시 중구 세종대로 110" required>
+      </div>
+
+      <div>
+        <label for="city">도시</label>
+        <input id="city" name="city" type="text" th:value="${member.address.city}" placeholder="예) 서울특별시" required>
+      </div>
+
+      <div>
+        <label for="zipcode">우편번호</label>
+        <input id="zipcode" name="zipcode" type="text" th:value="${member.address.zipcode}" placeholder="우편번호" required>
+      </div>
+
+      <div class="col-2">
+        <label for="detailAddress">상세 주소</label>
+        <input id="detailAddress" name="detailAddress" type="text" th:value="${member.address.detailAddress}" placeholder="예) 무슨아파트 101동 1004호" required>
+      </div>
+
+      <h3 class="section-title col-2" style="margin-top:6px">보안</h3>
+
+      <div class="col-2">
+        <label for="password">새 비밀번호</label>
+        <input id="password" name="password" type="password" placeholder="변경하지 않으려면 비워두세요">
+      </div>
+
+      <!-- 숨은 submit (하단 고정 버튼이 눌러줌) -->
+      <button type="submit" style="position:absolute; left:-9999px; width:1px; height:1px">submit</button>
+    </form>
+  </section>
+</main>
+
+<!-- Bottom Action Bar -->
+<div class="actions">
+  <div class="actions-inner">
+    <button class="btn btn-ghost" type="button" onclick="history.back()">취소</button>
+    <button class="btn btn-brand" type="button" onclick="document.querySelector('form').requestSubmit()">변경 사항 저장</button>
+  </div>
 </div>
 
 </body>

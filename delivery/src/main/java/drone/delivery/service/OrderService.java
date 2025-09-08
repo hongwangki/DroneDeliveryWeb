@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,45 +28,87 @@ public class OrderService {
     /**
      * 주문 메서드
      */
-    public void order(Member sessionMember, List<CartItem> cart) {
-        // 회원 조회
+    public Long order(Member sessionMember, List<CartItem> cart) {
+
+        if (cart == null || cart.isEmpty()) {
+            throw new IllegalArgumentException("장바구니가 비어 있습니다.");
+        }
+
+        // 1) 회원 로드
         Member member = memberRepository.findById(sessionMember.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
 
+        // 2) 장바구니 → (상품ID, 수량) 맵
+        Map<Long, Integer> qtyMap = cart.stream().collect(Collectors.toMap(
+                CartItem::getProductId,
+                CartItem::getQuantity,
+                Integer::sum  // 같은 상품 중복 담겼을 때 합산
+        ));
+
+        // 3) 상품들 잠금 로드(경쟁주문 대비) - PESSIMISTIC_WRITE 또는 낙관적락 중 택1
+        List<Product> products = productRepository.findAllByIdInForUpdate(qtyMap.keySet());
+        if (products.size() != qtyMap.size()) {
+            throw new EntityNotFoundException("일부 상품을 찾을 수 없습니다.");
+        }
+
+        // (선택) 서로 다른 가게 묶음 방지
+        Store store = null;
+        for (Product p : products) {
+            if (store == null) store = p.getStore();
+            else if (!store.getId().equals(p.getStore().getId())) {
+                throw new IllegalArgumentException("서로 다른 가게의 상품은 한 번에 주문할 수 없습니다.");
+            }
+        }
+
+        // 4) 모든 검증 먼저 수행 (재고/수량/최소주문/잔액)
         List<OrderItem> orderItems = new ArrayList<>();
         int totalPrice = 0;
         StringBuilder summary = new StringBuilder();
 
-        for (CartItem item : cart) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new EntityNotFoundException("상품 없음"));
+        for (Product product : products) {
+            int reqQty = qtyMap.get(product.getId());
+            if (reqQty <= 0) throw new IllegalArgumentException("수량은 1개 이상이어야 합니다.");
 
-            int quantity = item.getQuantity();
+            int stock = product.getQuantity();
+            if (stock < reqQty) {
+                throw new IllegalStateException(
+                        "재고 부족: " + product.getFoodName() + " (남은 " + stock + "개, 요청 " + reqQty + "개)"
+                );
+            }
+
             int unitPrice = product.getFoodPrice();
-            int itemTotal = unitPrice * quantity;
+            totalPrice += unitPrice * reqQty;
 
-            // 주문 아이템 생성
-            OrderItem orderItem = OrderItem.createOrderItem(product, quantity, unitPrice);
-            orderItems.add(orderItem);
-
-            // 상품 수량 감소
-            product.setQuantity(product.getQuantity() - quantity); // 여기서 재고 감소
+            OrderItem oi = OrderItem.createOrderItem(product, reqQty, unitPrice);
+            orderItems.add(oi);
 
             summary.append("• ").append(product.getFoodName())
-                    .append(" x ").append(quantity).append("\n");
-
-            totalPrice += itemTotal;
+                    .append(" x ").append(reqQty).append("\n");
         }
 
-        // 주문 생성
+        if (store != null && store.getMinOrderPrice() > 0 && totalPrice < store.getMinOrderPrice()) {
+            throw new IllegalStateException("최소 주문 금액은 " + store.getMinOrderPrice() + "원 입니다.");
+        }
+
+        if (member.getMoney() < totalPrice) {
+            throw new IllegalStateException("잔액이 부족합니다. 필요: " + totalPrice + "원");
+        }
+
+        // 5) 모든 검증 통과 후 차감/생성 (트랜잭션 내에서 원자적으로 수행)
+        for (Product product : products) {
+            int reqQty = qtyMap.get(product.getId());
+            product.setQuantity(product.getQuantity() - reqQty); // 이제 음수 불가
+        }
+        member.setMoney(member.getMoney() - totalPrice);
+
         Order order = Order.createOrder(member, orderItems);
         order.setSummary(summary.toString());
         order.setTotalPrice(totalPrice);
         order.setOrderStatus(OrderStatus.PENDING);
 
-        orderRepository.save(order); // DB에 저장
-        member.setMoney(member.getMoney() - totalPrice); // 금액 차감
-        //json으로 쏴주기
+
+        orderRepository.save(order);
+        return order.getId();
     }
 
 
