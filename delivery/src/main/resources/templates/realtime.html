@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>실시간 주문 현황</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 95%;
+      background-color: white;
+    }
+
+    th, td {
+      padding: 12px 20px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #eee;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      text-align: left;
+    }
+
+    .cancel-btn {
+      padding: 5px 10px;
+      background-color: #ff385c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .cancel-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📦 실시간 주문 현황</h1>
+
+<table>
+  <thead>
+  <tr>
+    <th>주문 번호</th>
+    <th>주문자</th>
+    <th>상품 내역</th>
+    <th>총 가격</th>
+    <th>상태</th>
+    <th>주문 취소</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="order : ${orders}">
+    <td th:text="${order.id}">1</td>
+    <td th:text="${order.member.name}">홍길동</td>
+    <td>
+      <ul>
+        <li th:each="item : ${order.orderItems}">
+          <span th:text="${item.product.foodName} + ' x ' + ${item.quantity}"></span>
+        </li>
+      </ul>
+    </td>
+    <td th:text="${order.totalPrice} + '원'">20000원</td>
+    <td>
+        <span th:switch="${order.orderStatus.name()}">
+          <span th:case="'PENDING'">주문 접수</span>
+          <span th:case="'SHIPPED'">배송 중</span>
+          <span th:case="'DELIVERED'">배송 완료</span>
+          <span th:case="'CANCELED'">주문 취소</span>
+          <span th:case="'RETURNED'">반품 완료</span>
+          <span th:case="*">상태 미정</span>
+        </span>
+    </td>
+    <td>
+      <button class="cancel-btn" th:attr="data-id=${order.id}" th:disabled="${order.orderStatus.name() != 'PENDING'}">
+        주문 취소
+      </button>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function(){
+    $(".cancel-btn").click(function(){
+      let orderId = $(this).data("id");
+
+      $.ajax({
+        url: "/orders/cancel/" + orderId,
+        type: "POST",
+        contentType: "application/json",
+        success: function(response){
+          let res = JSON.parse(response);
+          alert(res.message); // 안내 메시지 띄우기
+          window.location.href = res.redirect; // 취소 후 자동 이동
+        },
+        error: function(){
+          alert("주문 취소 중 오류가 발생했습니다.");
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${store.name} + ' 메뉴판'">Store Menu</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f8f9fc;
+      padding: 40px;
+      position: relative;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .home-btn {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      background-color: #4e73df;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .success, .error {
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .products {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .product {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      background: white;
+      width: 220px;
+      text-align: center;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }
+    .product h3 { margin-bottom: 10px; }
+    input[type='number'] {
+      width: 50px;
+      padding: 5px;
+    }
+    .order-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .order-btn:hover { background-color: #218838; }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: red;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .cart-box {
+      background: #fffbea;
+      border: 1px solid #f5e79e;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 30px auto;
+      width: 400px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    .cart-box h4 { margin-bottom: 10px; }
+    .cart-box ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .cart-box li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+<h1 th:text="${store.name} + ' 메뉴판'">Store Name</h1>
+<a href="/delivery" class="home-btn">🏠 홈으로 가기</a>
+
+<div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
+<div th:if="${success}" class="success" th:text="${success}"></div>
+<div th:if="${successMessage}" class="success" th:text="${successMessage}"></div>
+
+<!-- 장바구니 -->
+<div th:if="${cart}" class="cart-box">
+  <h4>🛒 현재 장바구니</h4>
+  <ul>
+    <li th:each="item : ${cart}">
+      <span th:text="${item.productName}"></span> -
+      <span th:text="${item.quantity}"></span>개 /
+      <span th:text="${item.totalPrice}"></span>원
+      <form method="post" action="/cart/remove" style="display:inline;">
+        <input type="hidden" name="productId" th:value="${item.productId}" />
+        <button type="submit" class="remove-btn">❌</button>
+      </form>
+    </li>
+  </ul>
+  <hr>
+  <p><strong>총 결제 금액:</strong> <span th:text="${totalPrice}"></span>원</p>
+  <button type="button" class="order-btn" onclick="openConfirmModal()">📋 주문확정</button>
+</div>
+
+<!-- 주문 확인 목록 Modal -->
+<div id="confirmModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.4); z-index:9999;">
+  <div style="background:white; padding:30px; border-radius:10px; width:500px; margin:100px auto; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+    <h3>📅 주문 확인</h3>
+    <p><strong>주문자:</strong> <span th:text="${session.loggedInMember.name}">홍길동</span></p>
+    <p><strong>주소:</strong>
+      <span th:text="${session.loggedInMember.address.city} + ' ' + ${session.loggedInMember.address.street}"></span>
+    </p>
+
+    <h4>🧾 주문 목록</h4>
+    <ul>
+      <li th:each="item : ${cart}">
+        <span th:text="${item.productName}">상품명</span> -
+        <span th:text="${item.quantity}">1</span>개 /
+        <span th:text="${item.totalPrice}">10000</span>원
+      </li>
+    </ul>
+
+    <hr>
+    <p><strong>총 결제 금액:</strong> <span th:text="${totalPrice}"></span>원</p>
+
+    <form method="post" action="/cart/checkout">
+      <button type="submit" class="order-btn">✅ 주문 확정</button>
+      <button type="button" onclick="closeConfirmModal()" class="remove-btn">취소</button>
+    </form>
+  </div>
+</div>
+
+<!-- 상품 목록 -->
+<div class="products">
+  <div class="product" th:each="product : ${store.products}">
+    <h3 th:text="${product.foodName}">상품명</h3>
+    <p th:text="${product.foodPrice} + '원'">가격</p>
+    <form method="post" th:action="@{/cart/add}">
+      <input type="hidden" name="productId" th:value="${product.id}" />
+      <input type="number" name="quantity" value="1" min="1" />
+      <button type="submit" class="order-btn">담기</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'block';
+  }
+  function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+  }
+</script>
+</body>
+</html>

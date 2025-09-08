@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>배달의 드론 | 로그인</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --brand:#2AC1BC; --brand-d:#1fa6a1;
+            --ink:#0f172a; --muted:#6b7280;
+            --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
+            --radius:20px; --shadow:0 14px 38px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
+            --glass:rgba(255,255,255,.75);
+        }
+
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family:"Noto Sans KR","Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            color:var(--ink);
+            background:
+                    radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.10), transparent 60%),
+                    radial-gradient(900px 500px at 120% 110%, rgba(42,193,188,.08), transparent 55%),
+                    linear-gradient(180deg,#f8fafc 0%, #f3f7fb 100%);
+            min-height:100vh;
+            display:grid; place-items:center;
+        }
+
+        /* Layout */
+        .wrap{ width:100%; max-width:1100px; padding:24px;
+            display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center; }
+
+        /* Brand hero */
+        .hero{ position:relative; min-height:520px; border-radius:28px; overflow:hidden;
+            background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow); }
+        .hero::before{ content:""; position:absolute; inset:0;
+            background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,.06) 1px, rgba(255,255,255,0) 1px);
+            background-size:28px 28px; opacity:.6; }
+        .hero::after{ content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
+            background: radial-gradient(closest-side, rgba(42,193,188,.35), rgba(42,193,188,0) 70%),
+            conic-gradient(from 210deg, rgba(42,193,188,.20), rgba(255,255,255,0) 60%);
+            filter:blur(20px) saturate(1.05); }
+        .brand{ position:relative; padding:48px clamp(20px,5vw,60px); color:#063a38; max-width:560px; }
+        .brand-badge{ width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
+            background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35); }
+        .brand h1{ margin:0 0 8px; font-size:clamp(2.2rem,4.8vw,3.6rem); font-weight:900; letter-spacing:.4px }
+        .brand p{ margin:0; color:#0b2b29; opacity:.85; font-weight:700 }
+
+        /* Login card */
+        .form{ backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
+            border:1px solid rgba(2,6,23,.08); border-radius:24px; box-shadow:var(--shadow);
+            padding:clamp(20px,3vw,32px); }
+        .form h2{ margin:0 0 8px; text-align:center; font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:900 }
+        .sub{ text-align:center; color:var(--muted); font-weight:600; margin-bottom:8px }
+
+        /* Messages */
+        .msg{ text-align:center; margin:10px 0; font-weight:700; padding:10px 12px; border-radius:12px; border:1px solid }
+        .msg.ok{ background:#ecfdf5; color:#065f46; border-color:#a7f3d0 }
+        .msg.err{ background:#fef2f2; color:#991b1b; border-color:#fecaca }
+
+        form{ margin-top:8px }
+        .field{ position:relative; margin:12px 0 }
+
+        /* ★ 아이콘/입력 정렬 수정 */
+        .input{
+            width:100%; height:52px;
+            border-radius:12px; border:1px solid var(--line); background:#f9fafb;
+            padding:0 14px 0 46px; /* 아이콘 공간 확보 */
+            font-size:15px;
+            transition:border-color .15s, box-shadow .15s, background .15s;
+        }
+        .input:focus{ outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15) }
+
+        .ico{
+            position:absolute; left:14px; top:0; height:100%;
+            display:flex; align-items:center; font-size:18px; opacity:.6; pointer-events:none;
+        }
+
+        .btn{
+            width:100%; height:54px; border:none; border-radius:12px;
+            background:var(--brand); color:#fff; font-weight:900; font-size:1rem;
+            margin-top:6px; cursor:pointer; box-shadow:0 10px 24px rgba(42,193,188,.35);
+            transition:background .15s, transform .05s;
+        }
+        .btn:hover{ background:var(--brand-d) }
+        .btn:active{ transform:translateY(1px) }
+
+        .foot{ text-align:center; margin-top:12px; color:var(--muted); font-weight:600 }
+        .foot a{ color:#0f766e; text-decoration:none; font-weight:900 }
+        .foot a:hover{ text-decoration:underline }
+
+        @media (max-width:1024px){
+            .wrap{ grid-template-columns:1fr; gap:22px }
+            .hero{ min-height:240px }
+            .brand{ padding:32px 28px }
+        }
+        @media (max-width:480px){
+            .form{ border-radius:18px; padding:18px }
+            .input{ height:50px }
+            .btn{ height:50px }
+        }
+    </style>
+</head>
+<body>
+
+<main class="wrap">
+    <!-- Left: Brand -->
+    <section class="hero" aria-hidden="true">
+        <div class="brand">
+            <div class="brand-badge">드</div>
+            <h1>배달의 드론</h1>
+            <p>하늘길로 더 빠르게, 더 신선하게.</p>
+        </div>
+    </section>
+
+    <!-- Right: Login -->
+    <section>
+        <div class="form">
+            <h2>로그인</h2>
+            <p class="sub">계정 정보로 계속하세요</p>
+
+            <!-- 서버 메시지 -->
+            <div th:if="${successMessage}" class="msg ok" th:text="${successMessage}">성공 메시지</div>
+            <div th:if="${logoutMessage}" class="msg ok" th:text="${logoutMessage}">로그아웃 되었습니다</div>
+            <div th:if="${errorMessage}" class="msg err" th:text="${errorMessage}">이메일 또는 비밀번호를 확인해주세요</div>
+
+            <form action="/login" method="post" novalidate>
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="field">
+                    <span class="ico">📧</span>
+                    <label for="email">이메일</label>
+                    <input id="email" class="input" type="email" name="email" placeholder="you@example.com" required autocomplete="username">
+                </div>
+
+                <div class="field">
+                    <span class="ico">🔒</span>
+                    <label for="password">비밀번호</label>
+                    <input id="password" class="input" type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <button class="btn" type="submit">로그인</button>
+            </form>
+
+            <div class="foot">
+                계정이 없으신가요?
+                <a href="/register">회원가입</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

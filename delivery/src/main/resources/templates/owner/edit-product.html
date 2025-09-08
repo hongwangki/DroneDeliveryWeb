@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>배달의 드론 | 상품 수정</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --ink:#0f172a; --muted:#6b7280;
+      --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
+      --radius:20px; --shadow:0 18px 44px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
+      --glass:rgba(255,255,255,.75); --danger:#ef4444; --danger-d:#dc2626;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      font-family:"Noto Sans KR","Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:
+              radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.10), transparent 60%),
+              radial-gradient(900px 500px at 120% 110%, rgba(42,193,188,.08), transparent 55%),
+              linear-gradient(180deg,#f8fafc 0%, #f3f7fb 100%);
+      min-height:100vh;
+    }
+
+    /* Appbar */
+    header{
+      position:sticky; top:0; z-index:20;
+      background:rgba(255,255,255,.8);
+      backdrop-filter:saturate(1.1) blur(8px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.35);font-weight:900}
+    .actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
+    .actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+    /* Page */
+    main{max-width:900px;margin:22px auto 60px;padding:0 20px;display:grid;gap:18px}
+
+    .card{backdrop-filter:blur(8px) saturate(1.05);background:var(--glass);
+      border:1px solid rgba(2,6,23,.08);border-radius:24px;box-shadow:var(--shadow);padding:20px}
+    .card h1{margin:0 0 10px;font-size:20px;font-weight:900}
+    .sub{margin:-4px 0 10px;color:var(--muted);font-weight:600}
+
+    /* Form */
+    label{display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px}
+    .input{
+      width:100%;height:52px;border-radius:12px;border:1px solid var(--line);background:#f9fafb;
+      padding:0 14px;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s
+    }
+    .input:focus{outline:none;border-color:#8ee2df;background:#fff;box-shadow:0 0 0 4px rgba(42,193,188,.15)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:640px){.row{grid-template-columns:1fr}}
+
+    .error-global{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:12px;margin-bottom:10px;font-weight:700}
+    .error{margin-top:6px;color:#b91c1c;font-size:13px}
+
+    .actions{display:flex;gap:10px;margin-top:16px}
+    .btn{border:none;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .btn-primary{background:var(--brand);color:#fff;box-shadow:0 8px 20px rgba(42,193,188,.35)}
+    .btn-primary:hover{background:var(--brand-d)}
+    .btn-ghost{background:#fff;border:1px solid var(--line);color:#111827}
+    .btn-ghost:hover{box-shadow:0 8px 20px rgba(2,6,23,.06)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-danger:hover{background:var(--danger-d)}
+
+    /* Preview */
+    .preview{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+    .pv-label{color:var(--muted);font-weight:800;font-size:13px}
+    .pv-value{font-weight:900}
+  </style>
+</head>
+<body>
+
+<!-- Appbar -->
+<header>
+  <div class="appbar">
+    <div class="brand">
+      <div class="brand-badge">드</div>
+      <span>상품 수정</span>
+    </div>
+    <div class="actions">
+      <a th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">가게 상세</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="edit-menu" class="card">
+    <h1>상품 수정</h1>
+    <p class="sub">상품명, 가격, 기본 수량을 수정하세요.</p>
+
+    <form th:action="@{/owner/stores/{storeId}/products/{productId}/edit(storeId=${storeId}, productId=${productId})}"
+          th:object="${foodDTO}" method="post" novalidate>
+      <!-- 전역 에러 -->
+      <div class="error-global" th:if="${#fields.hasAnyErrors()}">
+        입력값을 다시 확인해주세요. 아래 항목의 오류를 수정 후 저장하세요.
+      </div>
+
+      <!-- CSRF -->
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+      <div class="field">
+        <label for="foodName">상품명</label>
+        <input id="foodName" class="input" type="text" th:field="*{foodName}" placeholder="예) 돼지고기 김치찌개" />
+        <div class="error" th:if="${#fields.hasErrors('foodName')}" th:errors="*{foodName}">오류</div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="foodPrice">가격(원)</label>
+          <input id="foodPrice" class="input" type="number" min="0" step="100" th:field="*{foodPrice}" placeholder="예) 8900" />
+          <div class="error" th:if="${#fields.hasErrors('foodPrice')}" th:errors="*{foodPrice}">오류</div>
+        </div>
+
+        <div class="field">
+          <label for="quantity">수량</label>
+          <input id="quantity" class="input" type="number" min="1" step="1" th:field="*{quantity}" placeholder="예) 1" />
+          <div class="error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}">오류</div>
+        </div>
+      </div>
+
+      <!-- 미리보기 -->
+      <div class="preview" aria-live="polite">
+        <div>
+          <div class="pv-label">총액(미리보기)</div>
+          <div class="pv-value" id="pvTotal">- 원</div>
+        </div>
+        <div>
+          <div class="pv-label">단가</div>
+          <div class="pv-value" id="pvUnit">- 원</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">수정하기</button>
+        <a class="btn btn-ghost" th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">가게 상세로</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script>
+  // 가격/수량 미리보기
+  const priceEl = document.getElementById('foodPrice');
+  const qtyEl   = document.getElementById('quantity');
+  const unitEl  = document.getElementById('pvUnit');
+  const totalEl = document.getElementById('pvTotal');
+
+  function fmt(n){
+    if (isNaN(n) || n === '' || n === null) return '- 원';
+    return Number(n).toLocaleString('ko-KR') + '원';
+  }
+  function update(){
+    const p = Number(priceEl?.value || 0);
+    const q = Math.max(1, Number(qtyEl?.value || 1));
+    unitEl.textContent  = fmt(p);
+    totalEl.textContent = fmt(p * q);
+  }
+  priceEl && priceEl.addEventListener('input', update);
+  qtyEl && qtyEl.addEventListener('input', update);
+  update();
+</script>
+
+</body>
+</html>

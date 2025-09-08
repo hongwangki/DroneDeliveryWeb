@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>배달의 드론 | 사용자 정보</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --mint:#2AC1BC;
+      --mint-d:#21a7a2;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+      --radius:18px;
+      --radius-lg:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--ink);
+      background:
+              radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+              linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
+      background-size:18px 18px, auto;
+      background-attachment:fixed;
+    }
+
+    /* App Bar */
+    .appbar{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:blur(6px);
+      background:rgba(255,255,255,.8);
+      border-bottom:1px solid var(--border);
+    }
+    .appbar-inner{
+      max-width:1000px; margin:0 auto; padding:12px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b;}
+    .logo{
+      width:32px; height:32px; display:grid; place-items:center;
+      background:var(--mint); color:#fff; border-radius:10px; font-weight:900;
+      box-shadow:0 6px 14px rgba(42,193,188,.25);
+    }
+    .nav a{ color:var(--muted); text-decoration:none; margin-left:16px; font-weight:700; }
+    .nav a:hover{ color:#0b3d3b; }
+
+    /* Page */
+    .wrap{ max-width:1000px; margin:26px auto 64px; padding:0 20px; }
+
+    .page-title{
+      margin:0 0 16px;
+      font-size:28px; letter-spacing:-.3px;
+    }
+
+    .success{
+      display:flex; align-items:center; gap:10px;
+      background:#e6f9f6; color:#056e6a;
+      border:1px solid #c9f4ef;
+      padding:12px 14px; border-radius:12px;
+      box-shadow:0 6px 14px rgba(6,95,91,.06);
+      font-weight:800; margin-bottom:16px;
+    }
+
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--radius-lg); box-shadow:var(--shadow);
+      padding:20px;
+    }
+
+    .grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    }
+    @media (max-width:700px){ .grid{ grid-template-columns:1fr; } }
+
+    .item{
+      background:#fbfcfe; border:1px solid #edf0f5; border-radius:14px;
+      padding:14px 16px;
+    }
+    .label{ color:var(--muted); font-weight:700; font-size:13px; margin-bottom:6px; }
+    .value{ font-weight:900; font-size:16px; letter-spacing:-.2px; }
+
+    .money{
+      display:inline-flex; align-items:center; gap:8px;
+      background:#fff6e6; color:#8a5a00; border:1px solid #ffe4b3;
+      padding:8px 10px; border-radius:999px; font-weight:900; font-size:14px;
+    }
+
+    .actions{
+      display:flex; gap:12px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap;
+    }
+    .btn{
+      appearance:none; border:none; cursor:pointer; text-decoration:none;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      height:46px; padding:0 16px; border-radius:12px; font-weight:900;
+      box-shadow:0 10px 18px rgba(42,193,188,.16);
+    }
+    .btn-primary{ background:var(--mint); color:#fff; }
+    .btn-primary:hover{ background:var(--mint-d); }
+    .btn-secondary{ background:#eef2f7; color:#0b3d3b; box-shadow:none; }
+    .btn-secondary:hover{ background:#e6ebf3; }
+  </style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand"><span class="logo">드</span>배달의 드론</div>
+    <nav class="nav">
+      <a th:href="@{/delivery}">가게목록</a>
+      <a th:href="@{/logout}">로그아웃</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">사용자 정보</h1>
+
+  <!-- 성공 메시지 -->
+  <div th:if="${successMessage}" class="success" th:text="${successMessage}">변경이 저장되었습니다.</div>
+
+  <section class="card">
+    <div class="grid">
+      <div class="item">
+        <div class="label">이름</div>
+        <div class="value" th:text="${member.name}">홍길동</div>
+      </div>
+
+      <div class="item">
+        <div class="label">이메일</div>
+        <div class="value" th:text="${member.email}">user@example.com</div>
+      </div>
+
+      <div class="item">
+        <div class="label">도로명 주소</div>
+        <div class="value" th:text="${member.address.street}">서울특별시 강남구 테헤란로 123</div>
+      </div>
+
+      <div class="item">
+        <div class="label">상세 주소</div>
+        <div class="value" th:text="${member.address.detailAddress}">101동 1001호</div>
+      </div>
+
+      <div class="item">
+        <div class="label">도시</div>
+        <div class="value" th:text="${member.address.city}">서울</div>
+      </div>
+
+      <div class="item">
+        <div class="label">우편번호</div>
+        <div class="value" th:text="${member.address.zipcode}">06236</div>
+      </div>
+
+      <div class="item" style="grid-column:1 / -1;">
+        <div class="label">보유한 돈</div>
+        <span class="money" th:text="${#numbers.formatInteger(member.money,0,'COMMA')} + ' 원'">5,000 원</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <form action="/account/edit" method="get">
+        <button type="submit" class="btn btn-primary">정보 수정</button>
+      </form>
+      <a class="btn btn-secondary" th:href="@{/delivery}">뒤로 가기</a>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
