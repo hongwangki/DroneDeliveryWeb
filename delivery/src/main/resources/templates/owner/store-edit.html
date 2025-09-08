@@ -3,43 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title th:text="${form != null ? form.name : ''} + ' | 가게 수정'">가게 수정</title>
+  <title th:text="${form != null ? form.name : ''} + ' | 가게 수정'">배달의 드론 | 가게 수정</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
   <style>
-    :root { --bg:#f8fafc; --card:#ffffff; --border:#e5e7eb; --fg:#0f172a; --brand:#2563eb; --brand-hover:#1d4ed8; --danger:#b91c1c; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--fg); background:var(--bg); }
-    main { max-width: 760px; margin: 40px auto; padding: 0 20px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 4px 14px rgba(2,6,23,.04); padding:24px; }
-    h1 { margin:0 0 18px; font-size:22px; }
-    .field { margin-top:14px; }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    @media (max-width: 640px){ .row { grid-template-columns:1fr; } }
-    label { display:block; font-weight:600; margin-bottom:6px; }
-    input[type="text"], input[type="number"], select, textarea {
-      width:100%; padding:12px; border:1px solid var(--border); border-radius:10px; font-size:16px; background:#fff; outline:none;
+    :root{
+      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --ink:#0f172a; --muted:#6b7280;
+      --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
+      --radius:20px; --shadow:0 18px 44px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
+      --glass:rgba(255,255,255,.75); --danger:#ef4444;
     }
-    textarea { min-height:110px; resize:vertical; }
-    input:focus, select:focus, textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(37,99,235,.15); }
-    .actions { display:flex; gap:10px; margin-top:20px; }
-    button, .btn { appearance:none; border:none; padding:12px 16px; border-radius:10px; cursor:pointer; font-weight:600; font-size:15px;
-      background:var(--brand); color:#fff; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
-    button:hover, .btn:hover { background:var(--brand-hover); }
-    .btn-secondary { background:#fff; color:var(--fg); border:1px solid var(--border); }
-    .btn-secondary:hover { background:#f8fafc; }
-    .error { margin-top:6px; color:var(--danger); font-size:13px; }
-    .error-global { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; padding:10px 12px; border-radius:10px; margin-bottom:12px; }
-    .img-preview { margin-top:8px; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; }
-    .img-preview img { display:block; width:100%; max-height:220px; object-fit:cover; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
+      font-family:"Noto Sans KR","Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:
+              radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.10), transparent 60%),
+              radial-gradient(900px 500px at 120% 110%, rgba(42,193,188,.08), transparent 55%),
+              linear-gradient(180deg,#f8fafc 0%, #f3f7fb 100%);
+      min-height:100vh;
+    }
+
+    /* Appbar */
+    header{
+      position:sticky; top:0; z-index:20;
+      background:rgba(255,255,255,.8);
+      backdrop-filter:saturate(1.1) blur(8px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.35)}
+    .app-actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
+    .app-actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+    /* Hero banner (live) */
+    .hero{max-width:960px;margin:16px auto 0;padding:0 20px}
+    .banner{position:relative;border-radius:28px;overflow:hidden;min-height:160px;border:1px solid rgba(2,6,23,.08);box-shadow:var(--shadow);background:#dff8f6}
+    .banner .img{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(1.05) contrast(1.02)}
+    .banner::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(2,6,23,.55),rgba(2,6,23,.18) 45%,rgba(2,6,23,0));z-index:0}
+    .banner .inner{position:relative;z-index:1;padding:22px;color:#fff;display:flex;align-items:center;gap:16px}
+    .avatar{width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,.15);display:grid;place-items:center;border:2px solid rgba(255,255,255,.45);font-weight:900}
+    .banner h1{margin:0;font-size:24px;font-weight:900}
+    .chips{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+    .chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}
+
+    /* Page */
+    main{max-width:960px;margin:18px auto 90px;padding:0 20px;display:grid;gap:18px}
+    .card{backdrop-filter:blur(8px) saturate(1.05);background:var(--glass);border:1px solid rgba(2,6,23,.08);border-radius:24px;box-shadow:var(--shadow);padding:20px}
+    h1{margin:0 0 10px;font-size:20px;font-weight:900}
+    .sub{margin:-4px 0 10px;color:var(--muted);font-weight:600}
+
+    /* Form */
+    label{display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px}
+    .input,.select,.textarea{
+      width:100%;border-radius:12px;border:1px solid var(--line);background:#f9fafb;
+      padding:12px 14px;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s
+    }
+    .input:focus,.select:focus,.textarea:focus{outline:none;border-color:#8ee2df;background:#fff;box-shadow:0 0 0 4px rgba(42,193,188,.15)}
+    .textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:680px){.row{grid-template-columns:1fr}}
+
+    .error-global{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:12px;margin-bottom:10px;font-weight:700}
+    .error{margin-top:6px;color:var(--danger);font-size:13px}
+
+    .actions{display:flex;gap:10px;margin-top:16px}
+    .btn{border:none;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    .btn-primary{background:var(--brand);color:#fff;box-shadow:0 8px 20px rgba(42,193,188,.35)}
+    .btn-primary:hover{background:var(--brand-d)}
+    .btn-ghost{background:#fff;border:1px solid var(--line);color:#111827}
+    .btn-ghost:hover{box-shadow:0 8px 20px rgba(2,6,23,.06)}
   </style>
 </head>
 <body>
+
+<!-- Appbar -->
+<header>
+  <div class="appbar">
+    <div class="brand">
+      <div class="badge">드</div>
+      <span>가게 수정</span>
+    </div>
+    <div class="app-actions">
+      <a th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">가게 상세</a>
+    </div>
+  </div>
+</header>
+
+<!-- Live hero banner -->
+<section class="hero">
+  <div class="banner">
+    <div class="img" id="heroImg"
+         th:style="'background-image: url(' + (${form.imageUrl} != null ? ${form.imageUrl} : '') + ');'"></div>
+    <div class="inner">
+      <div class="avatar" id="heroAvatar" th:text="${form != null && form.name != null ? #strings.substring(form.name,0,1) : '드'}">드</div>
+      <div>
+        <h1 id="heroName" th:text="${form != null ? form.name : '가게 이름'}">가게 이름</h1>
+        <div class="chips">
+          <div class="chip" id="chipCat" th:text="${form != null && form.category != null ? form.category : '카테고리'}">카테고리</div>
+          <div class="chip" id="chipMin" th:text="'최소주문 ' + (${form != null && form.minOrderPrice != null ? #numbers.formatInteger(form.minOrderPrice,0,'COMMA') : 0}) + '원'">최소주문 0원</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <main>
   <section class="card">
-    <h1>가게 수정</h1>
+    <h1>가게 정보 수정</h1>
+    <p class="sub">이름, 소개, 카테고리, 최소주문 금액, 대표 이미지를 수정하세요.</p>
 
-    <form th:action="@{/owner/stores/{storeId}/edit(storeId=${storeId})}"
-          th:object="${form}" method="post">
-
+    <form th:action="@{/owner/stores/{storeId}/edit(storeId=${storeId})}" th:object="${form}" method="post" novalidate>
       <div class="error-global" th:if="${#fields.hasAnyErrors()}">
         입력값을 다시 확인해주세요. 아래 항목의 오류를 수정 후 저장하세요.
       </div>
@@ -48,20 +127,20 @@
 
       <div class="field">
         <label for="name">가게 이름</label>
-        <input id="name" type="text" th:field="*{name}" placeholder="예) 해방집 용산점" required />
+        <input id="name" class="input" type="text" th:field="*{name}" placeholder="예) 해방집 용산점" />
         <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">오류</div>
       </div>
 
       <div class="field">
         <label for="description">소개</label>
-        <textarea id="description" th:field="*{description}" placeholder="가게 소개를 입력하세요."></textarea>
+        <textarea id="description" class="textarea" th:field="*{description}" placeholder="가게 소개를 입력하세요."></textarea>
         <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">오류</div>
       </div>
 
       <div class="row">
         <div class="field">
           <label for="category">카테고리</label>
-          <select id="category" th:field="*{category}">
+          <select id="category" class="select" th:field="*{category}">
             <option value="" disabled>카테고리를 선택하세요</option>
             <option value="한식">한식</option>
             <option value="중식">중식</option>
@@ -77,28 +156,46 @@
 
         <div class="field">
           <label for="minOrderPrice">최소 주문 금액(원)</label>
-          <input id="minOrderPrice" type="number" min="0" step="100" th:field="*{minOrderPrice}" placeholder="예) 15000" />
+          <input id="minOrderPrice" class="input" type="number" min="0" step="100" th:field="*{minOrderPrice}" placeholder="예) 15000" />
           <div class="error" th:if="${#fields.hasErrors('minOrderPrice')}" th:errors="*{minOrderPrice}">오류</div>
         </div>
       </div>
 
       <div class="field">
         <label for="imageUrl">대표 이미지 URL</label>
-        <input id="imageUrl" type="text" th:field="*{imageUrl}" placeholder="예) https://example.com/image.jpg" />
+        <input id="imageUrl" class="input" type="text" th:field="*{imageUrl}" placeholder="예) https://example.com/image.jpg" />
         <div class="error" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}">오류</div>
-
-        <div class="img-preview" th:if="*{imageUrl}">
-          <img th:src="*{imageUrl}" alt="대표 이미지 미리보기"
-               onerror="this.closest('.img-preview').style.display='none'">
-        </div>
       </div>
 
       <div class="actions">
-        <button type="submit">저장하기</button>
-        <a class="btn btn-secondary" th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">돌아가기</a>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+        <a class="btn btn-ghost" th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">돌아가기</a>
       </div>
     </form>
   </section>
 </main>
+
+<script>
+  // 라이브 배너 업데이트
+  const $ = s => document.querySelector(s);
+  const nameI = $('#name'), imgI = $('#imageUrl'), catI = $('#category'), minI = $('#minOrderPrice');
+  const heroName = $('#heroName'), heroAvatar = $('#heroAvatar'), heroImg = $('#heroImg');
+  const chipCat = $('#chipCat'), chipMin = $('#chipMin');
+
+  function fmt(n){ if(!n && n!==0) return '0원'; return Number(n).toLocaleString('ko-KR')+'원'; }
+
+  function sync(){
+    if (nameI){ heroName.textContent = nameI.value || '가게 이름'; heroAvatar.textContent = (nameI.value||'드').trim().charAt(0) || '드'; }
+    if (imgI){ const url = (imgI.value||'').trim(); heroImg.style.backgroundImage = url ? `url('${url}')` : ''; }
+    if (catI){ chipCat.textContent = catI.value || '카테고리'; }
+    if (minI){ chipMin.textContent = '최소주문 ' + fmt(minI.value || 0); }
+  }
+  nameI && nameI.addEventListener('input', sync);
+  imgI && imgI.addEventListener('input', sync);
+  catI && catI.addEventListener('change', sync);
+  minI && minI.addEventListener('input', sync);
+  sync();
+</script>
+
 </body>
 </html>
