@@ -1,7 +1,7 @@
 package drone.delivery.dto;
 
 import drone.delivery.domain.Member;
-import drone.delivery.domain.Product;
+import drone.delivery.domain.Order;
 import drone.delivery.domain.ReviewImage;
 import drone.delivery.domain.Store;
 import jakarta.persistence.Lob;
@@ -10,7 +10,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
@@ -21,7 +20,10 @@ public class ReviewDto {
     private Store store;
 
     @NotNull
-    private Member createdBy;
+    private Member member;
+
+    @NotNull
+    private Order order;
 
 
     @Lob
