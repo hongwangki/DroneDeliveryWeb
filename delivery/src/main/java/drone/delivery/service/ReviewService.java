@@ -27,10 +27,11 @@ public class ReviewService {
 
         Review review = new Review();
         review.setStore(reviewDto.getStore());
-        review.setCreatedBy(reviewDto.getCreatedBy());
+        review.setMember(reviewDto.getMember());
         review.setContent(reviewDto.getContent());
         review.setRating(reviewDto.getRating());
         review.setReviewImages(reviewDto.getReviewImages());
+        review.setOrder(reviewDto.getOrder());
 
         Review savedReview = reviewRepository.save(review);
 
@@ -48,6 +49,6 @@ public class ReviewService {
 
 
     public List<Review> findAllByMember(Member member) {
-        return reviewRepository.findAllByCreatedBy(member);
+        return reviewRepository.findAllByMember(member);
     }
 }

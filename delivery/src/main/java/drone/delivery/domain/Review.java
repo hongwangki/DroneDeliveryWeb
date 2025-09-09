@@ -19,16 +19,14 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private Member createdBy;
+    private Member member;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-
-    
+    @JoinColumn(name = "order_id", unique = true, nullable = false)
     private Order order;
+
     @Lob
     private String content;
 

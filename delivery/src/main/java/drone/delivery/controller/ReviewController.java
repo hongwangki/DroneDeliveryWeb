@@ -79,10 +79,11 @@ public class ReviewController {
         Long memberId = member.getId();
 
         Store store = storeService.findById(form.getStoreId());
+        Order order = orderService.findById(form.getOrderId());
 
 
         reviewService.createReview(
-                toDto(store, member, form.getContent(), form.getRating()));
+                toDto(store, member, form.getContent(), form.getRating(), order));
 
 
         ra.addFlashAttribute("message", "리뷰가 등록되었습니다.");
@@ -98,12 +99,13 @@ public class ReviewController {
 
     }
 
-    private ReviewDto toDto(Store store, Member member, String content, Integer rating) {
+    private ReviewDto toDto(Store store, Member member, String content, Integer rating, Order order) {
         ReviewDto dto = new ReviewDto();
         dto.setStore(store);
         dto.setContent(content);
-        dto.setCreatedBy(member);
+        dto.setMember(member);
         dto.setRating(rating);
+        dto.setOrder(order);
         return dto;
     }
 
