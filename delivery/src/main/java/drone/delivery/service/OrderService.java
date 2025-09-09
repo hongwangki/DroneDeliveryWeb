@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +154,29 @@ public class OrderService {
     }
 
 
+    public List<Order> findByMember(Member member) {
+        return orderRepository.findByMember(member);
+    }
+
+    public List<Order> findByMemberAndOrderStatus(Member member, OrderStatus status) {
+        return orderRepository.findByMemberAndOrder(member, status);
+    }
 
 
+
+    // 상세: N+1 방지용 fetch join
+    public Order getDetail(Long userId, Long orderId) {
+        return orderRepository.findByIdWithItemsAndProductAndStore(userId, orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+    }
+
+    public void markDelivered(Long memberId, Long orderId) {
+
+        Order o = orderRepository.findByIdAndMemberId(orderId, memberId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+        if (o.getOrderStatus() == OrderStatus.CANCELED || o.getOrderStatus() == OrderStatus.RETURNED) {
+            throw new IllegalStateException("해당 상태에서는 배달 완료로 변경할 수 없습니다.");
+        }
+        o.setOrderStatus(OrderStatus.DELIVERED);
+    }
 }

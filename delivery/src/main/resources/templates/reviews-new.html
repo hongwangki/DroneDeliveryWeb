@@ -1,0 +1,181 @@
+﻿<!-- src/main/resources/templates/reviews-new.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>배달의 드론 | 리뷰 작성</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --mint:#2AC1BC; --mint-d:#21a7a2;
+            --ink:#0f172a; --muted:#64748b; --bg:#f6f7fb; --card:#ffffff;
+            --border:#e5e7eb; --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+            --radius:18px; --radius-lg:22px;
+            --star:#f59e0b;          /* ⭐ 노란색 */
+            --star-empty:#e5e7eb;    /* 빈 별 색 */
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0; font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink);
+            background:
+                    radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+                    linear-gradient(180deg, #fafbff 0%, var(--bg) 100%); background-size:18px 18px, auto; background-attachment:fixed;
+        }
+        .appbar{ position:sticky; top:0; z-index:50; backdrop-filter: blur(6px); background:rgba(255,255,255,.8); border-bottom:1px solid var(--border); }
+        .appbar-inner{ max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
+        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b3d3b; }
+        .logo{ width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff; border-radius:10px; font-weight:900; box-shadow:0 6px 14px rgba(42,193,188,.25); }
+        .nav a{ text-decoration:none; color:#64748b; margin-left:16px; font-weight:600; }
+        .nav a:hover, .nav a.active{ color:#0b3d3b; font-weight:800; }
+
+        .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
+        .page-head{ background:linear-gradient(180deg,#e9fbfa,#f7fffe); border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg); box-shadow:var(--shadow); }
+        .page-head h1{ margin:0; font-size:28px; letter-spacing:-.3px; }
+        .page-head .sub{ margin-top:6px; color:#64748b; }
+
+        .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:18px; margin-top:18px; }
+        .field{ margin:14px 0; }
+        .label{ display:block; font-weight:800; margin-bottom:8px; }
+        .help{ color:#64748b; font-size:13px; margin-top:4px; }
+        .error{ color:#b91c1c; font-size:13px; margin-top:6px; }
+
+        .star-rating{
+            display:flex; gap:8px; align-items:center;
+            /* DOM 순서는 5→1인데 왼쪽부터 쌓이게 하려면 row-reverse가 편함 */
+            flex-direction:row-reverse;
+        }
+        .star-rating input{ display:none; }     /* 라디오 숨김 */
+        .star-rating label{
+            width:38px; height:38px; cursor:pointer; user-select:none;
+            display:grid; place-items:center; border-radius:10px;
+        }
+        .star-rating .icon{
+            width:100%; height:100%; fill:var(--star-empty); transition:fill .12s ease;
+        }
+
+        /* 선택된 별(자기 자신 + 그 왼쪽들)을 채우기 */
+        .star-rating input:checked + label .icon,
+        .star-rating input:checked ~ label .icon{
+            fill:var(--star);
+        }
+
+        /* 호버 시 미리보기(자기 자신 + 그 왼쪽들) */
+        .star-rating label:hover .icon,
+        .star-rating label:hover ~ label .icon{
+            fill:var(--star);
+        }
+
+        /* 키보드 접근성 */
+        .star-rating label:focus-visible{
+            outline:2px solid var(--mint); outline-offset:2px;
+        }
+
+        textarea{
+            width:100%; min-height:140px; resize:vertical; padding:12px; border:1px solid #e5e7eb;
+            border-radius:12px; font:inherit; line-height:1.6; background:#fff;
+        }
+
+        .actions{ display:flex; gap:10px; margin-top:12px; }
+        .btn{ display:inline-block; padding:10px 14px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid #e5e7eb; background:#f8fafc; color:#0f172a; }
+        .btn:hover{ background:#eef2f7; }
+        .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; box-shadow:0 10px 18px rgba(42,193,188,.22); }
+        .btn.primary:hover{ background:var(--mint-d); }
+    </style>
+</head>
+<body>
+
+<header class="appbar">
+    <div class="appbar-inner">
+        <div class="brand"><span class="logo">드</span>배달의 드론</div>
+        <nav class="nav">
+            <a th:href="@{/orders}" class="active">주문내역</a>
+            <a th:href="@{/account}">정보보기</a>
+            <a th:href="@{/recharge}">돈충전</a>
+            <a th:href="@{/settings}">설정</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
+<main class="wrap">
+    <section class="page-head">
+        <h1 th:text="'리뷰 작성 — ' + ${storeName}">리뷰 작성 — 가게 이름</h1>
+        <div class="sub">
+            주문번호 <strong th:text="${order.id}">1</strong>
+            · 주문시간 <strong th:text="${#temporals.format(order.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:34</strong>
+            · 상태 <strong th:text="${order.orderStatus.name()}">DELIVERED</strong>
+        </div>
+    </section>
+
+    <section class="card">
+        <form th:action="@{/reviews}" th:object="${form}" method="post">
+            <!-- CSRF (스프링 시큐리티 사용 시) -->
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" th:field="*{orderId}">
+            <input type="hidden" th:field="*{storeId}">
+
+            <!-- 별점 -->
+            <div class="field">
+                <label class="label">별점</label>
+
+                <!-- ⭐ 별점: 5(오른쪽) ~ 1(왼쪽) 순서로 배치하고 row-reverse로 좌→우 표시 -->
+                <div class="star-rating" role="radiogroup" aria-label="별점">
+                    <input id="rate5" type="radio" th:field="*{rating}" value="5"/>
+                    <label for="rate5" aria-label="5점">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    </label>
+
+                    <input id="rate4" type="radio" th:field="*{rating}" value="4"/>
+                    <label for="rate4" aria-label="4점">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    </label>
+
+                    <input id="rate3" type="radio" th:field="*{rating}" value="3"/>
+                    <label for="rate3" aria-label="3점">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    </label>
+
+                    <input id="rate2" type="radio" th:field="*{rating}" value="2"/>
+                    <label for="rate2" aria-label="2점">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    </label>
+
+                    <input id="rate1" type="radio" th:field="*{rating}" value="1"/>
+                    <label for="rate1" aria-label="1점">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                    </label>
+                </div>
+
+                <div class="error" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}">별점 에러</div>
+                <div class="help">노란 별이 선택된 개수만큼 별점이 등록됩니다. (1~5)</div>
+            </div>
+
+
+            <!-- 내용 -->
+            <div class="field">
+                <label for="content" class="label">리뷰 내용</label>
+                <textarea id="content" th:field="*{content}" placeholder="맛/양/배송 속도 등 솔직한 후기를 남겨주세요. (최대 1000자)"></textarea>
+                <div class="error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}">내용 에러</div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn primary">리뷰 등록</button>
+                <a th:href="@{/orders}" class="btn">목록으로</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

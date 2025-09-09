@@ -2,16 +2,15 @@ package drone.delivery.controller;
 
 import drone.delivery.domain.Member;
 import drone.delivery.domain.Order;
+import drone.delivery.domain.OrderStatus;
+import drone.delivery.repository.OrderRepository;
 import drone.delivery.service.MemberService;
 import drone.delivery.service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -21,6 +20,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final MemberService memberService;
+    private final OrderRepository orderRepository;
 
     //실제 주문이 이루어진 후 메서드
     @GetMapping("/realtime")
@@ -47,6 +47,66 @@ public class OrderController {
 
         // JSON 형태로 메시지 반환
         return "{\"message\": \"주문이 취소되었습니다.\", \"redirect\": \"/delivery\"}";
+    }
+
+
+    // 주문 내역
+    @GetMapping("/orders")
+    public String orderList(HttpSession session,
+                            Model model,
+                            @RequestParam(name = "status", defaultValue = "ALL") String status) {
+
+
+        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+        if (sessionMember == null) {
+            return "redirect:/";
+        }
+
+        OrderStatus filter = null;
+        try {
+            if (!"ALL".equalsIgnoreCase(status)) {
+                filter = OrderStatus.valueOf(status.toUpperCase());
+            }
+        } catch (IllegalArgumentException e) {
+            // 잘못된 값이 오면 ALL로 폴백
+            status = "ALL";
+        }
+
+        List<Order> orders = (filter == null)
+                ? orderService.findByMember(sessionMember)                 // 전체
+                : orderService.findByMemberAndOrderStatus(sessionMember, filter); // 상태 필터
+
+        model.addAttribute("orders", orders);
+        model.addAttribute("status", status.toUpperCase()); // 탭 활성화용
+        return "orders"; // templates/orders.html
+    }
+
+    //주문 상세보기
+    @GetMapping("/orders/{id}")
+    public String orderDetail(HttpSession session,
+                              @PathVariable Long id,
+                              Model model) {
+        Member member = (Member) session.getAttribute("loggedInMember");
+        Long memberId = member.getId();
+
+        Order order = orderService.getDetail(memberId, id); // fetch join으로 아이템/상품/가게까지 로드
+        model.addAttribute("order", order);
+        return "orders-detail";
+    }
+
+
+    // ttest
+    @PostMapping("/orders/deliver/{id}")
+    @ResponseBody
+    public String markDelivered(@PathVariable Long id,
+                                HttpSession session) {
+        // 1) 권한/소유자 검증, 상태 전이 허용(PENDING/SHIPPED -> DELIVERED) 체크
+        Member member = (Member) session.getAttribute("loggedInMember");
+
+        orderService.markDelivered(member.getId(), id);
+
+        // 2) 프런트와 맞춘 간단한 JSON 문자열 반환
+        return "{\"message\":\"배달 완료 처리되었습니다.\",\"redirect\":\"/realtime\"}";
     }
 
 

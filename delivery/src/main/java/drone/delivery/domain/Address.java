@@ -13,7 +13,7 @@ public class Address {
     private String detailAddress; // 상세 주소
 
     // 기본 생성자 (JPA에서 사용)
-    protected Address() {}
+    public Address() {}
 
     // 생성자 (새로운 필드 포함)
     public Address(String street, String city, String zipcode, String detailAddress) {
