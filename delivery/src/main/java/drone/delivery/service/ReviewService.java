@@ -1,11 +1,14 @@
-﻿package drone.delivery.service;
+package drone.delivery.service;
 
 import drone.delivery.domain.Review;
+import drone.delivery.domain.Store;
 import drone.delivery.dto.ReviewDto;
 import drone.delivery.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,6 +37,16 @@ public class ReviewService {
         return savedReview.getId();
 
     }
+
+    public List<Review> findAllReviews() {
+        return reviewRepository.findAll();
+    }
+
+    public List<Review> findByStore(Store store) {
+        return reviewRepository.findByStore(store);
+    }
+
+
 
 
 }

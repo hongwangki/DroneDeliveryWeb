@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>배달의 드론 | 주문 내역</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- 한글 가독성 좋은 폰트 -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --mint:#2AC1BC; --mint-d:#21a7a2;
+            --ink:#0f172a; --muted:#64748b; --bg:#f6f7fb; --card:#ffffff;
+            --chip:#eef6f6; --border:#e5e7eb;
+            --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+            --radius:18px; --radius-lg:22px; --gap:18px;
+            --ok:#10b981; --warn:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            color:var(--ink);
+            background:
+                    radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+                    linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+            background-size: 18px 18px, auto;
+            background-attachment: fixed;
+        }
+
+        /* 헤더 */
+        .appbar{ position: sticky; top:0; z-index:50; backdrop-filter: blur(6px);
+            background: rgba(255,255,255,.8); border-bottom:1px solid var(--border); }
+        .appbar-inner{ max-width:1200px; margin:0 auto; padding:12px 20px;
+            display:flex; align-items:center; justify-content:space-between; }
+        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b3d3b; }
+        .logo{ width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff;
+            border-radius:10px; font-weight:900; box-shadow:0 6px 14px rgba(42,193,188,.25); }
+        .nav a{ text-decoration:none; color:var(--muted); margin-left:16px; font-weight:600; }
+        .nav a:hover{ color:#0b3d3b }
+        .nav a.active{ color:#0b3d3b; font-weight:800; }
+
+        /* 컨텐트 프레임 */
+        .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
+
+        .page-head{
+            background: linear-gradient(180deg,#e9fbfa,#f7fffe);
+            border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg);
+            box-shadow:var(--shadow);
+        }
+        .page-head h1{ margin:0 0 6px; font-size:32px; letter-spacing:-.3px; }
+        .page-head p{ margin:0; color:var(--muted); }
+
+        /* 상태 탭 (OrderStatus 기준) */
+        .cats{ display:flex; gap:10px; overflow:auto; padding:12px 2px 0; scrollbar-width:none; }
+        .cats::-webkit-scrollbar{ display:none }
+        .cat{ flex:0 0 auto; text-decoration:none; color:#0b3d3b; font-weight:700;
+            background:#eef7f7; border:1px solid #e4f0f0; padding:10px 14px; border-radius:999px; transition:.15s ease; }
+        .cat:hover{ background:#e3f2f2 }
+        .cat.active{ background:var(--mint); color:#fff; border-color:var(--mint);
+            box-shadow: 0 6px 14px rgba(42,193,188,.28); }
+
+        /* 주문 카드 */
+        .list{ margin-top:14px; display:grid; gap:var(--gap); }
+        .card{ position:relative; background:var(--card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); }
+        .card-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .store{ display:flex; align-items:center; gap:12px; min-width:0; }
+        .thumb{ width:56px; height:56px; border-radius:12px; background:#f1f5f9; flex:0 0 auto; overflow:hidden; }
+        .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+        .title-wrap{ min-width:0; }
+        .store-name{ font-weight:900; font-size:18px; letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .sub{ color:var(--muted); font-size:13px; }
+        .badge{ font-weight:800; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #dceeee; background:var(--chip); color:#0b3d3b; }
+        .badge.ok{ background:#ecfdf5; border-color:#d1fae5; color:#065f46; }
+        .badge.warn{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
+        .badge.danger{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
+        .badge.info{ background:#eff6ff; border-color:#bfdbfe; color:#1e3a8a; }
+
+        .items{ margin:12px 0 6px; color:#3b475a; font-size:14px; line-height:1.6; }
+        .price-row{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+        .price{ font-weight:900; font-size:18px; }
+        .cta{ display:flex; gap:8px; flex-wrap:wrap; }
+        .btn{ background:#f8fafc; border:1px solid #e5e7eb; color:#0f172a; padding:9px 12px; border-radius:12px; font-weight:700; text-decoration:none; }
+        .btn:hover{ background:#eef2f7 }
+        .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; box-shadow:0 10px 18px rgba(42,193,188,.22); }
+        .btn.primary:hover{ background:var(--mint-d) }
+
+        /* 빈 상태 */
+        .empty{
+            margin:22px 0; padding:24px; border:1px dashed #cbd5e1; border-radius:16px; background:#fff;
+            color:#64748b; text-align:center;
+        }
+        .empty strong{ color:#0b3d3b }
+    </style>
+</head>
+<body>
+
+<!-- Top App Bar -->
+<header class="appbar">
+    <div class="appbar-inner">
+        <div class="brand">
+            <span class="logo">드</span>
+            배달의 드론
+        </div>
+        <nav class="nav">
+            <a th:href="@{/orders}" class="active">주문내역</a>
+            <a th:href="@{/account}">정보보기</a>
+            <a th:href="@{/recharge}">돈충전</a>
+            <a th:href="@{/settings}">설정</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
+<main class="wrap">
+    <!-- Page head -->
+    <section class="page-head">
+        <h1>주문 내역</h1>
+        <p>최근 순으로 정렬됩니다. 진행 중인 주문은 상단에 표시돼요.</p>
+
+        <!-- 상태 탭: OrderStatus = PENDING/SHIPPED/DELIVERED/CANCELED/RETURNED -->
+        <div class="cats" aria-label="주문 상태 필터">
+            <a class="cat" th:classappend="${status} == 'ALL' ? ' active'"
+               th:href="@{/orders(status='ALL')}">전체</a>
+            <a class="cat" th:classappend="${status} == 'PENDING' ? ' active'"
+               th:href="@{/orders(status='PENDING')}">접수</a>
+            <a class="cat" th:classappend="${status} == 'SHIPPED' ? ' active'"
+               th:href="@{/orders(status='SHIPPED')}">배송중</a>
+            <a class="cat" th:classappend="${status} == 'DELIVERED' ? ' active'"
+               th:href="@{/orders(status='DELIVERED')}">배달완료</a>
+            <a class="cat" th:classappend="${status} == 'CANCELED' ? ' active'"
+               th:href="@{/orders(status='CANCELED')}">취소</a>
+            <a class="cat" th:classappend="${status} == 'RETURNED' ? ' active'"
+               th:href="@{/orders(status='RETURNED')}">반품</a>
+        </div>
+    </section>
+
+    <!-- Empty state -->
+    <div class="empty" th:if="${#lists.isEmpty(orders)}">
+        아직 주문 내역이 없습니다. <strong><a th:href="@{/delivery}">가게 목록</a></strong>에서 첫 주문을 시작해보세요!
+    </div>
+
+    <!-- Order list -->
+    <section class="list" th:if="${!#lists.isEmpty(orders)}">
+        <!-- 모델: List<drone.delivery.domain.Order> orders -->
+        <!-- article 카드 시작 태그에 st 지역변수를 추가 -->
+        <!-- article 시작 부분 -->
+        <article class="card"
+                 th:each="o : ${orders}"
+                 th:with="st=${o.orderStatus},
+                  stName=${st.name()},
+                  firstItem=${#lists.isEmpty(o.orderItems) ? null : o.orderItems.get(0)}">
+
+            <!-- 상태 배지 -->
+            <span class="badge"
+                  th:classappend="${stName == 'DELIVERED' ? ' ok' :
+                         (stName == 'PENDING' or stName == 'SHIPPED') ? ' info' :
+                         (stName == 'CANCELED' ? ' danger' :
+                         (stName == 'RETURNED' ? ' warn' : ''))}"
+                  th:text="${stName == 'DELIVERED' ? '배달완료' :
+                 (stName == 'PENDING' ? '접수' :
+                 (stName == 'SHIPPED' ? '배송중' :
+                 (stName == 'CANCELED' ? '취소' :
+                 (stName == 'RETURNED' ? '반품' : stName))))}">
+    상태
+  </span>
+            <!-- ✅ 여기부터: 아이템 요약 넣기 -->
+            <!-- o.summary가 있으면 summary 표시 -->
+            <div class="items"
+                 th:if="${o.summary != null and !#strings.isEmpty(o.summary)}"
+                 th:text="${o.summary}">
+                짜장면 x2, 탕수육 x1
+            </div>
+
+            <!-- summary 없으면 orderItems 나열 -->
+            <div class="items"
+                 th:if="${o.summary == null or #strings.isEmpty(o.summary)}">
+  <span th:each="it, iter : ${o.orderItems}">
+    <span th:text="${it.product != null ? it.product.foodName : '상품'}">메뉴</span>
+    <span th:text="'x' + ${it.quantity}">x1</span>
+    <span th:if="${!iter.last}"> · </span>
+  </span>
+            </div>
+            <!-- ✅ 여기까지: 아이템 요약 -->
+
+            <!-- 액션 버튼 쪽 조건들도 enum → 문자열 비교로 수정 -->
+            <div class="cta" style="margin-top:12px">
+
+                <a class="btn" th:href="@{|/orders/${o.id}|}">상세보기</a>
+                <a class="btn" th:href="@{|/orders/${o.id}/receipt|}">영수증</a>
+
+                <a class="btn primary"
+                   th:if="${firstItem != null and firstItem.product != null and firstItem.product.store != null}"
+                   th:href="@{|/delivery/${firstItem.product.store.id}?reorder=${o.id}|}">재주문</a>
+
+                <a class="btn" th:if="${stName == 'DELIVERED' and !o.reviewed}"
+                   th:href="@{|/reviews/new?orderId=${o.id}|}">리뷰 쓰기</a>
+
+                <a class="btn" th:if="${stName == 'SHIPPED'}"
+                   th:href="@{|/orders/${o.id}/track|}">실시간 위치</a>
+
+                <a class="btn" th:if="${stName == 'PENDING'}"
+                   th:href="@{|/orders/${o.id}/cancel|}">주문 취소</a>
+            </div>
+        </article>
+
+    </section>
+</main>
+
+</body>
+</html>

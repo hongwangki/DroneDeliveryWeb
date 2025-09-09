@@ -1,5 +1,6 @@
-﻿package drone.delivery.domain;
+package drone.delivery.domain;
 
+import drone.delivery.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Getter @Setter
-public class Review {
+public class Review extends BaseEntity {
 
     @Id @GeneratedValue
     private Long id;
@@ -33,6 +34,15 @@ public class Review {
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     private List<ReviewImage> reviewImages = new ArrayList<>();
+
+
+    /**
+     * 양방향 편의 메소드
+     */
+    public void addReviewImage(ReviewImage reviewImage) {
+        reviewImages.add(reviewImage);
+        reviewImage.setReview(this);
+    }
 
 
 

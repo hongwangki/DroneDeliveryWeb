@@ -1,4 +1,4 @@
-﻿package drone.delivery.domain;
+package drone.delivery.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,5 +12,9 @@ public class ReviewImage {
     private Long id;
 
     private String imagePath;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id")
+    private Review review;
 
 }
