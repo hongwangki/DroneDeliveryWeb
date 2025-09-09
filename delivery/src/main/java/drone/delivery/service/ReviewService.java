@@ -1,5 +1,6 @@
 package drone.delivery.service;
 
+import drone.delivery.domain.Member;
 import drone.delivery.domain.Review;
 import drone.delivery.domain.Store;
 import drone.delivery.dto.ReviewDto;
@@ -26,7 +27,6 @@ public class ReviewService {
 
         Review review = new Review();
         review.setStore(reviewDto.getStore());
-        review.setProduct(reviewDto.getProduct());
         review.setCreatedBy(reviewDto.getCreatedBy());
         review.setContent(reviewDto.getContent());
         review.setRating(reviewDto.getRating());
@@ -47,6 +47,7 @@ public class ReviewService {
     }
 
 
-
-
+    public List<Review> findAllByMember(Member member) {
+        return reviewRepository.findAllByCreatedBy(member);
+    }
 }

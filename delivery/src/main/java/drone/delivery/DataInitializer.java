@@ -1,7 +1,7 @@
 package drone.delivery;
 
-import drone.delivery.domain.Product;
-import drone.delivery.domain.Store;
+import drone.delivery.domain.*;
+import drone.delivery.service.MemberService;
 import drone.delivery.service.StoreService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +14,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class DataInitializer {
 
     private final StoreService storeService;
+    private final MemberService memberService;
 
     @PostConstruct
     public void init() {
+
+        Member member= new Member();
+        member.setMoney(500000);
+        member.setName("강현민");
+        member.setMemberType(MemberType.USER);
+        member.setEmail("1");
+        Address address = new Address();
+        address.setCity("1");
+        address.setDetailAddress("1");
+        address.setStreet("1");
+        address.setZipcode("1");
+        member.setAddress(address);
+        member.setPassword("1");
+        memberService.save(member);
+
         // 치킨
         Store chickenStore = new Store();
         chickenStore.setName("맘스터치");

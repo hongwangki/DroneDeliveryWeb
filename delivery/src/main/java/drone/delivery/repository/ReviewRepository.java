@@ -1,5 +1,6 @@
 package drone.delivery.repository;
 
+import drone.delivery.domain.Member;
 import drone.delivery.domain.Product;
 import drone.delivery.domain.Review;
 import drone.delivery.domain.Store;
@@ -14,4 +15,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     public List<Review> findByStore(Store store);
 
     public List<Review> findByProduct(Product product);
+
+    List<Review> findAllByCreatedBy(Member member);
 }

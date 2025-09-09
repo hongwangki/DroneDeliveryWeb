@@ -23,8 +23,6 @@ public class ReviewDto {
     @NotNull
     private Member createdBy;
 
-    @NotNull
-    private Product product;
 
     @Lob
     @Size(min = 10, max = 500)

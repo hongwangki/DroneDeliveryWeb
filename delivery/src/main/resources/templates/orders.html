@@ -74,7 +74,7 @@
         .title-wrap{ min-width:0; }
         .store-name{ font-weight:900; font-size:18px; letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .sub{ color:var(--muted); font-size:13px; }
-        .badge{ font-weight:800; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #dceeee; background:var(--chip); color:#0b3d3b; }
+        .badge{ font-weight:800; font-size:20px; padding:6px 10px; border-radius:999px; border:1px solid #dceeee; background:var(--chip); color:#0b3d3b; }
         .badge.ok{ background:#ecfdf5; border-color:#d1fae5; color:#065f46; }
         .badge.warn{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
         .badge.danger{ background:#fef2f2; border-color:#fecaca; color:#991b1b; }
@@ -107,9 +107,10 @@
             배달의 드론
         </div>
         <nav class="nav">
+            <a th:href="@{/reviews}">나의 리뷰</a>
             <a th:href="@{/orders}" class="active">주문내역</a>
-            <a th:href="@{/account}">정보보기</a>
-            <a th:href="@{/recharge}">돈충전</a>
+            <a th:href="@{/account}">정보 보기</a>
+            <a th:href="@{/recharge}">돈 충전</a>
             <a th:href="@{/settings}">설정</a>
             <a th:href="@{/logout}">로그아웃</a>
         </nav>
@@ -151,23 +152,32 @@
         <!-- article 시작 부분 -->
         <article class="card"
                  th:each="o : ${orders}"
-                 th:with="st=${o.orderStatus},
-                  stName=${st.name()},
-                  firstItem=${#lists.isEmpty(o.orderItems) ? null : o.orderItems.get(0)}">
+                 th:with="
+            st=${o.orderStatus},
+            stName=${st.name()},
+            firstItem=${#lists.isEmpty(o.orderItems) ? null : o.orderItems.get(0)},
+            storeName=${firstItem != null and firstItem.product != null and firstItem.product.store != null ? firstItem.product.store.name : '알 수 없는 매장'}">
 
-            <!-- 상태 배지 -->
-            <span class="badge"
-                  th:classappend="${stName == 'DELIVERED' ? ' ok' :
+
+        <!-- 상태 배지 -->
+            <div class="card-head">
+                <!-- 왼쪽: 가게명 -->
+                <div class="store-name" th:text="${storeName}">가게 이름</div>
+
+                <!-- 오른쪽: 상태 배지 (문자열 비교 유지) -->
+                <span class="badge"
+                      th:classappend="${stName == 'DELIVERED' ? ' ok' :
                          (stName == 'PENDING' or stName == 'SHIPPED') ? ' info' :
                          (stName == 'CANCELED' ? ' danger' :
                          (stName == 'RETURNED' ? ' warn' : ''))}"
-                  th:text="${stName == 'DELIVERED' ? '배달완료' :
+                      th:text="${stName == 'DELIVERED' ? '배달완료' :
                  (stName == 'PENDING' ? '접수' :
                  (stName == 'SHIPPED' ? '배송중' :
                  (stName == 'CANCELED' ? '취소' :
                  (stName == 'RETURNED' ? '반품' : stName))))}">
     상태
   </span>
+            </div>
             <!-- ✅ 여기부터: 아이템 요약 넣기 -->
             <!-- o.summary가 있으면 summary 표시 -->
             <div class="items"
@@ -191,13 +201,12 @@
             <div class="cta" style="margin-top:12px">
 
                 <a class="btn" th:href="@{|/orders/${o.id}|}">상세보기</a>
-                <a class="btn" th:href="@{|/orders/${o.id}/receipt|}">영수증</a>
 
                 <a class="btn primary"
                    th:if="${firstItem != null and firstItem.product != null and firstItem.product.store != null}"
                    th:href="@{|/delivery/${firstItem.product.store.id}?reorder=${o.id}|}">재주문</a>
 
-                <a class="btn" th:if="${stName == 'DELIVERED' and !o.reviewed}"
+                <a class="btn" th:if="${stName == 'DELIVERED'}"
                    th:href="@{|/reviews/new?orderId=${o.id}|}">리뷰 쓰기</a>
 
                 <a class="btn" th:if="${stName == 'SHIPPED'}"

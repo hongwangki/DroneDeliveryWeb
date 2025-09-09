@@ -81,6 +81,34 @@ public class OrderController {
         return "orders"; // templates/orders.html
     }
 
+    //주문 상세보기
+    @GetMapping("/orders/{id}")
+    public String orderDetail(HttpSession session,
+                              @PathVariable Long id,
+                              Model model) {
+        Member member = (Member) session.getAttribute("loggedInMember");
+        Long memberId = member.getId();
+
+        Order order = orderService.getDetail(memberId, id); // fetch join으로 아이템/상품/가게까지 로드
+        model.addAttribute("order", order);
+        return "orders-detail";
+    }
+
+
+    // ttest
+    @PostMapping("/orders/deliver/{id}")
+    @ResponseBody
+    public String markDelivered(@PathVariable Long id,
+                                HttpSession session) {
+        // 1) 권한/소유자 검증, 상태 전이 허용(PENDING/SHIPPED -> DELIVERED) 체크
+        Member member = (Member) session.getAttribute("loggedInMember");
+
+        orderService.markDelivered(member.getId(), id);
+
+        // 2) 프런트와 맞춘 간단한 JSON 문자열 반환
+        return "{\"message\":\"배달 완료 처리되었습니다.\",\"redirect\":\"/realtime\"}";
+    }
+
 
 
 }

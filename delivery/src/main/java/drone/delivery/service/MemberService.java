@@ -24,6 +24,10 @@ public class MemberService {
 
     private final GeoService geoService;
 
+    public void save(Member member){
+        memberRepository.save(member);
+    }
+
     /**
      * 회원가입 로직
      */

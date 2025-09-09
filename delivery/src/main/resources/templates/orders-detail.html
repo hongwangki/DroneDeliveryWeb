@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>배달의 드론 | 주문 상세</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root{ --mint:#2AC1BC; --mint-d:#21a7a2; --ink:#0f172a; --muted:#64748b; --bg:#f6f7fb; --card:#ffffff;
+            --border:#e5e7eb; --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+            --radius:18px; --radius-lg:22px; }
+        *{box-sizing:border-box}
+        body{ margin:0; font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink);
+            background: radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+            linear-gradient(180deg, #fafbff 0%, var(--bg) 100%); background-size:18px 18px, auto; background-attachment:fixed; }
+        .appbar{ position:sticky; top:0; z-index:50; backdrop-filter: blur(6px); background:rgba(255,255,255,.8); border-bottom:1px solid var(--border); }
+        .appbar-inner{ max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
+        .brand{ display:flex; gap:10px; font-weight:900; color:#0b3d3b; }
+        .logo{ width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff; border-radius:10px; font-weight:900;
+            box-shadow:0 6px 14px rgba(42,193,188,.25); }
+        .nav a{ text-decoration:none; color:#64748b; margin-left:16px; font-weight:600; }
+        .nav a:hover, .nav a.active{ color:#0b3d3b; font-weight:800; }
+
+        .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
+        .page-head{ background:linear-gradient(180deg,#e9fbfa,#f7fffe); border:1px solid #dbf5f2; padding:22px; border-radius:22px; box-shadow:var(--shadow); }
+        .page-head h1{ margin:0; font-size:28px; letter-spacing:-.3px; }
+        .page-head .sub{ margin-top:6px; color:#64748b; }
+
+        .card{ background:var(--card); border:1px solid var(--border); border-radius:22px; box-shadow:var(--shadow); padding:18px; }
+        .grid{ display:grid; gap:18px; grid-template-columns: 2fr 1fr; margin-top:18px; }
+        @media (max-width: 960px){ .grid{ grid-template-columns: 1fr; } }
+
+        table{ width:100%; border-collapse:collapse; }
+        th, td{ padding:12px 10px; border-bottom:1px solid #eef2f7; font-size:14px; }
+        th{ text-align:left; color:#475569; font-weight:800; }
+        td .muted{ color:#64748b; }
+        tfoot td{ font-weight:900; font-size:16px; }
+
+        .box{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:16px; }
+        .row{ display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
+        .label{ color:#64748b; }
+        .value{ font-weight:800; }
+
+        .btn{ display:inline-block; padding:10px 14px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid #e5e7eb; background:#f8fafc; color:#0f172a; }
+        .btn:hover{ background:#eef2f7; }
+        .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; box-shadow:0 10px 18px rgba(42,193,188,.22); }
+        .btn.primary:hover{ background:var(--mint-d); }
+    </style>
+</head>
+<body>
+
+<header class="appbar">
+    <div class="appbar-inner">
+        <div class="brand"><span class="logo">드</span>배달의 드론</div>
+        <nav class="nav">
+            <a th:href="@{/orders}" class="active">주문내역</a>
+            <a th:href="@{/account}">정보보기</a>
+            <a th:href="@{/recharge}">돈충전</a>
+            <a th:href="@{/settings}">설정</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
+<main class="wrap" th:with="
+      firstItem=${#lists.isEmpty(order.orderItems) ? null : order.orderItems.get(0)},
+      storeName=${firstItem != null and firstItem.product != null and firstItem.product.store != null ? firstItem.product.store.name : '알 수 없는 매장'},
+      storeId=${firstItem != null and firstItem.product != null and firstItem.product.store != null ? firstItem.product.store.id : null}">
+
+    <section class="page-head">
+        <h1 th:text="${storeName}">가게 이름</h1>
+        <div class="sub">
+            주문번호 <strong th:text="${order.id}">1</strong>
+            · 주문시간 <strong th:text="${#temporals.format(order.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:34</strong>
+            · 상태 <strong th:text="${order.orderStatus.name()}">DELIVERED</strong>
+        </div>
+    </section>
+
+    <section class="grid">
+        <!-- 품목 테이블 -->
+        <div class="card">
+            <table>
+                <thead>
+                <tr>
+                    <th>메뉴</th>
+                    <th style="width:100px">수량</th>
+                    <th style="width:140px">단가</th>
+                    <th style="width:160px">금액</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="it : ${order.orderItems}">
+                    <td>
+                        <div th:text="${it.product != null ? it.product.foodName : '상품'}">메뉴 이름</div>
+                        <!-- 옵션 필드가 프로젝트에 없음: 옵션 줄 제거 -->
+                    </td>
+
+                    <td th:text="${it.quantity}">1</td>
+
+                    <!-- 단가: orderPrice 사용 -->
+                    <td th:text="${#numbers.formatInteger(it.orderPrice,3,'COMMA')} + '원'">12,000원</td>
+
+                    <!-- 금액: getTotalPrice()가 있으므로 it.totalPrice 로 바로 표시 -->
+                    <td th:text="${#numbers.formatInteger(it.totalPrice,3,'COMMA')} + '원'">12,000원</td>
+                </tr>
+                </tbody>
+
+                <tfoot>
+                <tr>
+                    <td colspan="3" style="text-align:right">총 결제금액</td>
+                    <td th:text="${#numbers.formatInteger(order.totalPrice,3,'COMMA')} + '원'">32,000원</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- 사이드 요약/액션 -->
+        <div class="card">
+            <div class="box">
+                <div class="row"><span class="label">주문번호</span><span class="value" th:text="${order.id}">1</span></div>
+                <div class="row"><span class="label">주문시간</span><span class="value" th:text="${#temporals.format(order.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:34</span></div>
+                <div class="row"><span class="label">상태</span><span class="value" th:text="${order.orderStatus.name()}">DELIVERED</span></div>
+                <div class="row"><span class="label">총 결제금액</span><span class="value" th:text="${#numbers.formatInteger(order.totalPrice,3,'COMMA')} + '원'">32,000원</span></div>
+            </div>
+
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+                <a class="btn" th:href="@{/orders}">목록으로</a>
+                <a class="btn primary"
+                   th:if="${order.orderStatus.name() == 'DELIVERED'}"
+                   th:href="@{|/reviews/new?orderId=${order.id}|}">리뷰 쓰기</a>
+                <a class="btn"
+                   th:if="${order.orderStatus.name() == 'SHIPPED'}"
+                   th:href="@{|/orders/${order.id}/track|}">실시간 위치</a>
+                <a class="btn"
+                   th:if="${order.orderStatus.name() == 'PENDING'}"
+                   th:href="@{|/orders/${order.id}/cancel|}">주문 취소</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -55,6 +55,19 @@
       background-color: #ccc;
       cursor: not-allowed;
     }
+    .deliver-btn {
+      padding: 5px 10px;
+      background-color: #10b981; /* 초록 */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 6px;          /* 취소 버튼과 간격 */
+    }
+    .deliver-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -98,6 +111,12 @@
       <button class="cancel-btn" th:attr="data-id=${order.id}" th:disabled="${order.orderStatus.name() != 'PENDING'}">
         주문 취소
       </button>
+      <!-- ✅ 테스트용 '배달 완료' 버튼: PENDING/SHIPPED에서만 활성 -->
+      <button class="deliver-btn"
+              th:attr="data-id=${order.id}"
+              th:disabled="${!(order.orderStatus.name() == 'PENDING' or order.orderStatus.name() == 'SHIPPED')}">
+        배달 완료
+      </button>
     </td>
   </tr>
   </tbody>
@@ -106,23 +125,38 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function(){
-    $(".cancel-btn").click(function(){
-      let orderId = $(this).data("id");
 
+    $(".cancel-btn").click(function(){
+      const orderId = $(this).data("id");
       $.ajax({
         url: "/orders/cancel/" + orderId,
         type: "POST",
         contentType: "application/json",
         success: function(response){
-          let res = JSON.parse(response);
-          alert(res.message); // 안내 메시지 띄우기
-          window.location.href = res.redirect; // 취소 후 자동 이동
+          const res = typeof response === "string" ? JSON.parse(response) : response;
+          alert(res.message);
+          window.location.href = res.redirect;
         },
-        error: function(){
-          alert("주문 취소 중 오류가 발생했습니다.");
-        }
+        error: function(){ alert("주문 취소 중 오류가 발생했습니다."); }
       });
     });
+
+    /* ✅ 배달 완료 */
+    $(".deliver-btn").click(function(){
+      const orderId = $(this).data("id");
+      $.ajax({
+        url: "/orders/deliver/" + orderId,   // ← 서버쪽 매핑 (아래 #3 참고)
+        type: "POST",
+        contentType: "application/json",
+        success: function(response){
+          const res = typeof response === "string" ? JSON.parse(response) : response;
+          alert(res.message || "배달 완료 처리되었습니다.");
+          window.location.href = res.redirect || "/realtime";
+        },
+        error: function(){ alert("배달 완료 처리 중 오류가 발생했습니다."); }
+      });
+    });
+
   });
 </script>
 
