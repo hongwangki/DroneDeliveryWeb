@@ -1,10 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title th:text="${product.name} + ' | 옵션 선택'">옵션 선택</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root{
+            --mint:#2AC1BC; --mint-d:#21a7a2;
+            --ink:#0f172a; --muted:#6b7280;
+            --bg:#f6f7fb; --card:#ffffff; --border:#e5e7eb;
+            --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+            --radius:18px; --radius-lg:22px; --danger:#ef4444;
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0; color:var(--ink);
+            font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            background:
+                    radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+                    linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
+            background-size:18px 18px, auto; background-attachment:fixed;
+        }
+        /* header */
+        .appbar{position:sticky; top:0; z-index:40; background:rgba(255,255,255,.85); backdrop-filter:blur(6px); border-bottom:1px solid var(--border)}
+        .appbar-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+        .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#0b3d3b}
+        .logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--mint);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.25)}
+        .back{padding:8px 12px;border:1px solid var(--border);border-radius:12px;text-decoration:none;color:#111827;font-weight:800;background:#fff}
+        .back:hover{background:var(--mint);color:#fff;border-color:var(--mint)}
+
+        /* layout */
+        .wrap{max-width:1200px;margin:18px auto 80px;padding:0 20px;display:grid;grid-template-columns: 1fr 360px;gap:18px}
+        @media (max-width: 1000px){ .wrap{ grid-template-columns: 1fr } }
+
+        .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:16px}
+        .left .head{display:flex;gap:18px;align-items:center}
+        .thumb{
+            width:220px;max-width:30vw;aspect-ratio:1/1;border-radius:14px;
+            background:#f2f5f7;border:1px solid #e6ecef; overflow:hidden;
+            background-size:cover;background-position:center;
+        }
+        .title{font-weight:900;font-size:24px;margin:0}
+        .price{font-weight:900}
+        .line{height:1px;background:var(--border);margin:14px 0}
+
+        .group{border:1px solid #eef1f4;border-radius:12px;margin-bottom:10px;overflow:hidden}
+        .group-head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fbfefe;border-bottom:1px solid #eef1f4;font-weight:900}
+        .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;background:#f5fbfb;border:1px solid #e2f3f1;color:#0b3d3b;font-weight:800;font-size:12px}
+        .req{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+        .opt-item{display:flex;justify-content:space-between;align-items:center;padding:12px}
+        .opt-item + .opt-item{border-top:1px dashed #f0f2f6}
+        .muted{color:var(--muted)}
+        .sold{color:#991b1b;font-weight:800;font-size:12px;border:1px solid #fecaca;background:#fee2e2;padding:3px 8px;border-radius:999px;margin-left:8px}
+
+        .side h3{margin:0 0 10px}
+        .qty{height:40px;border:1px solid var(--border);border-radius:10px;padding:0 10px;width:120px}
+        .btn{height:44px;padding:0 14px;border:none;border-radius:12px;font-weight:900;cursor:pointer}
+        .btn.primary{background:var(--mint);color:#fff}
+        .btn.primary:disabled{opacity:.5;cursor:not-allowed}
+        .alert{padding:12px 14px;border-radius:12px;border:1px solid;margin:6px 0;font-weight:800}
+        .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+    </style>
 </head>
 <body>
-$END$
+
+<header class="appbar">
+    <div class="appbar-inner">
+        <div class="brand"><span class="logo">드</span>배달의 드론</div>
+        <a class="back" th:href="@{'/delivery/' + ${storeId}}">← 가게로</a>
+    </div>
+</header>
+
+<main class="wrap"
+      th:with="base=${product.basePrice != null ? product.basePrice : 0}">
+    <!-- 좌측: 상품/옵션 -->
+    <section class="left card">
+        <!-- 서버 플래시 에러 표시 -->
+        <div class="alert err" th:if="${errorMessage != null}" th:text="${errorMessage}"></div>
+
+        <div class="head">
+            <div class="thumb"
+                 th:style="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'background-image:url(' + @{${product.imageUrl}} + ');' : ''">
+            </div>
+            <div>
+                <h1 class="title" th:text="${product.name}">메뉴명</h1>
+                <div class="muted">기본가</div>
+                <div class="price" th:text="${#numbers.formatInteger(base,0,'COMMA')} + '원'">0원</div>
+            </div>
+        </div>
+
+        <div class="line"></div>
+
+        <!-- 옵션 그룹들 -->
+        <form id="addToCartForm" th:action="@{/cart/add}" method="post">
+            <input type="hidden" name="productId" th:value="${product.productId}">
+            <input type="hidden" name="storeId" th:value="${storeId}">
+            <input type="hidden" id="basePrice" th:value="${base}">
+
+            <div th:each="g : ${product.groups}"
+                 class="group opt-group"
+                 th:attr="data-group-id=${g.groupId},
+                    data-group-name=${g.name},
+                    data-required=${g.required},
+                    data-select-type=${g.selectType},
+                    data-min=${g.minSelect},
+                    data-max=${g.maxSelect}">
+                <div class="group-head">
+                    <span th:text="${g.name}">그룹명</span>
+                    <span class="chip req" th:if="${g.required}">필수</span>
+                    <span class="chip" th:text="${g.selectType == 'SINGLE' ? '단일선택' : '다중선택'}">선택방식</span>
+                </div>
+
+                <!-- 항목 -->
+                <label th:each="it : ${g.items}" class="opt-item">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <!-- SINGLE: 라디오 / MULTI: 체크박스 (name은 그룹별로 구분) -->
+                        <input th:if="${g.selectType == 'SINGLE'}"
+                               type="radio"
+                               th:name="${'g-' + g.groupId}"
+                               th:attr="data-item-id=${it.itemId}, data-group-id=${g.groupId}, data-delta=${it.priceDelta}"
+                               th:disabled="${it.stock != null and it.stock <= 0}">
+                        <input th:if="${g.selectType != 'SINGLE'}"
+                               type="checkbox"
+                               th:name="${'g-' + g.groupId}"
+                               th:attr="data-item-id=${it.itemId}, data-group-id=${g.groupId}, data-delta=${it.priceDelta}"
+                               th:disabled="${it.stock != null and it.stock <= 0}">
+
+                        <span th:text="${it.name}">옵션명</span>
+                        <span class="sold" th:if="${it.stock != null and it.stock <= 0}">품절</span>
+                    </div>
+                    <div class="muted"
+                         th:text="${(it.priceDelta>=0?'+':'') + #numbers.formatInteger(it.priceDelta,0,'COMMA')} + '원'">+0원</div>
+                </label>
+            </div>
+
+            <!-- 오른쪽 카드의 버튼과 동기화하려고 form은 그대로 두고, 제출은 오른쪽에서 트리거 -->
+        </form>
+    </section>
+
+    <!-- 우측: 주문 정보 -->
+    <aside class="card side" id="orderBox">
+        <h3>주문 정보</h3>
+        <div class="muted">수량</div>
+        <input id="qty" class="qty" type="number" min="1" value="1">
+
+        <div class="line"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="muted">총 결제 금액</span>
+            <strong id="total" class="price">0원</strong>
+        </div>
+
+        <button id="btnAdd" class="btn primary" style="width:100%; margin-top:12px">장바구니 담기</button>
+
+        <div id="needMsg" class="alert err" style="display:none; margin-top:10px"></div>
+    </aside>
+</main>
+
+<script>
+    (function(){
+        const fmt = n => Number(n||0).toLocaleString('ko-KR');
+
+        const form = document.getElementById('addToCartForm');
+        const basePrice = Number(document.getElementById('basePrice').value || 0);
+        const qtyEl = document.getElementById('qty');
+        const totalEl = document.getElementById('total');
+        const btnAdd = document.getElementById('btnAdd');
+        const needMsg = document.getElementById('needMsg');
+
+        const groups = [...document.querySelectorAll('.opt-group')];
+
+        function selectedItems(){
+            // 각 그룹에서 체크된 input 수집
+            const selected = [];
+            groups.forEach(g=>{
+                const gid = g.dataset.groupId;
+                const inputs = [...g.querySelectorAll('input[type="radio"],input[type="checkbox"]')];
+                inputs.filter(i=>i.checked).forEach(i=>{
+                    selected.push({
+                        groupId: gid,
+                        itemId: i.dataset.itemId,
+                        delta: Number(i.dataset.delta || 0)
+                    });
+                });
+            });
+            return selected;
+        }
+
+        function validate(){
+            for(const g of groups){
+                const name = g.dataset.groupName || '옵션';
+                const required = g.dataset.required === 'true';
+                const type = g.dataset.selectType;  // SINGLE | MULTI
+                const min = parseInt(g.dataset.min || '0', 10);
+                const max = g.dataset.max ? parseInt(g.dataset.max,10) : Infinity;
+
+                const cnt = selectedItems().filter(s => s.groupId === g.dataset.groupId).length;
+
+                if(type === 'SINGLE'){
+                    if(required && cnt === 0){
+                        return {ok:false, msg:`필수 옵션을 선택해 주세요: ${name}`};
+                    }
+                }else{
+                    const needMin = Math.max(required ? 1 : 0, isNaN(min)?0:min);
+                    if(cnt < needMin) return {ok:false, msg:`${name}은(는) 최소 ${needMin}개 선택해야 합니다.`};
+                    if(cnt > max)     return {ok:false, msg:`${name}은(는) 최대 ${max}개까지 선택할 수 있습니다.`};
+                }
+            }
+            return {ok:true};
+        }
+
+        function calc(){
+            const qty = Math.max(1, parseInt(qtyEl.value || '1', 10));
+            const optSum = selectedItems().reduce((a,b)=>a + (b.delta||0), 0);
+            const unit = Math.max(0, basePrice + optSum);
+            totalEl.textContent = fmt(unit * qty) + '원';
+        }
+
+        function updateUI(){
+            const v = validate();
+            btnAdd.disabled = !v.ok;
+            needMsg.style.display = v.ok ? 'none' : 'block';
+            needMsg.textContent = v.ok ? '' : v.msg;
+            calc();
+        }
+
+        // 이벤트 바인딩
+        document.querySelectorAll('.opt-group input').forEach(i=>i.addEventListener('change', updateUI));
+        qtyEl.addEventListener('input', updateUI);
+
+        // 초기 계산
+        updateUI();
+
+        // 제출 핸들러: 선택값을 name=options 로 만들어서 전송
+        btnAdd.addEventListener('click', function(e){
+            const v = validate();
+            if(!v.ok){ updateUI(); return; }
+
+            // 기존 숨긴 options 지우기
+            [...form.querySelectorAll('input[name="options"]')].forEach(n=>n.remove());
+            // 새로 추가
+            selectedItems().forEach(s=>{
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'options'; // 같은 이름 반복 → List<Long> 바인딩
+                hidden.value = s.itemId;
+                form.appendChild(hidden);
+            });
+
+            // 수량 반영
+            let qtyHidden = form.querySelector('input[name="quantity"]');
+            if(!qtyHidden){
+                qtyHidden = document.createElement('input');
+                qtyHidden.type = 'hidden';
+                qtyHidden.name = 'quantity';
+                form.appendChild(qtyHidden);
+            }
+            qtyHidden.value = Math.max(1, parseInt(qtyEl.value || '1', 10));
+
+            form.submit();
+        });
+    })();
+</script>
+
 </body>
 </html>

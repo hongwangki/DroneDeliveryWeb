@@ -2,288 +2,187 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title th:text="${store.name} + ' | 가게 관리'">배달의 드론 | 가게 관리</title>
+  <title th:text="${store.name} + ' | 사장님 가게 관리'">사장님 가게 관리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --mint:#2AC1BC; --mint-d:#1fa6a1;
       --ink:#0f172a; --muted:#6b7280;
-      --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
-      --radius:20px; --radius-sm:14px;
-      --shadow:0 18px 44px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
-      --glass:rgba(255,255,255,.75);
+      --bg:#f6f7fb; --card:#ffffff; --line:#e5e7eb;
+      --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+      --radius:18px; --radius-lg:22px;
+      --danger:#ef4444; --warn:#f59e0b;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
     body{
       margin:0; color:var(--ink);
-      font-family:"Noto Sans KR","Poppins",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:
-              radial-gradient(1200px 600px at -10% -20%, rgba(42,193,188,.10), transparent 60%),
-              radial-gradient(900px 500px at 120% 110%, rgba(42,193,188,.08), transparent 55%),
-              linear-gradient(180deg,#f8fafc 0%, #f3f7fb 100%);
-      min-height:100vh;
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
+    }
+    .wrap{max-width:1200px; margin:26px auto 80px; padding:0 20px}
+
+    /* 상단바 */
+    .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.8);
+      backdrop-filter:blur(6px); border-bottom:1px solid var(--line)}
+    .appbar-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#0b3d3b}
+    .logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--mint);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.25)}
+    .nav a{ text-decoration:none; color:var(--muted); margin-left:14px; font-weight:700 }
+    .nav a:hover{ color:#0b3d3b }
+
+    /* 카드/패널 */
+    .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); padding:18px; }
+    .panel + .panel{ margin-top:18px }
+
+    .title{font-weight:900; font-size:22px; margin:0 0 10px}
+    .muted{color:var(--muted)}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    .field{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
+    .key{font-weight:800;color:#374151;margin-bottom:6px}
+    .val{font-weight:900}
+
+    /* 테이블 */
+    table{width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:16px}
+    thead th{background:#f8fafc; text-align:left; padding:12px; border-bottom:1px solid var(--line); font-weight:800}
+    tbody td{padding:12px; border-bottom:1px dashed #eef2f6}
+    tbody tr:last-child td{border-bottom:none}
+
+    /* 버튼 */
+    .btn{height:36px; padding:0 12px; border:none; border-radius:10px; font-weight:900; cursor:pointer}
+    .btn.primary{background:var(--mint); color:#fff}
+    .btn.primary:hover{background:var(--mint-d)}
+    .btn.ghost{background:#fff; border:1px solid var(--line); color:#111827}
+    .btn.warn{background:#f59e0b; color:#fff}
+    .btn.danger{background:var(--danger); color:#fff}
+
+    input[type="text"], input[type="number"]{
+      height:40px; border:1px solid var(--line); border-radius:12px; background:#fff; padding:0 12px; width:100%;
     }
 
-    /* ===== Appbar (유리 느낌) ===== */
-    header{
-      position:sticky; top:0; z-index:30;
-      background:rgba(255,255,255,.75);
-      backdrop-filter:saturate(1.1) blur(8px);
-      border-bottom:1px solid rgba(15,23,42,.06);
-    }
-    .appbar{max-width:1120px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-    .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.35);font-weight:900}
-    .actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
-    .actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
-    .actions a.logout{color:#ef4444;border-color:#fecaca}
-    .actions a.logout:hover{background:#fee2e2;color:#b91c1c}
-
-    /* ===== Hero Banner ===== */
-    .hero{
-      max-width:1120px;margin:16px auto 0;padding:0 20px;
-    }
-    .banner{
-      border-radius:28px; overflow:hidden; position:relative; min-height:160px;
-      box-shadow:var(--shadow); border:1px solid rgba(2,6,23,.08);
-      background:#dff8f6;
-    }
-    .banner::before{
-      content:""; position:absolute; inset:0;
-      background:linear-gradient(120deg, rgba(2,6,23,.65), rgba(2,6,23,.25) 45%, rgba(2,6,23,.0));
-      z-index:0;
-    }
-    .banner .img{
-      position:absolute; inset:0; background-size:cover; background-position:center; filter: saturate(1.05) contrast(1.02);
-    }
-    .banner .inner{
-      position:relative; z-index:1; display:flex; align-items:center; gap:16px;
-      padding:22px;
-      color:#fff;
-    }
-    .banner .avatar{
-      width:72px; height:72px; border-radius:18px; background:rgba(255,255,255,.15);
-      display:grid; place-items:center; font-weight:900; border:2px solid rgba(255,255,255,.45);
-    }
-    .banner h1{margin:0;font-size:28px;font-weight:900}
-    .chips{display:flex; gap:8px; margin-top:6px}
-    .chip{background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); color:#fff; padding:6px 10px; font-weight:800; border-radius:999px; font-size:12px}
-
-    /* ===== Page body ===== */
-    .wrap{max-width:1120px;margin:18px auto 90px;padding:0 20px;display:grid;grid-template-columns:1fr;gap:18px}
-
-    .card{
-      backdrop-filter: blur(8px) saturate(1.05);
-      background:var(--glass);
-      border:1px solid rgba(2,6,23,.08);
-      border-radius:24px; box-shadow:var(--shadow); padding:20px;
-    }
-    .card h2{margin:0 0 10px;font-size:20px;font-weight:900}
-    .sub{margin:-4px 0 10px;color:var(--muted);font-weight:600}
-
-    /* KPI */
-    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
-    .kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px}
-    .kpi .label{color:var(--muted);font-size:13px;font-weight:800}
-    .kpi .value{margin-top:6px;font-weight:900}
-
-    /* Alerts */
     .alert{padding:12px 14px;border-radius:12px;border:1px solid;margin:6px 0;font-weight:700}
-    .success{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
-    .error{background:#fef2f2;border-color:#fecaca;color:#991b1b}
-    .warn{background:#fff7ed;border-color:#ffedd5;color:#9a3412}
-
-    /* Table */
-    .table-wrap{overflow:auto;border-radius:16px;border:1px solid var(--line);background:#fff}
-    table{width:100%;border-collapse:separate;border-spacing:0}
-    thead th{background:#f8fafc;font-weight:900}
-    th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
-    tbody tr:hover{background:#f9fafb}
-    tbody td:last-child{white-space:nowrap}
-
-    /* Form */
-    label{display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px}
-    .input{
-      width:100%;height:48px;border-radius:12px;border:1px solid var(--line);background:#f9fafb;
-      padding:0 12px;font-size:14px;transition:border-color .15s,box-shadow .15s,background .15s
-    }
-    .input:focus{outline:none;border-color:#8ee2df;background:#fff;box-shadow:0 0 0 4px rgba(42,193,188,.15)}
-    .grid-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
-    .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
-    .btn-primary{background:var(--brand);color:#fff;box-shadow:0 8px 20px rgba(42,193,188,.35)}
-    .btn-primary:hover{background:var(--brand-d)}
-    .btn-ghost{background:#fff;border:1px solid var(--line);color:#111827}
-    .btn-ghost:hover{box-shadow:0 8px 20px rgba(2,6,23,.06)}
-    .btn-danger{background:#ef4444;color:#fff}
-    .btn-danger:hover{background:#dc2626}
-
-    @media (max-width:860px){
-      .grid-form{grid-template-columns:1fr 1fr 1fr 1fr}
-    }
-    @media (max-width:560px){
-      .grid-form{grid-template-columns:1fr}
-      .btn{height:48px}
-    }
+    .ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+    .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
   </style>
 </head>
 <body>
 
-<!-- Appbar -->
-<header>
-  <div class="appbar">
-    <div class="brand">
-      <div class="brand-badge">드</div>
-      <span th:text="${store.name}">가게 이름</span>
-    </div>
-    <div class="actions">
-      <a th:href="@{/owner/stores/{id}/edit(id=${store.id})}">가게 수정</a>
-      <a href="/owner">홈으로</a>
-      <a href="/logout" class="logout">로그아웃</a>
-    </div>
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand"><span class="logo">드</span>배달의 드론 — 사장님</div>
+    <nav class="nav">
+      <a th:href="@{/owner}">내 가게들</a>
+      <a th:href="@{/realtime}">실시간 주문</a>
+      <a th:href="@{/logout}">로그아웃</a>
+    </nav>
   </div>
 </header>
 
-<!-- Hero banner (스토어 이미지가 있으면 오버레이) -->
-<section class="hero">
-  <div class="banner">
-    <div class="img"
-         th:style="'background-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), url(' + (${store.imageUrl} != null ? ${store.imageUrl} : '') + ');'">
-    </div>
-    <div class="inner">
-      <div class="avatar" th:text="${#strings.substring(store.name,0,1)}">드</div>
-      <div>
-        <h1 th:text="${store.name}">가게 이름</h1>
-        <div class="chips">
-          <div class="chip" th:text="${store.category}">카테고리</div>
-          <div class="chip" th:text="'최소주문 ' + ${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">최소주문 0원</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <main class="wrap">
-  <!-- Flash -->
-  <div th:if="${pageMessage}" class="alert success" th:text="${pageMessage}"></div>
-  <div th:if="${pageError}" class="alert error" th:text="${pageError}"></div>
-  <div th:if="${pageWarnMessage}" class="alert warn" th:text="${pageWarnMessage}"></div>
 
-  <!-- 가게 설명 + KPI -->
-  <section class="card">
-    <h2>가게 정보</h2>
-    <p class="sub" th:text="${store.description}">가게 소개</p>
-    <div class="kpis">
-      <div class="kpi">
-        <div class="label">카테고리</div>
-        <div class="value" th:text="${store.category}">중식</div>
+  <!-- 플래시 메시지 -->
+  <div th:if="${pageError}" class="alert err" th:text="${pageError}"></div>
+  <div th:if="${formError}" class="alert err" th:text="${formError}"></div>
+  <div th:if="${message}" class="alert ok" th:text="${message}"></div>
+  <div th:if="${formMessage}" class="alert ok" th:text="${formMessage}"></div>
+  <div th:if="${pageMessage}" class="alert ok" th:text="${pageMessage}"></div>
+
+  <!-- 가게 정보 -->
+  <section class="panel">
+    <h2 class="title" th:text="${store.name}">가게 이름</h2>
+    <div class="grid2">
+      <div class="field">
+        <div class="key">카테고리</div>
+        <div class="val" th:text="${store.category}">치킨</div>
       </div>
-      <div class="kpi">
-        <div class="label">최소 주문 금액</div>
-        <div class="value" th:text="${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">0원</div>
+      <div class="field">
+        <div class="key">최소 주문 금액</div>
+        <div class="val" th:text="${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">0원</div>
       </div>
     </div>
   </section>
 
   <!-- 메뉴 리스트 -->
-  <section class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2>메뉴</h2>
-      <div class="toolbar"></div>
-    </div>
+  <section class="panel">
+    <h3 class="title">메뉴</h3>
 
-    <div th:if="${#lists.isEmpty(store.products)}" class="alert warn" style="margin-top:10px">
-      등록된 메뉴가 없습니다. 아래 폼으로 메뉴를 추가해 주세요.
-    </div>
-
-    <div th:if="${!#lists.isEmpty(store.products)}" class="table-wrap">
-      <table>
-        <thead>
-        <tr>
-          <th>#</th>
-          <th>메뉴명</th>
-          <th>가격</th>
-          <th>기본 수량</th>
-          <th>총액(미리보기)</th>
-          <th>관리</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="p, stat : ${store.products}">
-          <td th:text="${stat.index + 1}">1</td>
-          <td th:text="${p.foodName}">싸이순살</td>
-          <td th:text="${#numbers.formatInteger(p.foodPrice,0,'COMMA')} + '원'">18,000원</td>
-          <td th:text="${p.quantity}">1</td>
-          <td th:text="${#numbers.formatInteger(p.foodPrice * p.quantity,0,'COMMA')} + '원'">18,000원</td>
-          <td>
-            <a th:href="@{/owner/stores/{sid}/products/{pid}/edit(sid=${store.id}, pid=${p.id})}" class="btn btn-ghost">수정</a>
-
-            <form th:action="@{/owner/stores/{sid}/products/{pid}(sid=${store.id}, pid=${p.id})}"
-                  method="post" style="display:inline"
-                  onsubmit="return confirm('정말 이 메뉴를 삭제할까요?');">
-              <th:block th:if="${_csrf != null}">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-              </th:block>
-              <button type="submit" class="btn btn-danger">삭제</button>
-            </form>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+    <table>
+      <thead>
+      <tr>
+        <th style="width:60px">#</th>
+        <th>메뉴명</th>
+        <th style="width:140px">가격</th>
+        <th style="width:120px">기본 수량</th>
+        <th style="width:180px">총액(미리보기)</th>
+        <th style="width:260px">관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="p, stat : ${store.products}">
+        <td th:text="${stat.index + 1}">1</td>
+        <td th:text="${p.foodName}">싸이순살</td>
+        <td th:text="${#numbers.formatInteger(p.foodPrice,0,'COMMA')} + '원'">0원</td>
+        <td th:text="${p.quantity}">0</td>
+        <td th:text="${#numbers.formatInteger(p.foodPrice * p.quantity,0,'COMMA')} + '원'">0원</td>
+        <td>
+          <a class="btn ghost" th:href="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/options'}">옵션관리</a>
+          <a class="btn warn" th:href="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/edit'}">수정</a>
+          <form th:action="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/delete'}"
+                method="post"
+                th:onsubmit="|return confirm('정말로 삭제하시겠습니까?');|"
+                style="display:inline">
+            <!-- Spring Security CSRF 사용 시 -->
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button class="btn danger" type="submit">삭제</button>
+          </form>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(store.products)}">
+        <td colspan="6" class="muted" style="text-align:center; padding:20px">등록된 메뉴가 없습니다.</td>
+      </tr>
+      </tbody>
+    </table>
   </section>
 
   <!-- 메뉴 추가 -->
-  <section class="card">
-    <h2>메뉴 추가</h2>
-    <p class="sub">가격과 기본 수량을 입력해 새 메뉴를 등록하세요.</p>
+  <section class="panel" id="add-menu">
+    <h3 class="title">메뉴 추가</h3>
+    <p class="muted" style="margin-top:-4px">가격과 기본 수량, 이미지 URL을 입력해 새 메뉴를 등록하세요.</p>
 
-    <div th:if="${formError}" class="alert error" th:text="${formError}"></div>
-    <div th:if="${formMessage}" class="alert success" th:text="${formMessage}"></div>
-
-    <form th:action="@{/owner/stores/{id}(id=${store.id})}" method="post" id="addForm">
-      <th:block th:if="${_csrf != null}">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-      </th:block>
-
-      <div class="grid-form">
-        <div>
-          <label for="foodName">메뉴명</label>
-          <input id="foodName" name="foodName" type="text" class="input" placeholder="예: 싸이순살" required>
-        </div>
-
-        <div>
-          <label for="foodPrice">가격(원)</label>
-          <input id="foodPrice" name="foodPrice" type="number" class="input" min="0" step="100" placeholder="예: 18000" required>
-        </div>
-
-        <div>
-          <label for="quantity">기본 수량</label>
-          <input id="quantity" name="quantity" type="number" class="input" min="1" step="1" value="1" required>
-        </div>
-
-        <div>
-          <button type="submit" class="btn btn-primary" style="width:100%">추가</button>
-        </div>
+    <!-- 이미지 URL 입력칸만 추가됨 -->
+    <form th:action="@{'/owner/stores/' + ${store.id}}" method="post"
+          style="display:grid; grid-template-columns:2fr 1fr 1fr 2fr auto; gap:10px; align-items:end">
+      <div>
+        <label class="key" for="foodName">메뉴명</label>
+        <input id="foodName" type="text" name="foodName" placeholder="예: 싸이순살" required />
+      </div>
+      <div>
+        <label class="key" for="foodPrice">가격(원)</label>
+        <input id="foodPrice" type="number" name="foodPrice" min="0" placeholder="예: 18000" required />
+      </div>
+      <div>
+        <label class="key" for="quantity">기본 수량</label>
+        <input id="quantity" type="number" name="quantity" min="1" value="1" required />
+      </div>
+      <div>
+        <label class="key" for="imageUrl">이미지 URL</label>
+        <input id="imageUrl" type="text" name="productImageUrl" placeholder="https://.../image.jpg" />
+      </div>
+      <div style="display:flex; gap:12px; align-items:center">
+        <label style="display:flex; gap:8px; align-items:center; white-space:nowrap; margin-bottom:6px">
+          <input type="checkbox" name="goConfigure" value="true" />
+          추가 후 옵션 설정하기
+        </label>
+        <!-- Spring Security CSRF 사용 시 -->
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button class="btn primary" type="submit">추가</button>
       </div>
     </form>
   </section>
+
 </main>
-
-<script>
-  // 숫자 입력 UX: 1000단위 자동 step, 음수 방지
-  const price = document.getElementById('foodPrice');
-  if (price){
-    price.addEventListener('input', () => {
-      const v = price.value.replace(/[^0-9]/g,'');
-      price.value = v;
-    });
-  }
-</script>
-
 </body>
 </html>

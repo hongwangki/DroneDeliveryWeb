@@ -1,4 +1,8 @@
 package drone.delivery.repository;
 
-public interface OptionGroupRepository {
+import drone.delivery.domain.OptionGroup;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface OptionGroupRepository extends JpaRepository<OptionGroup, Long> {
+
 }

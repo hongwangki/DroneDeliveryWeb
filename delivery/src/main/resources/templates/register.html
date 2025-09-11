@@ -32,29 +32,41 @@
         }
 
         /* Layout */
-        .wrap{ width:100%; max-width:1100px; padding:24px;
-            display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center; }
+        .wrap{
+            width:100%; max-width:1100px; padding:24px;
+            display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center;
+        }
 
-        /* Left: hero (로그인과 동일) */
-        .hero{ position:relative; min-height:520px; border-radius:28px; overflow:hidden;
-            background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow); }
-        .hero::before{ content:""; position:absolute; inset:0;
+        /* Left: hero */
+        .hero{
+            position:relative; min-height:520px; border-radius:28px; overflow:hidden;
+            background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow);
+        }
+        .hero::before{
+            content:""; position:absolute; inset:0;
             background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,.06) 1px, rgba(255,255,255,0) 1px);
-            background-size:28px 28px; opacity:.6; }
-        .hero::after{ content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
+            background-size:28px 28px; opacity:.6;
+        }
+        .hero::after{
+            content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
             background: radial-gradient(closest-side, rgba(42,193,188,.35), rgba(42,193,188,0) 70%),
             conic-gradient(from 210deg, rgba(42,193,188,.20), rgba(255,255,255,0) 60%);
-            filter:blur(20px) saturate(1.05); }
+            filter:blur(20px) saturate(1.05);
+        }
         .brand{ position:relative; padding:48px clamp(20px,5vw,60px); color:#063a38; max-width:560px; }
-        .brand-badge{ width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
-            background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35); }
+        .brand-badge{
+            width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
+            background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35);
+        }
         .brand h1{ margin:0 0 8px; font-size:clamp(2.2rem,4.8vw,3.6rem); font-weight:900; letter-spacing:.4px }
         .brand p{ margin:0; color:#0b2b29; opacity:.85; font-weight:700 }
 
         /* Right: Register glass card */
-        .card{ backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
+        .card{
+            backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
             border:1px solid rgba(2,6,23,.08); border-radius:24px; box-shadow:var(--shadow);
-            padding:clamp(20px,3vw,32px); }
+            padding:clamp(20px,3vw,32px);
+        }
         .card h2{ margin:0 0 8px; text-align:center; font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:900 }
         .sub{ text-align:center; color:var(--muted); font-weight:600; margin-bottom:8px }
 
@@ -66,21 +78,19 @@
         form{ margin-top:8px }
         .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .grid-1{ grid-column:1/-1; }
-        .field{ position:relative; }
+        .field label{ display:block; font-size:13px; font-weight:800; color:#334155; margin:0 0 6px }
 
-        /* 입력/아이콘 정렬 (로그인과 동일) */
+        /* 입력 (아이콘 제거) */
         .input,.select{
             width:100%; height:52px;
             border-radius:12px; border:1px solid var(--line); background:#f9fafb;
-            padding:0 14px 0 46px; font-size:15px;
+            padding:0 14px; /* ← 아이콘 없으니 기본 패딩 */
+            font-size:15px;
             transition:border-color .15s, box-shadow .15s, background .15s;
         }
         .select{ padding-left:14px }
-        .input:focus,.select:focus{ outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15) }
-
-        .ico{
-            position:absolute; left:14px; top:0; height:100%;
-            display:flex; align-items:center; font-size:18px; opacity:.6; pointer-events:none;
+        .input:focus,.select:focus{
+            outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15)
         }
 
         .btn{
@@ -136,55 +146,47 @@
 
                 <div class="grid">
                     <div class="field grid-1">
-                        <span class="ico">👤</span>
-                        <label for="name" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">이름</label>
+                        <label for="name">이름</label>
                         <input class="input" type="text" id="name" name="name" placeholder="홍길동" required>
                     </div>
 
                     <div class="field grid-1">
-                        <span class="ico">📧</span>
-                        <label for="email" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">이메일</label>
+                        <label for="email">이메일</label>
                         <input class="input" type="email" id="email" name="email" placeholder="you@example.com" required>
                     </div>
 
                     <div class="field">
-                        <span class="ico">🔒</span>
-                        <label for="password" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">비밀번호</label>
+                        <label for="password">비밀번호</label>
                         <input class="input" type="password" id="password" name="password" placeholder="••••••••" required>
                     </div>
 
                     <div class="field">
-                        <span class="ico">🔐</span>
-                        <label for="confirmPassword" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">비밀번호 확인</label>
+                        <label for="confirmPassword">비밀번호 확인</label>
                         <input class="input" type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
                     </div>
 
                     <div class="field grid-1">
-                        <span class="ico">🛣️</span>
-                        <label for="street" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">도로명 주소</label>
+                        <label for="street">도로명 주소</label>
                         <input class="input" type="text" id="street" name="street" placeholder="예) 서울특별시 중구 세종대로 110" required>
                     </div>
 
                     <div class="field">
-                        <span class="ico">🏙️</span>
-                        <label for="city" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">도시</label>
+                        <label for="city">도시</label>
                         <input class="input" type="text" id="city" name="city" placeholder="예) 서울특별시" required>
                     </div>
 
                     <div class="field">
-                        <span class="ico">📮</span>
-                        <label for="zipcode" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">우편번호</label>
+                        <label for="zipcode">우편번호</label>
                         <input class="input" type="text" id="zipcode" name="zipcode" placeholder="우편번호" required>
                     </div>
 
                     <div class="field grid-1">
-                        <span class="ico">📍</span>
-                        <label for="detailAddress" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">상세 주소</label>
+                        <label for="detailAddress">상세 주소</label>
                         <input class="input" type="text" id="detailAddress" name="detailAddress" placeholder="예) 무슨아파트 101동 1004호" required>
                     </div>
 
                     <div class="field grid-1">
-                        <label for="memberType" style="display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px">회원 유형</label>
+                        <label for="memberType">회원 유형</label>
                         <select class="select" id="memberType" name="memberType" required>
                             <option value="" disabled selected>회원 유형 선택</option>
                             <option value="USER">일반 사용자</option>

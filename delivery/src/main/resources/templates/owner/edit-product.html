@@ -39,8 +39,8 @@
     .appbar{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
     .brand{display:flex;align-items:center;gap:10px;font-weight:900}
     .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.35);font-weight:900}
-    .actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
-    .actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .nav-actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
+    .nav-actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
 
     /* Page */
     main{max-width:900px;margin:22px auto 60px;padding:0 20px;display:grid;gap:18px}
@@ -58,7 +58,7 @@
     }
     .input:focus{outline:none;border-color:#8ee2df;background:#fff;box-shadow:0 0 0 4px rgba(42,193,188,.15)}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:640px){.row{grid-template-columns:1fr}}
+    @media (max-width:720px){.row{grid-template-columns:1fr}}
 
     .error-global{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:12px;margin-bottom:10px;font-weight:700}
     .error{margin-top:6px;color:#b91c1c;font-size:13px}
@@ -73,9 +73,19 @@
     .btn-danger:hover{background:var(--danger-d)}
 
     /* Preview */
-    .preview{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+    .preview{
+      margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;
+      display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center
+    }
+    .pv-left{display:flex;gap:22px}
     .pv-label{color:var(--muted);font-weight:800;font-size:13px}
     .pv-value{font-weight:900}
+    .pv-thumb{
+      width:84px;height:84px;border-radius:10px;background:#f3f5f7;border:1px solid #e6ecef;
+      overflow:hidden;display:grid;place-items:center;color:#0b3d3b;font-weight:900
+    }
+    .pv-thumb img{width:100%;height:100%;object-fit:cover}
+    .hint{color:#6b7280;font-size:12px;margin-top:6px}
   </style>
 </head>
 <body>
@@ -87,7 +97,7 @@
       <div class="brand-badge">드</div>
       <span>상품 수정</span>
     </div>
-    <div class="actions">
+    <div class="nav-actions">
       <a th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">가게 상세</a>
     </div>
   </div>
@@ -96,7 +106,7 @@
 <main>
   <section id="edit-menu" class="card">
     <h1>상품 수정</h1>
-    <p class="sub">상품명, 가격, 기본 수량을 수정하세요.</p>
+    <p class="sub">상품명, 가격, 기본 수량, <b>이미지 URL</b>을 수정하세요.</p>
 
     <form th:action="@{/owner/stores/{storeId}/products/{productId}/edit(storeId=${storeId}, productId=${productId})}"
           th:object="${foodDTO}" method="post" novalidate>
@@ -128,11 +138,26 @@
         </div>
       </div>
 
-      <!-- 미리보기 -->
+      <!-- 이미지 URL -->
+      <div class="field">
+        <label for="productImageUrl">이미지 URL</label>
+        <input id="productImageUrl" class="input" type="text" th:field="*{productImageUrl}" placeholder="https://예시.com/image.jpg" />
+        <div class="hint">정적 URL을 넣으면 상품 목록/상세에 바로 표시됩니다. 비어 있으면 기본 플레이스홀더가 보여요.</div>
+        <div class="error" th:if="${#fields.hasErrors('productImageUrl')}" th:errors="*{productImageUrl}">오류</div>
+      </div>
+
+      <!-- 미리보기 (이미지 + 금액) -->
       <div class="preview" aria-live="polite">
-        <div>
-          <div class="pv-label">총액(미리보기)</div>
-          <div class="pv-value" id="pvTotal">- 원</div>
+        <div class="pv-left">
+          <div class="pv-thumb">
+            <!-- 항상 존재 + referrer 차단 -->
+            <img id="pvImg" alt="미리보기 이미지" style="display:none" referrerpolicy="no-referrer">
+            <span id="pvFallback">미리보기</span>
+          </div>
+          <div>
+            <div class="pv-label">총액(미리보기)</div>
+            <div class="pv-value" id="pvTotal">- 원</div>
+          </div>
         </div>
         <div>
           <div class="pv-label">단가</div>
@@ -149,25 +174,79 @@
 </main>
 
 <script>
-  // 가격/수량 미리보기
-  const priceEl = document.getElementById('foodPrice');
-  const qtyEl   = document.getElementById('quantity');
-  const unitEl  = document.getElementById('pvUnit');
-  const totalEl = document.getElementById('pvTotal');
+  // DOMContentLoaded 이후 실행 (타이밍 문제 방지)
+  document.addEventListener('DOMContentLoaded', function () {
+    // ===== 금액 미리보기 =====
+    const priceEl = document.getElementById('foodPrice');
+    const qtyEl   = document.getElementById('quantity');
+    const unitEl  = document.getElementById('pvUnit');
+    const totalEl = document.getElementById('pvTotal');
 
-  function fmt(n){
-    if (isNaN(n) || n === '' || n === null) return '- 원';
-    return Number(n).toLocaleString('ko-KR') + '원';
-  }
-  function update(){
-    const p = Number(priceEl?.value || 0);
-    const q = Math.max(1, Number(qtyEl?.value || 1));
-    unitEl.textContent  = fmt(p);
-    totalEl.textContent = fmt(p * q);
-  }
-  priceEl && priceEl.addEventListener('input', update);
-  qtyEl && qtyEl.addEventListener('input', update);
-  update();
+    function fmt(n){ return (isNaN(n) || n === '' || n == null) ? '- 원' : Number(n).toLocaleString('ko-KR') + '원'; }
+    function updatePrice(){
+      const p = Number(priceEl?.value || 0);
+      const q = Math.max(1, Number(qtyEl?.value || 1));
+      unitEl.textContent  = fmt(p);
+      totalEl.textContent = fmt(p * q);
+    }
+    ['input','change'].forEach(ev => {
+      priceEl?.addEventListener(ev, updatePrice);
+      qtyEl?.addEventListener(ev, updatePrice);
+    });
+    updatePrice();
+
+    // ===== 이미지 미리보기 =====
+    const imgInput   = document.getElementById('productImageUrl');
+    const pvImg      = document.getElementById('pvImg');
+    const pvFallback = document.getElementById('pvFallback');
+
+    // 문자열에서 첫 번째 "실제 이미지 URL"만 추출 (jpg/png/gif/webp)
+    const IMG_URL_RE = /(https?:\/\/[^\s"'<>]+?\.(?:jpg|jpeg|png|gif|webp))(?:\?[^\s"']*)?/i;
+
+    function extractImageUrl(text){
+      if (!text) return '';
+      const m = String(text).match(IMG_URL_RE);
+      return m ? m[1] : '';
+    }
+
+    function setPreview(url){
+      if (!url){
+        pvImg.style.display = 'none';
+        pvImg.removeAttribute('src');
+        pvFallback.style.display = 'grid';
+        return;
+      }
+      // 사전 로딩으로 성공/실패 판별
+      const test = new Image();
+      test.onload = () => {
+        pvImg.src = url;
+        pvImg.style.display = 'block';
+        pvFallback.style.display = 'none';
+      };
+      test.onerror = () => {
+        pvImg.style.display = 'none';
+        pvImg.removeAttribute('src');
+        pvFallback.style.display = 'grid';
+      };
+      // 일부 호스트 리퍼러 차단 방지
+      test.referrerPolicy = 'no-referrer';
+      test.src = url;
+    }
+
+    function updatePreviewFromInput(){
+      const raw = imgInput?.value?.trim();
+      const url = extractImageUrl(raw);
+      setPreview(url);
+    }
+
+    if (imgInput){
+      ['input','change','paste','blur'].forEach(ev =>
+              imgInput.addEventListener(ev, updatePreviewFromInput)
+      );
+      // 초기 값 반영
+      updatePreviewFromInput();
+    }
+  });
 </script>
 
 </body>

@@ -53,25 +53,23 @@ public class StoreController {
 
     @GetMapping("/delivery/{storeId}")
     public String showStoreMenu(@PathVariable Long storeId, Model model, HttpSession session) {
-        // 가게 정보
         Store store = storeService.findById(storeId);
         model.addAttribute("store", store);
         model.addAttribute("products", store.getProducts());
 
-        // 주문 목록 추가
-        model.addAttribute("orders", orderService.findAll());  // 여기가 추가 포인트
+        model.addAttribute("orders", orderService.findAll());
 
-        // 장바구니 처리
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        // per-store 세션 키 사용
+        @SuppressWarnings("unchecked")
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart_" + storeId);
         if (cart == null) cart = new ArrayList<>();
         model.addAttribute("cart", cart);
 
-        int totalPrice = cart.stream().mapToInt(CartItem::getTotalPrice).sum();
+        //  합계: item.price(옵션 포함 단가) * item.quantity
+        int totalPrice = cart.stream().mapToInt(ci -> ci.getPrice() * ci.getQuantity()).sum();
         model.addAttribute("totalPrice", totalPrice);
 
-        // 마지막 본 가게 저장
         session.setAttribute("lastStoreId", storeId);
-
         return "product-list";
     }
 

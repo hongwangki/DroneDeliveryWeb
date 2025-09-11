@@ -28,6 +28,8 @@ public class OrderService {
     /**
      * 주문 메서드
      */
+    // OrderService
+    @Transactional
     public Long order(Member sessionMember, List<CartItem> cart) {
 
         if (cart == null || cart.isEmpty()) {
@@ -38,20 +40,20 @@ public class OrderService {
         Member member = memberRepository.findById(sessionMember.getId())
                 .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
 
-        // 2) 장바구니 → (상품ID, 수량) 맵
+        // 2) (상품ID -> 요청수량 합계) 맵
         Map<Long, Integer> qtyMap = cart.stream().collect(Collectors.toMap(
                 CartItem::getProductId,
                 CartItem::getQuantity,
-                Integer::sum  // 같은 상품 중복 담겼을 때 합산
+                Integer::sum
         ));
 
-        // 3) 상품들 잠금 로드(경쟁주문 대비) - PESSIMISTIC_WRITE 또는 낙관적락 중 택1
+        // 3) 상품들 잠금 로드(경쟁주문 대비)
         List<Product> products = productRepository.findAllByIdInForUpdate(qtyMap.keySet());
         if (products.size() != qtyMap.size()) {
             throw new EntityNotFoundException("일부 상품을 찾을 수 없습니다.");
         }
 
-        // (선택) 서로 다른 가게 묶음 방지
+        // 3-1) 서로 다른 가게 묶음 방지
         Store store = null;
         for (Product p : products) {
             if (store == null) store = p.getStore();
@@ -60,23 +62,32 @@ public class OrderService {
             }
         }
 
-        // 4) 모든 검증 먼저 수행 (재고/수량/최소주문/잔액)
-        List<OrderItem> orderItems = new ArrayList<>();
-        int totalPrice = 0;
-        StringBuilder summary = new StringBuilder();
-
-        for (Product product : products) {
-            int reqQty = qtyMap.get(product.getId());
-            if (reqQty <= 0) throw new IllegalArgumentException("수량은 1개 이상이어야 합니다.");
-
-            int stock = product.getQuantity();
-            if (stock < reqQty) {
+        // 4) 합산 수량으로 재고 검증
+        for (Product p : products) {
+            int requested = qtyMap.getOrDefault(p.getId(), 0);
+            if (requested <= 0) throw new IllegalArgumentException("수량은 1개 이상이어야 합니다.");
+            if (p.getQuantity() < requested) {
                 throw new IllegalStateException(
-                        "재고 부족: " + product.getFoodName() + " (남은 " + stock + "개, 요청 " + reqQty + "개)"
+                        "재고 부족: " + p.getFoodName() + " (남은 " + p.getQuantity() + "개, 요청 " + requested + "개)"
                 );
             }
+        }
 
-            int unitPrice = product.getFoodPrice();
+        // 5) 장바구니 라인 기준으로 가격/주문아이템 생성 (옵션 포함 단가 사용!)
+        Map<Long, Product> productById = products.stream()
+                .collect(Collectors.toMap(Product::getId, v -> v));
+
+        int totalPrice = 0;
+        List<OrderItem> orderItems = new ArrayList<>();
+        StringBuilder summary = new StringBuilder();
+
+        for (CartItem ci : cart) {
+            Product product = productById.get(ci.getProductId());
+            if (product == null) throw new EntityNotFoundException("상품 없음: id=" + ci.getProductId());
+
+            int reqQty = Math.max(1, ci.getQuantity());
+            int unitPrice = Math.max(0, ci.getPrice()); // ✅ 옵션 포함 '단가' 사용
+
             totalPrice += unitPrice * reqQty;
 
             OrderItem oi = OrderItem.createOrderItem(product, reqQty, unitPrice);
@@ -86,18 +97,20 @@ public class OrderService {
                     .append(" x ").append(reqQty).append("\n");
         }
 
+        // 6) 최소주문가 검증
         if (store != null && store.getMinOrderPrice() > 0 && totalPrice < store.getMinOrderPrice()) {
             throw new IllegalStateException("최소 주문 금액은 " + store.getMinOrderPrice() + "원 입니다.");
         }
 
+        // 7) 잔액 검증
         if (member.getMoney() < totalPrice) {
             throw new IllegalStateException("잔액이 부족합니다. 필요: " + totalPrice + "원");
         }
 
-        // 5) 모든 검증 통과 후 차감/생성 (트랜잭션 내에서 원자적으로 수행)
-        for (Product product : products) {
-            int reqQty = qtyMap.get(product.getId());
-            product.setQuantity(product.getQuantity() - reqQty); // 이제 음수 불가
+        // 8) 차감/생성
+        for (Product p : products) {
+            int requested = qtyMap.getOrDefault(p.getId(), 0);
+            p.setQuantity(p.getQuantity() - requested);
         }
         member.setMoney(member.getMoney() - totalPrice);
 
@@ -106,8 +119,8 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
         order.setOrderStatus(OrderStatus.PENDING);
 
-
         orderRepository.save(order);
+
         return order.getId();
     }
 
@@ -153,8 +166,13 @@ public class OrderService {
     public List<Order> findAll() {
         return orderRepository.findAll();
     }
-
-
+    /// //////////////////
+    @Transactional
+    public Order placeOrder(Member sessionMember, List<CartItem> cart) {
+        Long id = order(sessionMember, cart);     // 기존 로직 그대로 사용
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("주문이 없습니다. id=" + id));
+    }
 
 
 }
