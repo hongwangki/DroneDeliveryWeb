@@ -18,11 +18,9 @@
       --danger:#ef4444;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0; color:var(--ink);
+    body{ margin:0; color:var(--ink);
       font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
-    }
+      background:linear-gradient(180deg,#fafbff 0%, var(--bg) 100%); }
 
     /* 상단바 */
     .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.8);
@@ -33,7 +31,7 @@
     .app-actions a{padding:8px 12px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:#111827;font-weight:800;background:#fff}
     .app-actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
 
-    /* 배너(기본 테마만) */
+    /* 배너 */
     .banner { max-width:1200px; margin:20px auto 0; padding:0 20px; }
     .banner-inner{
       border-radius:24px; min-height:120px; display:flex; align-items:center;
@@ -58,7 +56,7 @@
     .tab-panel{display:none}
     .tab-panel.active{display:block}
 
-    /* ===== 가로 리스트형 메뉴 ===== */
+    /* 메뉴 리스트 */
     .list{display:flex; flex-direction:column; gap:10px}
     .item{
       display:flex; gap:14px; align-items:center;
@@ -67,11 +65,8 @@
       text-decoration:none; color:inherit;
     }
     .item.disabled{pointer-events:none; opacity:.5}
-    .thumb{
-      width:84px; height:84px; border-radius:10px; overflow:hidden;
-      background:#f2f5f7; border:1px solid #e6ecef; display:grid; place-items:center; color:#0b3d3b; font-weight:900;
-      flex:0 0 84px;
-    }
+    .thumb{ width:84px; height:84px; border-radius:10px; overflow:hidden;
+      background:#f2f5f7; border:1px solid #e6ecef; display:grid; place-items:center; color:#0b3d3b; font-weight:900; flex:0 0 84px; }
     .thumb img{width:100%; height:100%; object-fit:cover}
     .meta{display:flex; gap:6px; align-items:center}
     .name{font-weight:900; font-size:16px}
@@ -93,8 +88,25 @@
     .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
 
     .empty{color:var(--muted); text-align:center; padding:24px 0}
+
+    /* ===== 모달 ===== */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(2,6,23,.45);
+      display:none; align-items:center; justify-content:center; z-index:1000;
+    }
+    .modal{ width:min(520px, 92vw); background:#fff; border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--line); }
+    .modal header{padding:14px 16px; border-bottom:1px solid var(--line); font-weight:900}
+    .modal .body{padding:14px 16px; max-height:min(62vh,520px); overflow:auto}
+    .modal .row{display:flex; justify-content:space-between; gap:12px; margin:8px 0}
+    .modal .total{display:flex; justify-content:space-between; margin-top:10px; font-weight:900}
+    .modal footer{padding:14px 16px; border-top:1px solid var(--line); display:flex; gap:8px; justify-content:flex-end}
+    .btn{appearance:none; border:1px solid var(--line); background:#fff; padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer}
+    .btn.primary{background:var(--brand); color:#fff; border-color:var(--brand)}
+    .btn.ghost{background:#fff}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
   </style>
 </head>
+
 <body
         th:with="
     cart=${session['cart_' + store.id]},
@@ -112,7 +124,7 @@
   </div>
 </header>
 
-<!-- 배너(이미지 X, 기본 테마만) -->
+<!-- 배너 -->
 <section class="banner">
   <div class="banner-inner">
     <div>
@@ -133,7 +145,7 @@
       <button id="tab-review" class="tab-btn" role="tab" aria-controls="panel-review" aria-selected="false">리뷰</button>
     </div>
 
-    <!-- 메뉴(가로 리스트) -->
+    <!-- 메뉴 -->
     <section id="panel-menu" class="tab-panel active">
       <div class="list">
         <a class="item"
@@ -203,15 +215,47 @@
         잔액 부족: 보유 <b th:text="${#numbers.formatInteger(money,0,'COMMA')} + '원'">0원</b>
       </div>
 
-      <form th:action="@{/cart/checkout}" method="post" style="margin-top:12px">
+      <!-- 기존 즉시 제출 → 모달 열기 버튼으로 변경 -->
+      <button id="openConfirm" class="btn primary" style="width:100%; margin-top:12px"
+              th:disabled="${lackMin or lackMoney}">주문 확정</button>
+
+      <!-- 실제 제출용 폼(모달에서 submit) -->
+      <form id="checkoutForm" th:action="@{/cart/checkout}" method="post" style="display:none">
         <input type="hidden" name="storeId" th:value="${store.id}">
-        <button class="btn primary" style="width:100%" th:disabled="${lackMin or lackMoney}">주문 확정</button>
       </form>
     </div>
   </aside>
 </main>
 
+<!-- ===== 주문 확인 모달 ===== -->
+<div class="modal-backdrop" id="confirmModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <header id="confirmTitle">주문 내역 확인</header>
+    <div class="body">
+      <div th:if="${cart != null and !#lists.isEmpty(cart)}">
+        <div class="row" th:each="ci : ${cart}">
+          <div style="font-weight:800" th:text="${ci.productName}">메뉴명</div>
+          <div class="muted" th:text="${ci.quantity} + '개 · ' + ${#numbers.formatInteger(ci.price,0,'COMMA')} + '원'">1개 · 0원</div>
+        </div>
+        <div class="line" style="margin:12px 0"></div>
+        <div class="total">
+          <span>총 결제 금액</span>
+          <span th:text="${#numbers.formatInteger(total,0,'COMMA')} + '원'">0원</span>
+        </div>
+      </div>
+      <p class="muted" th:if="${cart == null or #lists.isEmpty(cart)}">장바구니가 비어 있습니다.</p>
+      <p style="margin-top:10px">정말로 주문하시겠습니까?</p>
+    </div>
+    <footer>
+      <button class="btn ghost" id="cancelConfirm">취소</button>
+      <button class="btn primary" id="submitOrder"
+              th:disabled="${cart == null or #lists.isEmpty(cart)}">주문하기</button>
+    </footer>
+  </div>
+</div>
+
 <script>
+  // 탭
   const tabs=[...document.querySelectorAll('.tab-btn')];
   const panels=[...document.querySelectorAll('.tab-panel')];
   tabs.forEach(btn=>{
@@ -221,6 +265,37 @@
       btn.setAttribute('aria-selected','true');
       document.getElementById(btn.getAttribute('aria-controls')).classList.add('active');
     });
+  });
+
+  // 모달
+  const modal = document.getElementById('confirmModal');
+  const openBtn = document.getElementById('openConfirm');
+  const cancelBtn = document.getElementById('cancelConfirm');
+  const submitBtn = document.getElementById('submitOrder');
+  const form = document.getElementById('checkoutForm');
+
+  function openModal(){
+    if(!openBtn || openBtn.disabled) return;
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+    // 포커스 이동
+    submitBtn?.focus();
+  }
+  function closeModal(){
+    modal.style.display='none';
+    modal.setAttribute('aria-hidden','true');
+    openBtn?.focus();
+  }
+
+  openBtn && openBtn.addEventListener('click', openModal);
+  cancelBtn && cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.getAttribute('aria-hidden')==='false') closeModal(); });
+
+  // 주문 제출
+  submitBtn && submitBtn.addEventListener('click', ()=>{
+    // 실제 서버로 POST
+    form.submit();
   });
 </script>
 </body>

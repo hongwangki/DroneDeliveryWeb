@@ -5,6 +5,7 @@ import drone.delivery.domain.MemberType;
 import drone.delivery.domain.Product;
 import drone.delivery.dto.FoodDTO;
 import drone.delivery.dto.ProductOptionsDTO;
+import drone.delivery.repository.ProductRepository;
 import drone.delivery.service.ProductOptionQueryService;
 import drone.delivery.service.ProductService;
 import drone.delivery.service.StoreService;
@@ -23,10 +24,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Transactional
 public class ProductController {
     private final ProductService productService;
-    private final ProductOptionQueryService productOptionQueryService;
+    private final ProductOptionQueryService productOptionQueryService;;
+    private final ProductRepository productRepository;
     private final StoreService storeService;
 
     //상품 추가
+
     @PostMapping("/owner/stores/{storeId}")
     public String add(@PathVariable Long storeId,
                       @ModelAttribute @Valid FoodDTO dto,
@@ -80,17 +83,31 @@ public class ProductController {
         return "owner/edit-product";
     }
 
-    //상품 수정 메서드
     @PostMapping("/owner/stores/{storeId}/products/{productId}/edit")
-    public String menuEdit(@PathVariable Long storeId,@PathVariable Long productId, @ModelAttribute FoodDTO dto,  RedirectAttributes redirectAttributes){
+    public String menuEdit(@PathVariable Long storeId,
+                           @PathVariable Long productId,
+                           @ModelAttribute FoodDTO dto,
+                           RedirectAttributes ra) {
+
         Product product = productService.findById(productId);
-        product.setFoodName(dto.getFoodName());
+
+        // 🔎 중복 메뉴명 검사 (현재 상품 제외)
+        boolean dup = productRepository
+                .existsByStore_IdAndFoodNameIgnoreCaseAndIdNot(storeId, dto.getFoodName(), productId);
+
+        if (dup) {
+            ra.addFlashAttribute("formError", "이미 등록된 메뉴입니다: " + dto.getFoodName());
+            return "redirect:/owner/stores/" + storeId + "#edit-menu";
+        }
+
+        // 통과 시 수정
+        product.setFoodName(dto.getFoodName().trim());
         product.setFoodPrice(dto.getFoodPrice());
         product.setQuantity(dto.getQuantity());
         product.setProductImageUrl(dto.getProductImageUrl());
+        product.setProductDescription(dto.getProductDescription());
 
-        redirectAttributes.addFlashAttribute("pageMessage", "상품 수정이 완료되었습니다.");
-
+        ra.addFlashAttribute("pageMessage", "상품 수정이 완료되었습니다.");
         return "redirect:/owner/stores/" + storeId + "#edit-menu";
     }
 

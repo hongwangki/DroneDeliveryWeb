@@ -39,12 +39,22 @@
 
         .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:16px}
         .left .head{display:flex;gap:18px;align-items:center}
+
+        /* 썸네일: 이미지 or 기본 프사 */
         .thumb{
             width:220px;max-width:30vw;aspect-ratio:1/1;border-radius:14px;
-            background:#f2f5f7;border:1px solid #e6ecef; overflow:hidden;
-            background-size:cover;background-position:center;
+            border:1px solid #e6ecef; overflow:hidden; display:grid; place-items:center;
+            background:#f2f5f7;
         }
+        .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+        .thumb-fallback{
+            width:100%;height:100%;display:grid;place-items:center;
+            background:linear-gradient(135deg,var(--mint),var(--mint-d));
+            color:#fff;font-weight:900;font-size:48px;letter-spacing:-.5px;user-select:none;
+        }
+
         .title{font-weight:900;font-size:24px;margin:0}
+        .desc{margin:6px 0 10px;color:var(--muted);font-weight:600;line-height:1.45;word-break:keep-all}
         .price{font-weight:900}
         .line{height:1px;background:var(--border);margin:14px 0}
 
@@ -83,11 +93,27 @@
         <div class="alert err" th:if="${errorMessage != null}" th:text="${errorMessage}"></div>
 
         <div class="head">
-            <div class="thumb"
-                 th:style="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)} ? 'background-image:url(' + @{${product.imageUrl}} + ');' : ''">
+            <div class="thumb">
+                <!-- 이미지가 있으면 표시 -->
+                <img th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                     th:src="${product.imageUrl}" alt="상품 이미지" referrerpolicy="no-referrer">
+                <!-- 없으면 ‘드’ 기본 프사 -->
+                <div th:if="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)}"
+                     class="thumb-fallback">드</div>
             </div>
+
             <div>
                 <h1 class="title" th:text="${product.name}">메뉴명</h1>
+
+                <!-- 설명: 있으면 출력, 없으면 디폴트 안내 -->
+                <p class="desc"
+                   th:if="${product.productDescription != null and !#strings.isEmpty(product.productDescription)}"
+                   th:text="${product.productDescription}">겉바속촉, 특제소스와 환상궁합!</p>
+                <p class="desc"
+                   th:if="${product.productDescription == null or #strings.isEmpty(product.productDescription)}">
+                    설명이 아직 없어요.
+                </p>
+
                 <div class="muted">기본가</div>
                 <div class="price" th:text="${#numbers.formatInteger(base,0,'COMMA')} + '원'">0원</div>
             </div>
@@ -118,7 +144,7 @@
                 <!-- 항목 -->
                 <label th:each="it : ${g.items}" class="opt-item">
                     <div style="display:flex;align-items:center;gap:10px">
-                        <!-- SINGLE: 라디오 / MULTI: 체크박스 (name은 그룹별로 구분) -->
+                        <!-- SINGLE: 라디오 / MULTI: 체크박스 -->
                         <input th:if="${g.selectType == 'SINGLE'}"
                                type="radio"
                                th:name="${'g-' + g.groupId}"
@@ -138,7 +164,7 @@
                 </label>
             </div>
 
-            <!-- 오른쪽 카드의 버튼과 동기화하려고 form은 그대로 두고, 제출은 오른쪽에서 트리거 -->
+            <!-- 오른쪽 카드의 버튼이 submit 트리거 -->
         </form>
     </section>
 
@@ -174,7 +200,6 @@
         const groups = [...document.querySelectorAll('.opt-group')];
 
         function selectedItems(){
-            // 각 그룹에서 체크된 input 수집
             const selected = [];
             groups.forEach(g=>{
                 const gid = g.dataset.groupId;
@@ -228,30 +253,24 @@
             calc();
         }
 
-        // 이벤트 바인딩
         document.querySelectorAll('.opt-group input').forEach(i=>i.addEventListener('change', updateUI));
         qtyEl.addEventListener('input', updateUI);
 
-        // 초기 계산
         updateUI();
 
-        // 제출 핸들러: 선택값을 name=options 로 만들어서 전송
-        btnAdd.addEventListener('click', function(e){
+        btnAdd.addEventListener('click', function(){
             const v = validate();
             if(!v.ok){ updateUI(); return; }
 
-            // 기존 숨긴 options 지우기
             [...form.querySelectorAll('input[name="options"]')].forEach(n=>n.remove());
-            // 새로 추가
             selectedItems().forEach(s=>{
                 const hidden = document.createElement('input');
                 hidden.type = 'hidden';
-                hidden.name = 'options'; // 같은 이름 반복 → List<Long> 바인딩
+                hidden.name = 'options';
                 hidden.value = s.itemId;
                 form.appendChild(hidden);
             });
 
-            // 수량 반영
             let qtyHidden = form.querySelector('input[name="quantity"]');
             if(!qtyHidden){
                 qtyHidden = document.createElement('input');

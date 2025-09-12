@@ -61,6 +61,7 @@ public class ProductOptionQueryService {
                 .basePrice(p.getFoodPrice())
                 .imageUrl(p.getProductImageUrl())
                 .groups(groups)
+                .productDescription(p.getProductDescription())
                 .build();
     }
 

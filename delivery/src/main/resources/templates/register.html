@@ -15,6 +15,7 @@
             --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
             --radius:20px; --shadow:0 14px 38px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
             --glass:rgba(255,255,255,.75);
+            --danger:#ef4444;
         }
 
         *{box-sizing:border-box}
@@ -31,13 +32,11 @@
             display:grid; place-items:center;
         }
 
-        /* Layout */
         .wrap{
             width:100%; max-width:1100px; padding:24px;
             display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center;
         }
 
-        /* Left: hero */
         .hero{
             position:relative; min-height:520px; border-radius:28px; overflow:hidden;
             background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow);
@@ -61,7 +60,6 @@
         .brand h1{ margin:0 0 8px; font-size:clamp(2.2rem,4.8vw,3.6rem); font-weight:900; letter-spacing:.4px }
         .brand p{ margin:0; color:#0b2b29; opacity:.85; font-weight:700 }
 
-        /* Right: Register glass card */
         .card{
             backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
             border:1px solid rgba(2,6,23,.08); border-radius:24px; box-shadow:var(--shadow);
@@ -70,7 +68,6 @@
         .card h2{ margin:0 0 8px; text-align:center; font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:900 }
         .sub{ text-align:center; color:var(--muted); font-weight:600; margin-bottom:8px }
 
-        /* Messages */
         .msg{ text-align:center; margin:10px 0; font-weight:700; padding:10px 12px; border-radius:12px; border:1px solid }
         .msg.ok{ background:#ecfdf5; color:#065f46; border-color:#a7f3d0 }
         .msg.err{ background:#fef2f2; color:#991b1b; border-color:#fecaca }
@@ -80,17 +77,27 @@
         .grid-1{ grid-column:1/-1; }
         .field label{ display:block; font-size:13px; font-weight:800; color:#334155; margin:0 0 6px }
 
-        /* 입력 (아이콘 제거) */
         .input,.select{
             width:100%; height:52px;
             border-radius:12px; border:1px solid var(--line); background:#f9fafb;
-            padding:0 14px; /* ← 아이콘 없으니 기본 패딩 */
-            font-size:15px;
+            padding:0 14px; font-size:15px;
             transition:border-color .15s, box-shadow .15s, background .15s;
         }
         .select{ padding-left:14px }
         .input:focus,.select:focus{
             outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15)
+        }
+
+        .input.is-invalid, .select.is-invalid{
+            border-color: var(--danger);
+            box-shadow: 0 0 0 4px rgba(239,68,68,.10);
+            background:#fff;
+        }
+        .field .help{
+            margin-top:6px; font-size:12px; color:var(--muted); font-weight:600;
+        }
+        .field .error{
+            margin-top:6px; font-size:12px; color:var(--danger); font-weight:800;
         }
 
         .btn{
@@ -141,57 +148,68 @@
             <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}">가입이 완료되었습니다.</div>
             <div class="msg err" th:if="${errorMessage}" th:text="${errorMessage}">에러 메시지</div>
 
-            <form action="/register" method="post" novalidate>
+            <!-- ✅ 서버 검증 바인딩 -->
+            <form th:action="@{/register}" method="post" th:object="${request}" novalidate>
                 <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                 <div class="grid">
                     <div class="field grid-1">
                         <label for="name">이름</label>
-                        <input class="input" type="text" id="name" name="name" placeholder="홍길동" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('name')}? ' is-invalid'" type="text" id="name" th:field="*{name}" placeholder="홍길동" required>
+                        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">이름 에러</div>
                     </div>
 
                     <div class="field grid-1">
                         <label for="email">이메일</label>
-                        <input class="input" type="email" id="email" name="email" placeholder="you@example.com" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('email')}? ' is-invalid'" type="email" id="email" th:field="*{email}" placeholder="you@example.com" required>
+                        <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">이메일 에러</div>
                     </div>
 
                     <div class="field">
                         <label for="password">비밀번호</label>
-                        <input class="input" type="password" id="password" name="password" placeholder="••••••••" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('password')}? ' is-invalid'" type="password" id="password" th:field="*{password}" placeholder="••••••••" required>
+                        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">비밀번호 에러</div>
+                        <div class="help">최소 4자 이상</div>
                     </div>
 
                     <div class="field">
                         <label for="confirmPassword">비밀번호 확인</label>
-                        <input class="input" type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('confirmPassword')}? ' is-invalid'" type="password" id="confirmPassword" th:field="*{confirmPassword}" placeholder="••••••••" required>
+                        <div class="error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">비밀번호 확인 에러</div>
                     </div>
 
                     <div class="field grid-1">
                         <label for="street">도로명 주소</label>
-                        <input class="input" type="text" id="street" name="street" placeholder="예) 서울특별시 중구 세종대로 110" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('street')}? ' is-invalid'" type="text" id="street" th:field="*{street}" placeholder="예) 서울특별시 중구 세종대로 110" required>
+                        <div class="error" th:if="${#fields.hasErrors('street')}" th:errors="*{street}">도로명 주소 에러</div>
                     </div>
 
                     <div class="field">
                         <label for="city">도시</label>
-                        <input class="input" type="text" id="city" name="city" placeholder="예) 서울특별시" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('city')}? ' is-invalid'" type="text" id="city" th:field="*{city}" placeholder="예) 서울특별시" required>
+                        <div class="error" th:if="${#fields.hasErrors('city')}" th:errors="*{city}">도시 에러</div>
                     </div>
 
                     <div class="field">
                         <label for="zipcode">우편번호</label>
-                        <input class="input" type="text" id="zipcode" name="zipcode" placeholder="우편번호" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('zipcode')}? ' is-invalid'" type="text" id="zipcode" th:field="*{zipcode}" placeholder="우편번호" required>
+                        <div class="error" th:if="${#fields.hasErrors('zipcode')}" th:errors="*{zipcode}">우편번호 에러</div>
                     </div>
 
                     <div class="field grid-1">
                         <label for="detailAddress">상세 주소</label>
-                        <input class="input" type="text" id="detailAddress" name="detailAddress" placeholder="예) 무슨아파트 101동 1004호" required>
+                        <input class="input" th:classappend="${#fields.hasErrors('detailAddress')}? ' is-invalid'" type="text" id="detailAddress" th:field="*{detailAddress}" placeholder="예) 무슨아파트 101동 1004호" required>
+                        <div class="error" th:if="${#fields.hasErrors('detailAddress')}" th:errors="*{detailAddress}">상세 주소 에러</div>
                     </div>
 
                     <div class="field grid-1">
                         <label for="memberType">회원 유형</label>
-                        <select class="select" id="memberType" name="memberType" required>
+                        <select class="select" th:classappend="${#fields.hasErrors('memberType')}? ' is-invalid'" id="memberType" th:field="*{memberType}" required>
                             <option value="" disabled selected>회원 유형 선택</option>
                             <option value="USER">일반 사용자</option>
                             <option value="OWNER">사장님</option>
                         </select>
+                        <div class="error" th:if="${#fields.hasErrors('memberType')}" th:errors="*{memberType}">회원 유형 에러</div>
                     </div>
                 </div>
 

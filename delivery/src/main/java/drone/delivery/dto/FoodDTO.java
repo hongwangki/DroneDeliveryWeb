@@ -25,6 +25,7 @@ public class FoodDTO {
     private Integer quantity;
 
     private String productImageUrl;
+    private String productDescription;
 
     /** DTO -> 엔티티 변환 헬퍼 */
     public Product toEntity() {
@@ -33,6 +34,7 @@ public class FoodDTO {
         p.setFoodPrice(foodPrice);
         p.setQuantity(quantity);
         p.setProductImageUrl(productImageUrl);
+        p.setProductDescription(productDescription);
         return p;
     }
 }

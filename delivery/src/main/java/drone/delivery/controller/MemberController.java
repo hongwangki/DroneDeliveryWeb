@@ -1,17 +1,17 @@
 package drone.delivery.controller;
 
-import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
-import drone.delivery.domain.MemberType;
 import drone.delivery.dto.MemberDTO;
 import drone.delivery.dto.RegisterRequestDTO;
 import drone.delivery.dto.UpdateMemberDTO;
 import drone.delivery.repository.MemberRepository;
 import drone.delivery.service.MemberService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,16 +62,6 @@ public class MemberController {
     }
 
 
-//    // 메인 화면 (홈 화면)
-//    @GetMapping("/home")
-//    public String showHomePage(HttpSession session) {
-//        Member loggedInMember = (Member) session.getAttribute("loggedInMember");
-//        if (loggedInMember == null) {
-//            return "redirect:/";  // 로그인되지 않은 사용자라면 로그인 화면으로 리디렉션
-//        }
-//        return "home"; // home.html을 렌더링
-//    }
-
     // 로그아웃 처리
     @GetMapping("/logout")
     public String logout(HttpSession session) {
@@ -82,19 +72,49 @@ public class MemberController {
 
     // 회원가입 화면
     @GetMapping("/register")
-    public String showRegisterPage() {
-        return "register"; // register.html을 렌더링
+    public String registerForm(Model model){
+        if (!model.containsAttribute("request")) {
+            model.addAttribute("request", new RegisterRequestDTO());
+        }
+        return "register";
     }
 
-    // 회원가입 처리 (이메일 중복 체크 및 성공/실패 처리)
+    // 회원가입 처리 (검증 + 중복/비즈니스 에러 처리)
     @PostMapping("/register")
-    public String register(@ModelAttribute RegisterRequestDTO request, Model model) {
+    public String register(
+            @ModelAttribute("request") @Valid RegisterRequestDTO request,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes ra
+    ) {
+        // 1) 비밀번호 확인 일치 여부 (서비스에서도 확인하지만, UX를 위해 컨트롤러에서도 즉시 피드백)
+        if (!bindingResult.hasFieldErrors("password")   // 비번 자체 검증 통과한 경우에만
+                && !bindingResult.hasFieldErrors("confirmPassword")
+                && request.getPassword() != null
+                && request.getConfirmPassword() != null
+                && !request.getPassword().equals(request.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "Mismatch", "비밀번호가 일치하지 않습니다.");
+        }
+
+        // 2) Bean Validation 에러 있으면 회원가입 페이지로
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errorMessage", "입력값을 확인하세요.");
+            // 필요하면 필드별 메시지 맵도 내려줄 수 있음
+            // Map<String, String> fieldErrors = bindingResult.getFieldErrors().stream()
+            //         .collect(Collectors.toMap(FieldError::getField, DefaultMessageSourceResolvable::getDefaultMessage, (a,b)->a));
+            // model.addAttribute("fieldErrors", fieldErrors);
+            return "register";
+        }
+
+        // 3) 비즈니스 로직 실행
         try {
             memberService.registerMember(request);
-            return "redirect:/login?success=true"; // 회원가입 성공 후 로그인 페이지로
+            ra.addFlashAttribute("successMessage", "회원가입이 완료되었습니다!");
+            return "redirect:/login";
         } catch (IllegalArgumentException e) {
+            // 예: 이메일 중복, 이름 중복 등 서비스단 검증 실패
             model.addAttribute("errorMessage", e.getMessage());
-            return "register"; // 실패 시 회원가입 페이지로
+            return "register";
         }
     }
 

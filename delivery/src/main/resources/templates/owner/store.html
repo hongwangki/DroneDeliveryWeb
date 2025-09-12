@@ -10,62 +10,112 @@
 
   <style>
     :root{
-      --mint:#2AC1BC; --mint-d:#1fa6a1;
+      --mint:#2AC1BC; --mint-d:#1fa6a1; --mint-ink:#064e4b;
       --ink:#0f172a; --muted:#6b7280;
       --bg:#f6f7fb; --card:#ffffff; --line:#e5e7eb;
       --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
-      --radius:18px; --radius-lg:22px;
+      --radius:18px;
       --danger:#ef4444; --warn:#f59e0b;
     }
     *{box-sizing:border-box}
     body{
       margin:0; color:var(--ink);
       font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
+      background:
+              radial-gradient(900px 400px at -10% -10%, rgba(42,193,188,.08), transparent 60%),
+              radial-gradient(600px 300px at 120% 110%, rgba(42,193,188,.06), transparent 55%),
+              linear-gradient(180deg,#fafbff 0%, var(--bg) 100%);
     }
-    .wrap{max-width:1200px; margin:26px auto 80px; padding:0 20px}
+    .wrap{max-width:1200px; margin:26px auto 96px; padding:0 20px}
 
     /* 상단바 */
-    .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.8);
-      backdrop-filter:blur(6px); border-bottom:1px solid var(--line)}
+    .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.86);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
     .appbar-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#0b3d3b}
-    .logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--mint);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.25)}
-    .nav a{ text-decoration:none; color:var(--muted); margin-left:14px; font-weight:700 }
-    .nav a:hover{ color:#0b3d3b }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--mint-ink)}
+    .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--mint);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.25)}
+    .nav a{ text-decoration:none; color:var(--muted); margin-left:16px; font-weight:800 }
+    .nav a:hover{ color:var(--mint-ink) }
 
-    /* 카드/패널 */
+    /* 헤더 */
+    .hero{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;margin-top:18px}
+    .store-chip{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:#e6fbf9;color:var(--mint-ink);font-weight:900;border:1px solid #b9efea}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:800;color:#0b3d3b}
+
+    /* 패널 */
     .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); padding:18px; }
     .panel + .panel{ margin-top:18px }
 
-    .title{font-weight:900; font-size:22px; margin:0 0 10px}
-    .muted{color:var(--muted)}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-    .field{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
-    .key{font-weight:800;color:#374151;margin-bottom:6px}
-    .val{font-weight:900}
+    .title{font-weight:900; font-size:24px; margin:0 0 6px}
+    .subtitle{margin:0;color:var(--muted);font-weight:700}
 
-    /* 테이블 */
-    table{width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--line); border-radius:16px}
-    thead th{background:#f8fafc; text-align:left; padding:12px; border-bottom:1px solid var(--line); font-weight:800}
-    tbody td{padding:12px; border-bottom:1px dashed #eef2f6}
-    tbody tr:last-child td{border-bottom:none}
-
-    /* 버튼 */
-    .btn{height:36px; padding:0 12px; border:none; border-radius:10px; font-weight:900; cursor:pointer}
-    .btn.primary{background:var(--mint); color:#fff}
-    .btn.primary:hover{background:var(--mint-d)}
-    .btn.ghost{background:#fff; border:1px solid var(--line); color:#111827}
-    .btn.warn{background:#f59e0b; color:#fff}
-    .btn.danger{background:var(--danger); color:#fff}
-
-    input[type="text"], input[type="number"]{
-      height:40px; border:1px solid var(--line); border-radius:12px; background:#fff; padding:0 12px; width:100%;
-    }
-
-    .alert{padding:12px 14px;border-radius:12px;border:1px solid;margin:6px 0;font-weight:700}
+    /* 플래시 */
+    .alert{padding:12px 14px;border-radius:12px;border:1px solid;margin:8px 0;font-weight:800}
     .ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
     .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+
+    /* 메뉴 카드 */
+    .list{display:grid;gap:10px}
+    .item{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff}
+
+    /* 썸네일(이미지/기본 프사 공통 컨테이너) */
+    .thumb{
+      width:96px;height:96px;border-radius:14px;border:1px solid var(--line);
+      background:#f8fafc; display:grid; place-items:center; overflow:hidden;
+    }
+    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .thumb-fallback{
+      width:100%; height:100%; display:grid; place-items:center;
+      background:linear-gradient(135deg, var(--mint), var(--mint-d));
+      color:#fff; font-weight:900; font-size:22px; letter-spacing:-.5px;
+      user-select:none;
+    }
+
+    .item-name{margin:0 0 4px;font-weight:900;font-size:18px}
+    .item-desc{margin:0 0 6px; color:var(--muted); font-weight:600; line-height:1.35; word-break:keep-all}
+    .item-sub{margin:0;color:var(--muted);font-weight:700}
+    .price{font-weight:900}
+    .controls{display:flex;gap:10px;align-items:center}
+
+    /* 버튼 */
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      height:36px; min-width:84px; padding:0 14px;
+      border-radius:10px; border:1px solid transparent;
+      font-weight:800; font-size:14px; line-height:1; cursor:pointer;
+      transition:background .18s ease, color .18s ease, border-color .18s ease, transform .06s ease;
+      box-shadow:0 2px 0 rgba(15,23,42,.04);
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btn:focus-visible{ outline:3px solid rgba(42,193,188,.35); outline-offset:2px; }
+
+    .btn-opt{ background:#fff; color:#0b3d3b; border-color:#d1f3f1; }
+    .btn-opt:hover{ background:#2AC1BC; color:#fff; border-color:#2AC1BC; }
+
+    .btn-edit{ background:#f59e0b; color:#fff; }
+    .btn-edit:hover{ background:#d97706; }
+
+    .btn-del{ background:#ef4444; color:#fff; }
+    .btn-del:hover{ background:#b91c1c; }
+
+    /* 입력 */
+    input[type="text"], input[type="number"], textarea{
+      border:1px solid var(--line); border-radius:12px; background:#fff; padding:10px 12px; width:100%; font-weight:800; font-family:inherit;
+    }
+    input[type="text"], input[type="number"]{ height:44px; }
+    textarea{ min-height:44px; resize:vertical; }
+    .add-grid{display:grid; grid-template-columns:2fr 1fr 1fr 2fr auto; gap:10px; align-items:end}
+    /* 설명 textarea는 한 줄을 차지 */
+    .add-grid .col-span-5{ grid-column:1 / -1; }
+    @media (max-width:980px){ .add-grid{grid-template-columns:1fr 1fr} .add-grid .col-span-5{ grid-column:1 / -1; } }
+
+    .key{font-weight:900;color:#374151;margin-bottom:6px}
+    .muted{color:var(--muted)}
+
+    /* 검색 */
+    .search{display:flex;gap:10px;align-items:center}
+    .search input{flex:1}
+    .count{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700;text-align:right}
   </style>
 </head>
 <body>
@@ -82,6 +132,17 @@
 </header>
 
 <main class="wrap">
+  <!-- 헤더 -->
+  <section class="hero">
+    <div>
+      <div class="store-chip" th:text="${store.category} + ' · ' + ${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원 최소'">치킨 · 0원 최소</div>
+      <h1 class="title" th:text="${store.name}">가게 이름</h1>
+      <p class="subtitle" th:text="${store.description} ?: '사장님 센스가 빛나는 메뉴를 준비했어요.'">가게 설명</p>
+    </div>
+    <div class="pill">
+      <span th:text="${store.address != null ? store.address.street : '주소 미등록'}">서울특별시 …</span>
+    </div>
+  </section>
 
   <!-- 플래시 메시지 -->
   <div th:if="${pageError}" class="alert err" th:text="${pageError}"></div>
@@ -90,99 +151,121 @@
   <div th:if="${formMessage}" class="alert ok" th:text="${formMessage}"></div>
   <div th:if="${pageMessage}" class="alert ok" th:text="${pageMessage}"></div>
 
-  <!-- 가게 정보 -->
+  <!-- 메뉴 -->
   <section class="panel">
-    <h2 class="title" th:text="${store.name}">가게 이름</h2>
-    <div class="grid2">
-      <div class="field">
-        <div class="key">카테고리</div>
-        <div class="val" th:text="${store.category}">치킨</div>
-      </div>
-      <div class="field">
-        <div class="key">최소 주문 금액</div>
-        <div class="val" th:text="${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">0원</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <h3 class="title" style="margin:0">메뉴</h3>
+      <div class="search" style="min-width:260px;flex:1">
+        <input type="text" id="q" placeholder="메뉴 검색 (이름)" oninput="filterMenu()" />
+        <button class="btn btn-opt" type="button" onclick="clearSearch()">초기화</button>
       </div>
     </div>
-  </section>
 
-  <!-- 메뉴 리스트 -->
-  <section class="panel">
-    <h3 class="title">메뉴</h3>
+    <div class="list" id="menuList">
+      <div class="item" th:each="p, stat : ${store.products}" th:data-name="${p.foodName}">
+        <!-- 썸네일: 이미지 있으면 img, 없으면 '드' 기본 프사 -->
+        <div class="thumb">
+          <img th:if="${p.productImageUrl}" th:src="${p.productImageUrl}" alt="thumbnail">
+          <div th:if="${p.productImageUrl == null or #strings.isEmpty(p.productImageUrl)}" class="thumb-fallback">드</div>
+        </div>
 
-    <table>
-      <thead>
-      <tr>
-        <th style="width:60px">#</th>
-        <th>메뉴명</th>
-        <th style="width:140px">가격</th>
-        <th style="width:120px">기본 수량</th>
-        <th style="width:180px">총액(미리보기)</th>
-        <th style="width:260px">관리</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="p, stat : ${store.products}">
-        <td th:text="${stat.index + 1}">1</td>
-        <td th:text="${p.foodName}">싸이순살</td>
-        <td th:text="${#numbers.formatInteger(p.foodPrice,0,'COMMA')} + '원'">0원</td>
-        <td th:text="${p.quantity}">0</td>
-        <td th:text="${#numbers.formatInteger(p.foodPrice * p.quantity,0,'COMMA')} + '원'">0원</td>
-        <td>
-          <a class="btn ghost" th:href="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/options'}">옵션관리</a>
-          <a class="btn warn" th:href="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/edit'}">수정</a>
-          <form th:action="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/delete'}"
-                method="post"
-                th:onsubmit="|return confirm('정말로 삭제하시겠습니까?');|"
-                style="display:inline">
-            <!-- Spring Security CSRF 사용 시 -->
+        <div>
+          <h4 class="item-name" th:text="${p.foodName}">싸이순살</h4>
+          <!-- 설명 표시 (있을 때만) -->
+          <p class="item-desc" th:if="${p.productDescription}" th:text="${p.productDescription}">겉바속촉, 특제소스와 환상궁합!</p>
+          <p class="item-sub">
+            <span class="price" th:text="${#numbers.formatInteger(p.foodPrice,0,'COMMA')} + '원'">0원</span>
+            <span class="muted"> · 기본 수량 </span>
+            <b th:text="${p.quantity}">1</b>
+            <span class="muted"> · 총액 </span>
+            <b th:text="${#numbers.formatInteger(p.foodPrice * p.quantity,0,'COMMA')} + '원'">0원</b>
+          </p>
+        </div>
+        <div class="controls">
+          <a class="btn btn-opt" th:href="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/options'}">옵션관리</a>
+          <a class="btn btn-edit" th:href="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/edit'}">수정</a>
+          <form th:action="@{'/owner/stores/' + ${store.id} + '/products/' + ${p.id} + '/delete'}" method="post"
+                th:onsubmit="|return confirm('정말로 삭제하시겠습니까?');|">
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button class="btn danger" type="submit">삭제</button>
+            <button class="btn btn-del" type="submit">삭제</button>
           </form>
-        </td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(store.products)}">
-        <td colspan="6" class="muted" style="text-align:center; padding:20px">등록된 메뉴가 없습니다.</td>
-      </tr>
-      </tbody>
-    </table>
+        </div>
+      </div>
+      <div th:if="${#lists.isEmpty(store.products)}" class="muted" style="text-align:center; padding:20px">등록된 메뉴가 없습니다.</div>
+    </div>
   </section>
 
   <!-- 메뉴 추가 -->
   <section class="panel" id="add-menu">
-    <h3 class="title">메뉴 추가</h3>
-    <p class="muted" style="margin-top:-4px">가격과 기본 수량, 이미지 URL을 입력해 새 메뉴를 등록하세요.</p>
+    <h3 class="title" style="margin-bottom:6px">메뉴 추가</h3>
+    <p class="muted" style="margin-top:-2px">가격과 기본 수량, 이미지 URL, 설명을 입력해 새 메뉴를 등록하세요.</p>
 
-    <!-- 이미지 URL 입력칸만 추가됨 -->
-    <form th:action="@{'/owner/stores/' + ${store.id}}" method="post"
-          style="display:grid; grid-template-columns:2fr 1fr 1fr 2fr auto; gap:10px; align-items:end">
+    <form th:action="@{'/owner/stores/' + ${store.id}}" method="post" class="add-grid">
       <div>
         <label class="key" for="foodName">메뉴명</label>
         <input id="foodName" type="text" name="foodName" placeholder="예: 싸이순살" required />
       </div>
       <div>
         <label class="key" for="foodPrice">가격(원)</label>
-        <input id="foodPrice" type="number" name="foodPrice" min="0" placeholder="예: 18000" required />
+        <input id="foodPrice" type="number" name="foodPrice" min="0" placeholder="예: 18000" required oninput="calcPreview()" />
       </div>
       <div>
         <label class="key" for="quantity">기본 수량</label>
-        <input id="quantity" type="number" name="quantity" min="1" value="1" required />
+        <input id="quantity" type="number" name="quantity" min="1" value="1" required oninput="calcPreview()" />
       </div>
       <div>
         <label class="key" for="imageUrl">이미지 URL</label>
         <input id="imageUrl" type="text" name="productImageUrl" placeholder="https://.../image.jpg" />
       </div>
+
+      <!-- 설명 입력 (한 줄 전체 차지) -->
+      <div class="col-span-5">
+        <label class="key" for="productDescription">메뉴 설명</label>
+        <textarea id="productDescription"
+                  name="productDescription"
+                  placeholder="예: 겉바속촉 순살에 특제 양념소스가 어우러진 베스트 메뉴입니다."
+                  maxlength="200"
+                  oninput="updateCount(this)"></textarea>
+        <div class="count"><span id="descCount">0</span>/200</div>
+      </div>
+
       <div style="display:flex; gap:12px; align-items:center">
-        <label style="display:flex; gap:8px; align-items:center; white-space:nowrap; margin-bottom:6px">
-          <input type="checkbox" name="goConfigure" value="true" />
-          추가 후 옵션 설정하기
-        </label>
-        <!-- Spring Security CSRF 사용 시 -->
         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-        <button class="btn primary" type="submit">추가</button>
+        <button class="btn btn-opt" type="submit">추가</button>
       </div>
     </form>
+    <p class="muted" style="margin-top:10px">총액 미리보기: <b id="previewTotal">0원</b></p>
   </section>
-
 </main>
+
+<script>
+  function formatComma(n){
+    if (isNaN(n)) return '0원';
+    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
+  }
+  function calcPreview(){
+    const price = parseInt(document.getElementById('foodPrice').value || '0', 10);
+    const qty = parseInt(document.getElementById('quantity').value || '1', 10);
+    document.getElementById('previewTotal').textContent = formatComma(price * qty);
+  }
+  function filterMenu(){
+    const q = (document.getElementById('q').value || '').trim().toLowerCase();
+    const items = document.querySelectorAll('#menuList .item');
+    items.forEach(el => {
+      const name = (el.getAttribute('data-name') || '').toLowerCase();
+      el.style.display = name.includes(q) ? 'grid' : 'none';
+    });
+  }
+  function clearSearch(){
+    const ip = document.getElementById('q');
+    ip.value = '';
+    filterMenu();
+    ip.focus();
+  }
+  function updateCount(el){
+    document.getElementById('descCount').textContent = (el.value || '').length;
+  }
+</script>
+
 </body>
 </html>

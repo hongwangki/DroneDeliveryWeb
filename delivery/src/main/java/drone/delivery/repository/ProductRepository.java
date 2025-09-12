@@ -58,4 +58,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      */
     @EntityGraph(attributePaths = {"store"})
     Optional<Product> findById(Long id);
+
+    // 같은 가게 내, 동일 이름(대소문자 무시) 상품이 존재하는지 (현재 상품 제외)
+    boolean existsByStore_IdAndFoodNameIgnoreCaseAndIdNot(Long storeId, String foodName, Long excludeProductId);
 }

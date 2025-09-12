@@ -1,5 +1,7 @@
 package drone.delivery.service;
 
+import drone.delivery.GeoService;
+import drone.delivery.domain.Address;
 import drone.delivery.domain.Member;
 import drone.delivery.domain.Product;
 import drone.delivery.domain.Store;
@@ -10,9 +12,13 @@ import drone.delivery.repository.MemberRepository;
 import drone.delivery.repository.ProductRepository;
 import drone.delivery.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,23 +31,23 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
+    private final GeoService geoService;
+    private static final Logger logger = LoggerFactory.getLogger(GeoService.class);
 
     //가게 등록 함수 (init 데이터 용)
     public Long save(Store store) {
         return storeRepository.save(store).getId();
     }
 
+    @Transactional
     public Long createStore(StoreDTO dto, Long ownerId) {
-        // 소유자 로드 (신뢰 가능한 서버측 식별자)
         Member owner = memberRepository.findById(ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("사장님 정보를 찾을 수 없습니다."));
 
-        // 기본 검증 예시
         if (dto.getMinOrderPrice() < 0) {
             throw new IllegalArgumentException("최소 주문 금액은 0 이상이어야 합니다.");
         }
 
-        // 엔티티 생성
         Store store = new Store(
                 dto.getName(),
                 dto.getDescription(),
@@ -51,9 +57,24 @@ public class StoreService {
                 owner
         );
 
+        if (dto.getAddress() != null) {
+            Address a = dto.getAddress();
+            store.setAddress(new Address(a.getStreet(), a.getCity(), a.getZipcode(), a.getDetailAddress()));
+        }
+
         storeRepository.save(store);
+
+        // ✅ 좌표 업데이트 (GeoService는 수정하지 않고, 방금 추가한 메서드만 호출)
+        try {
+            geoService.updateStoreCoordinates(store);
+        } catch (Exception e) {
+            // 실패해도 가게 생성은 진행되도록 로깅만
+            logger.warn("지오코딩 실패(가게ID={}): {}", store.getId(), e.getMessage());
+        }
+
         return store.getId();
     }
+
 
     //가게 전체 조회 함수
     public List<Store> findAll() {
@@ -78,6 +99,7 @@ public class StoreService {
 
 
     //가게에 상품 등록하는 함수
+    @Transactional(noRollbackFor = IllegalArgumentException.class)
     public Long addProductToStore(Long ownerId, Long storeId, FoodDTO req) {
         // 1) 가게 존재 + 소유자 검증
         Store store = storeRepository.findByIdAndMember_Id(storeId, ownerId)

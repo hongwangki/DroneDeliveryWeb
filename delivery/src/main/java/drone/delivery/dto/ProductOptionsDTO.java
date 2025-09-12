@@ -13,6 +13,7 @@ public class ProductOptionsDTO {
     private int basePrice;
     private List<GroupDTO> groups;
     private String imageUrl;
+    private String productDescription;
     // 템플릿 호환용 게터 추가
     public String getProductName() {
         return name;              // 또는 return foodName;

@@ -65,6 +65,12 @@
 
     .hint{ font-size:12px; color:var(--muted); margin-top:4px }
 
+    .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
+    .grid-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px }
+
+    .section-title{ font-weight:900; margin-top:6px; color:#0b2b29 }
+    .divider{ height:1px; background:var(--line); margin:4px 0 2px }
+
     .preview{ display:none; gap:12px; align-items:center; margin-top:6px;
       background:#f9fafb; border:1px dashed var(--line); border-radius:12px; padding:10px 12px; }
     .thumb{ width:56px; height:56px; border-radius:12px; background:#e8f7f6;
@@ -81,6 +87,7 @@
       .wrap{ grid-template-columns:1fr; gap:22px }
       .hero{ min-height:240px }
       .brand{ padding:32px 28px }
+      .grid-2,.grid-3{ grid-template-columns:1fr; }
     }
     @media (max-width:480px){
       .card{ border-radius:18px; padding:18px }
@@ -97,7 +104,7 @@
     <div class="brand">
       <div class="brand-badge">드</div>
       <h1>가게 등록</h1>
-      <p>브랜드 정보와 최소 주문 금액을 입력해 첫 가게를 만들어 보세요.</p>
+      <p>브랜드 정보와 주소를 입력해 첫 가게를 만들어 보세요.</p>
     </div>
   </section>
 
@@ -107,11 +114,13 @@
       <h2>가게 등록</h2>
       <p class="sub">필수 정보를 입력하세요</p>
 
-      <div class="msg err" th:if="${error}" th:text="${error}">에러 메시지</div>
+      <div class="msg.err" th:if="${error}" th:text="${error}">에러 메시지</div>
 
+      <!-- th:object = StoreDTO (Address 포함) -->
       <form th:action="@{/owner/create}" method="post" th:object="${storeDTO}" novalidate>
         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
+        <!-- 기본 정보 -->
         <div>
           <label for="name">가게 이름</label>
           <input class="input" type="text" id="name" th:field="*{name}" placeholder="예) 왕기네 가게" required>
@@ -157,6 +166,31 @@
           <div class="hint">원(₩) 단위, 0 입력 시 최소주문 제한 없음</div>
         </div>
 
+        <!-- 주소 정보 (Address 임베디드 바인딩) -->
+        <div class="section-title">주소</div>
+        <div class="divider"></div>
+
+        <div>
+          <label for="street">도로명 주소</label>
+          <input class="input" type="text" id="street" th:field="*{address.street}" placeholder="예) 서울특별시 송파구 중대로 135" required>
+        </div>
+
+        <div class="grid-3">
+          <div>
+            <label for="city">시/도</label>
+            <input class="input" type="text" id="city" th:field="*{address.city}" placeholder="예) 서울특별시" required>
+          </div>
+          <div>
+            <label for="zipcode">우편번호</label>
+            <input class="input" type="text" id="zipcode" th:field="*{address.zipcode}" placeholder="예) 05800" required>
+          </div>
+          <div>
+            <label for="detailAddress">상세 주소</label>
+            <input class="input" type="text" id="detailAddress" th:field="*{address.detailAddress}" placeholder="예) 3층 301호">
+          </div>
+        </div>
+
+        <!-- 액션 -->
         <div class="actions">
           <button type="submit" class="btn btn-primary">등록하기</button>
           <a href="/owner" class="btn btn-ghost" style="text-decoration:none; display:grid; place-items:center;">홈으로</a>

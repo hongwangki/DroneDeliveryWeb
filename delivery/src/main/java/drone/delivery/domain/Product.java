@@ -24,6 +24,8 @@ public class Product extends BaseEntity {
 
     private String productImageUrl;
 
+    private String productDescription;
+
     /**
      * Product 1: N ProductOptionGroupLink N: 1 OptionGroup 1: N OptionItems
      * 치킨세트 -> 치킨세트, 사이즈 그룹 ->사이즈 그룹 -> 중간 사이즈
