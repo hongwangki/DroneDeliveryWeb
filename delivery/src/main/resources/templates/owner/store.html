@@ -42,6 +42,13 @@
     .store-chip{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:#e6fbf9;color:var(--mint-ink);font-weight:900;border:1px solid #b9efea}
     .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:800;color:#0b3d3b}
 
+    /* 주소 + 삭제 버튼 스택 */
+    .hero-actions{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+    @media (max-width:720px){
+      .hero{grid-template-columns:1fr}
+      .hero-actions{align-items:flex-start}
+    }
+
     /* 패널 */
     .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); padding:18px; }
     .panel + .panel{ margin-top:18px }
@@ -139,17 +146,19 @@
       <h1 class="title" th:text="${store.name}">가게 이름</h1>
       <p class="subtitle" th:text="${store.description} ?: '사장님 센스가 빛나는 메뉴를 준비했어요.'">가게 설명</p>
     </div>
-    <div class="pill">
-      <span th:text="${store.address != null ? store.address.street : '주소 미등록'}">서울특별시 …</span>
+
+    <!-- 주소 아래에 삭제 버튼 배치 -->
+    <div class="hero-actions">
+      <div class="pill">
+        <span th:text="${store.address != null ? store.address.street : '주소 미등록'}">서울특별시 …</span>
+      </div>
+      <form th:action="@{'/owner/stores/' + ${store.id} + '/delete'}" method="post"
+            th:onsubmit="|return confirm('정말로 삭제하시겠습니까? 복구할 수 없습니다.');|">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button class="btn btn-del" type="submit">가게 삭제</button>
+      </form>
     </div>
   </section>
-
-  <!-- 가게 삭제 버튼 -->
-  <div style="margin-top:20px;">
-    <form th:action="@{'/owner/stores/' + ${store.id} + '/delete'}" method="post" th:onsubmit="|return confirm('정말로 삭제하시겠습니까? 복구할 수 없습니다.');|">
-      <button class="btn btn-del" type="submit" style="display:block; margin: 20px auto;">가게 삭제</button>
-    </form>
-  </div>
 
   <!-- 플래시 메시지 -->
   <div th:if="${pageError}" class="alert err" th:text="${pageError}"></div>
