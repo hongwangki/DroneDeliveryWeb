@@ -144,6 +144,13 @@
     </div>
   </section>
 
+  <!-- 가게 삭제 버튼 -->
+  <div style="margin-top:20px;">
+    <form th:action="@{'/owner/stores/' + ${store.id} + '/delete'}" method="post" th:onsubmit="|return confirm('정말로 삭제하시겠습니까? 복구할 수 없습니다.');|">
+      <button class="btn btn-del" type="submit" style="display:block; margin: 20px auto;">가게 삭제</button>
+    </form>
+  </div>
+
   <!-- 플래시 메시지 -->
   <div th:if="${pageError}" class="alert err" th:text="${pageError}"></div>
   <div th:if="${formError}" class="alert err" th:text="${formError}"></div>

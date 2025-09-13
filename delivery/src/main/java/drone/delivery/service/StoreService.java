@@ -153,4 +153,11 @@ public class StoreService {
 
         return store.getId();
     }
+
+    //가게 삭제 함수
+    public void deleteStore(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다. id=" + storeId));
+        storeRepository.delete(store);
+    }
 }

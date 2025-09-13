@@ -108,6 +108,15 @@ public class StoreController {
         return "redirect:/owner/stores/" + storeId;
     }
 
+    //가게 삭제 메서드
+    @PostMapping("/owner/stores/{storeId}/delete")
+    public String storeDelete(@PathVariable Long storeId, RedirectAttributes ra) {
+        // 팝업을 띄우기 위한 URL 전달 (팝업을 띄우고 사용자 확인 후 삭제)
+        ra.addFlashAttribute("confirmationMessage", "정말로 삭제하시겠습니까? 복구할 수 없습니다.");
+        storeService.deleteStore(storeId);  // 실제 삭제 실행
+        ra.addFlashAttribute("message", "삭제가 완료되었습니다.");
+        return "redirect:/owner";
+    }
 
 
 
