@@ -28,7 +28,7 @@ public class Review extends BaseEntity {
     private Product product;
 
     
-    private Order order;
+//    private Order order;
     @Lob
     private String content;
 
