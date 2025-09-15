@@ -24,12 +24,17 @@ public class FoodDTO {
     @Min(value = 1, message = "수량은 1개 이상이어야 합니다.")
     private Integer quantity;
 
+    private String productImageUrl;
+    private String productDescription;
+
     /** DTO -> 엔티티 변환 헬퍼 */
     public Product toEntity() {
         Product p = new Product();
         p.setFoodName(foodName);
         p.setFoodPrice(foodPrice);
         p.setQuantity(quantity);
+        p.setProductImageUrl(productImageUrl);
+        p.setProductDescription(productDescription);
         return p;
     }
 }

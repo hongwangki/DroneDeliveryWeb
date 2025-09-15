@@ -28,6 +28,12 @@ public class Store {
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 
+    @Embedded
+    private Address address;
+    private Double latitude;  // 위도
+    private Double longitude; // 경도
+
+
     public Store() {}
 
     //생성자

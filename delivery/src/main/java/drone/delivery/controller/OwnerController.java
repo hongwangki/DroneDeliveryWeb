@@ -1,11 +1,11 @@
 package drone.delivery.controller;
 
-import drone.delivery.domain.Member;
-import drone.delivery.domain.MemberType;
-import drone.delivery.domain.Product;
-import drone.delivery.domain.Store;
+import drone.delivery.domain.*;
 import drone.delivery.dto.FoodDTO;
+import drone.delivery.dto.OptionGroupForm;
+import drone.delivery.dto.OptionItemForm;
 import drone.delivery.dto.StoreDTO;
+import drone.delivery.service.OptionOwnerService;
 import drone.delivery.service.OwnerService;
 import drone.delivery.service.ProductService;
 import drone.delivery.service.StoreService;
@@ -27,6 +27,7 @@ public class OwnerController {
     private final OwnerService ownerService;
     private final StoreService storeService;
     private final ProductService productService;
+    private final OptionOwnerService optionService;
 
     @GetMapping
     public String ownerHome(HttpSession session, Model model) {
@@ -102,35 +103,7 @@ public class OwnerController {
         return "redirect:/owner";
     }
 
-    // 가게 상품 등록 버튼 누를 시
-    @PostMapping("/stores/{storeId}")
-    public String add(@PathVariable Long storeId,
-                      @ModelAttribute @Valid FoodDTO dto,
-                      BindingResult br,
-                      HttpSession session,
-                      RedirectAttributes ra) {
-        Member owner = (Member) session.getAttribute("loggedInMember");
-        if (owner == null) {
-            ra.addFlashAttribute("pageError", "로그인이 필요합니다.");
-            return "redirect:/login";
-        }
 
-        if (br.hasErrors()) {
-            ra.addFlashAttribute("formError", "입력값을 확인해주세요.");
-            return "redirect:/owner/stores/" + storeId + "#add-menu";
-        }
 
-        try {
-            Long productId = storeService.addProductToStore(owner.getId(), storeId, dto);
-            ra.addFlashAttribute("formMessage", "메뉴가 추가되었습니다.");
-        } catch (IllegalArgumentException e) {
-            // 여기로 "이미 등록된 메뉴입니다: ~~" 메시지가 들어옴
-            ra.addFlashAttribute("formError", e.getMessage());
-        } catch (Exception e) {
-            ra.addFlashAttribute("formError", "메뉴 추가 중 오류가 발생했습니다.");
-        }
-
-        return "redirect:/owner/stores/" + storeId + "#add-menu";
-    }
 
 }

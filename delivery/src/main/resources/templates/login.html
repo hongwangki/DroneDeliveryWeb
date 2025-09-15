@@ -32,29 +32,41 @@
         }
 
         /* Layout */
-        .wrap{ width:100%; max-width:1100px; padding:24px;
-            display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center; }
+        .wrap{
+            width:100%; max-width:1100px; padding:24px;
+            display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center;
+        }
 
         /* Brand hero */
-        .hero{ position:relative; min-height:520px; border-radius:28px; overflow:hidden;
-            background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow); }
-        .hero::before{ content:""; position:absolute; inset:0;
+        .hero{
+            position:relative; min-height:520px; border-radius:28px; overflow:hidden;
+            background:linear-gradient(135deg,#dff8f6,#ffffff); border:1px solid rgba(2,6,23,.06); box-shadow:var(--shadow);
+        }
+        .hero::before{
+            content:""; position:absolute; inset:0;
             background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,.06) 1px, rgba(255,255,255,0) 1px);
-            background-size:28px 28px; opacity:.6; }
-        .hero::after{ content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
+            background-size:28px 28px; opacity:.6;
+        }
+        .hero::after{
+            content:""; position:absolute; width:120%; height:160%; left:-20%; top:-30%;
             background: radial-gradient(closest-side, rgba(42,193,188,.35), rgba(42,193,188,0) 70%),
             conic-gradient(from 210deg, rgba(42,193,188,.20), rgba(255,255,255,0) 60%);
-            filter:blur(20px) saturate(1.05); }
+            filter:blur(20px) saturate(1.05);
+        }
         .brand{ position:relative; padding:48px clamp(20px,5vw,60px); color:#063a38; max-width:560px; }
-        .brand-badge{ width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
-            background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35); }
+        .brand-badge{
+            width:56px; height:56px; border-radius:16px; display:grid; place-items:center;
+            background:var(--brand); color:#fff; font-weight:900; margin-bottom:14px; box-shadow:0 10px 24px rgba(42,193,188,.35);
+        }
         .brand h1{ margin:0 0 8px; font-size:clamp(2.2rem,4.8vw,3.6rem); font-weight:900; letter-spacing:.4px }
         .brand p{ margin:0; color:#0b2b29; opacity:.85; font-weight:700 }
 
         /* Login card */
-        .form{ backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
+        .form{
+            backdrop-filter:blur(8px) saturate(1.05); background:var(--glass);
             border:1px solid rgba(2,6,23,.08); border-radius:24px; box-shadow:var(--shadow);
-            padding:clamp(20px,3vw,32px); }
+            padding:clamp(20px,3vw,32px);
+        }
         .form h2{ margin:0 0 8px; text-align:center; font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:900 }
         .sub{ text-align:center; color:var(--muted); font-weight:600; margin-bottom:8px }
 
@@ -64,22 +76,18 @@
         .msg.err{ background:#fef2f2; color:#991b1b; border-color:#fecaca }
 
         form{ margin-top:8px }
-        .field{ position:relative; margin:12px 0 }
+        .field{ margin:12px 0 }
+        .field label{ display:block; font-size:13px; font-weight:800; color:#334155; margin-bottom:6px }
 
-        /* ★ 아이콘/입력 정렬 수정 */
+        /* 아이콘 제거 후 패딩/정렬 */
         .input{
             width:100%; height:52px;
             border-radius:12px; border:1px solid var(--line); background:#f9fafb;
-            padding:0 14px 0 46px; /* 아이콘 공간 확보 */
+            padding:0 14px; /* ← 왼쪽 패딩 정상화 */
             font-size:15px;
             transition:border-color .15s, box-shadow .15s, background .15s;
         }
         .input:focus{ outline:none; border-color:#8ee2df; background:#fff; box-shadow:0 0 0 4px rgba(42,193,188,.15) }
-
-        .ico{
-            position:absolute; left:14px; top:0; height:100%;
-            display:flex; align-items:center; font-size:18px; opacity:.6; pointer-events:none;
-        }
 
         .btn{
             width:100%; height:54px; border:none; border-radius:12px;
@@ -133,13 +141,11 @@
                 <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
                 <div class="field">
-                    <span class="ico">📧</span>
                     <label for="email">이메일</label>
                     <input id="email" class="input" type="email" name="email" placeholder="you@example.com" required autocomplete="username">
                 </div>
 
                 <div class="field">
-                    <span class="ico">🔒</span>
                     <label for="password">비밀번호</label>
                     <input id="password" class="input" type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
                 </div>
