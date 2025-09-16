@@ -108,6 +108,7 @@
 </head>
 
 <body
+        th:attr="data-active-tab=${activeTab}"
         th:with="
     cart=${session['cart_' + store.id]},
     total=${session.totalPrice != null ? session.totalPrice : 0},
@@ -178,10 +179,50 @@
     <!-- 리뷰 -->
     <section id="panel-review" class="tab-panel">
       <div class="side" style="box-shadow:none">
-        <h3>리뷰</h3>
-        <p class="muted">아직 리뷰 API가 없다면 목업 데이터나 안내 문구를 보여주세요.</p>
+        <h3>
+          리뷰
+          <span class="muted" th:text="'총 ' + ${#lists.size(reviews)} + '건'">총 0건</span>
+        </h3>
+
+        <div th:if="${#lists.isEmpty(reviews)}" class="empty">아직 등록된 리뷰가 없습니다.</div>
+
+        <div th:if="${!#lists.isEmpty(reviews)}" class="list">
+          <article th:each="r : ${reviews}" class="item" style="align-items:flex-start">
+            <!-- 작성자 아이콘 -->
+            <div class="thumb" style="width:56px;height:56px;flex:0 0 56px">
+              <span th:text="${#strings.substring(r.member != null ? r.member.name : '익명',0,1)}">유</span>
+            </div>
+
+            <div class="grow">
+              <div style="display:flex; align-items:baseline; gap:8px">
+                <div class="name" th:text="${r.member != null ? r.member.name : '알 수 없음'}">작성자</div>
+                <div class="muted" th:text="${#temporals.format(r.createdDate,'yyyy.MM.dd HH:mm')}">2025.01.01 12:34</div>
+              </div>
+
+              <!-- 별점 -->
+              <div style="margin:6px 0">
+            <span th:each="i : ${#numbers.sequence(1,5)}"
+                  th:text="${i <= (r.rating != null ? r.rating : 0)} ? '★' : '☆'"
+                  style="font-size:14px; color:#f59e0b; margin-right:2px">★</span>
+                <span class="muted" th:text="'(' + (r.rating!=null? r.rating : 0) + ')'">(0)</span>
+              </div>
+
+              <!-- 내용 -->
+              <div style="white-space:pre-wrap; line-height:1.7" th:text="${r.content}">내용</div>
+
+              <!-- 이미지 그리드 -->
+              <div th:if="${r.reviewImages != null and !#lists.isEmpty(r.reviewImages)}"
+                   style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:10px">
+                <img th:each="img : ${r.reviewImages}"
+                     th:src="${img.thumbnailUrl != null ? img.thumbnailUrl : img.url}"
+                     alt="" style="width:100%; height:120px; object-fit:cover; border-radius:10px; border:1px solid var(--line)">
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
+
   </section>
 
   <!-- 우측: 장바구니 -->
@@ -297,6 +338,18 @@
     // 실제 서버로 POST
     form.submit();
   });
+
+  (function(){
+    const qs = new URLSearchParams(location.search);
+    const fromQuery = (qs.get('tab') || '').toLowerCase();
+    const fromServer = (document.body.getAttribute('data-active-tab') || '').toLowerCase();
+    const active = fromServer || fromQuery;
+    if(active === 'review'){
+      document.getElementById('tab-review')?.click();
+    }
+  })();
+
+
 </script>
 </body>
 </html>
