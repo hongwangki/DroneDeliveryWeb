@@ -1,12 +1,15 @@
 package drone.delivery.controller;
 
 import drone.delivery.domain.CartItem;
+import drone.delivery.domain.Review;
 import drone.delivery.domain.Store;
 import drone.delivery.dto.StoreUpdateDTO;
 import drone.delivery.service.OrderService;
+import drone.delivery.service.ReviewQueryService;
 import drone.delivery.service.StoreService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,10 +21,12 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class StoreController {
 
     private final StoreService storeService;
     private final OrderService orderService;
+    private final ReviewQueryService reviewQueryService;
 
     // 카테고리별 가게 조회
     @GetMapping("/delivery")
@@ -52,12 +57,21 @@ public class StoreController {
 
 
     @GetMapping("/delivery/{storeId}")
-    public String showStoreMenu(@PathVariable Long storeId, Model model, HttpSession session) {
+    public String showStoreMenu(@PathVariable Long storeId,
+                                @RequestParam(value = "tab", required = false) String tab,
+                                Model model, HttpSession session) {
         Store store = storeService.findById(storeId);
+        List<Review> reviews = reviewQueryService.getStoreReviews(storeId);
+
+        log.info("store {} reviews loaded = {}", storeId, reviews.size());
+
+
         model.addAttribute("store", store);
         model.addAttribute("products", store.getProducts());
-
         model.addAttribute("orders", orderService.findAll());
+
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("activeTab", "review".equalsIgnoreCase(tab) ? "review" : "menu");
 
         // per-store 세션 키 사용
         @SuppressWarnings("unchecked")

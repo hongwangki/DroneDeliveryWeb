@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewQueryService {
@@ -23,5 +25,9 @@ public class ReviewQueryService {
         return reviewRepository.findAuthorIdById(reviewId)
                 .map(id -> id.equals(memberId))
                 .orElse(false);
+    }
+
+    public List<Review> getStoreReviews(Long storeId) {
+        return reviewRepository.findAllByStoreIdWithMemberAndImages(storeId);
     }
 }
