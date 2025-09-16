@@ -111,7 +111,7 @@
         th:with="
     cart=${session['cart_' + store.id]},
     total=${session.totalPrice != null ? session.totalPrice : 0},
-    money=${session.loggedInMember != null ? session.loggedInMember.money : 0},
+    money=${session.loginMember != null ? session.loginMember.money : 0},
     min=${store.minOrderPrice != null ? store.minOrderPrice : 0},
     lackMin=${total < min},
     lackMoney=${money < total}

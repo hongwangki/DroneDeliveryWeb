@@ -41,10 +41,10 @@ public class OrderController {
         orderService.cancelOrder(id);
 
         // 세션 회원 정보 최신화
-        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+        Member sessionMember = (Member) session.getAttribute("loginMember");
         if (sessionMember != null) {
             Member updatedMember = memberService.findById(sessionMember.getId());
-            session.setAttribute("loggedInMember", updatedMember);
+            session.setAttribute("loginMember", updatedMember);
         }
 
         // JSON 형태로 메시지 반환
@@ -64,7 +64,7 @@ public class OrderController {
                             @RequestParam(name = "status", defaultValue = "ALL") String status) {
 
 
-        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+        Member sessionMember = (Member) session.getAttribute("loginMember");
         if (sessionMember == null) {
             return "redirect:/";
         }
@@ -93,7 +93,7 @@ public class OrderController {
     public String orderDetail(HttpSession session,
                               @PathVariable Long id,
                               Model model) {
-        Member member = (Member) session.getAttribute("loggedInMember");
+        Member member = (Member) session.getAttribute("loginMember");
         Long memberId = member.getId();
 
         Order order = orderService.getDetail(memberId, id); // fetch join으로 아이템/상품/가게까지 로드
@@ -108,7 +108,7 @@ public class OrderController {
     public String markDelivered(@PathVariable Long id,
                                 HttpSession session) {
         // 1) 권한/소유자 검증, 상태 전이 허용(PENDING/SHIPPED -> DELIVERED) 체크
-        Member member = (Member) session.getAttribute("loggedInMember");
+        Member member = (Member) session.getAttribute("loginMember");
 
         orderService.markDelivered(member.getId(), id);
 

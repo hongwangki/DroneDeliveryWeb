@@ -31,7 +31,7 @@ public class OwnerController {
 
     @GetMapping
     public String ownerHome(HttpSession session, Model model) {
-        Member loggedInMember = (Member) session.getAttribute("loggedInMember");
+        Member loggedInMember = (Member) session.getAttribute("loginMember");
 
         // 로그인 및 권한 확인
         if (loggedInMember == null || loggedInMember.getMemberType() != MemberType.OWNER) {
@@ -53,7 +53,7 @@ public class OwnerController {
                             HttpSession session,
                             Model model) {
         // 로그인/권한 확인
-        Member loggedInMember = (Member) session.getAttribute("loggedInMember");
+        Member loggedInMember = (Member) session.getAttribute("loginMember");
         if (loggedInMember == null || loggedInMember.getMemberType() != MemberType.OWNER) {
             return "redirect:/login";
         }
@@ -69,7 +69,7 @@ public class OwnerController {
     @GetMapping("/create")
     public String showCreateForm(HttpSession session, Model model) {
         // 로그인 및 권한 확인
-        Member loggedInMember = (Member) session.getAttribute("loggedInMember");
+        Member loggedInMember = (Member) session.getAttribute("loginMember");
         if (loggedInMember == null || loggedInMember.getMemberType() != MemberType.OWNER) {
             return "redirect:/login";
         }
@@ -92,7 +92,7 @@ public class OwnerController {
             return "redirect:/owner/stores/create";
         }
 
-        Member owner = (Member) session.getAttribute("loggedInMember");
+        Member owner = (Member) session.getAttribute("loginMember");
         if (owner == null || owner.getMemberType() != MemberType.OWNER) {
             return "redirect:/login";
         }

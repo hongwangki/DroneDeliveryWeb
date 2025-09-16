@@ -161,6 +161,11 @@ public class OrderService {
                 .getId();
     }
 
+    public Order findById(Long id){
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("주문이 없습니다. id=" + id));
+    }
+
     //주문 전체 검색 메서드
     @Transactional(readOnly = true)
     public List<Order> findAll() {

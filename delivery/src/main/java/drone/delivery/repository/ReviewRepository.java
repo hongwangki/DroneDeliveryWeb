@@ -12,9 +12,8 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    public List<Review> findByStore(Store store);
+    List<Review> findByStore(Store store);
 
-    public List<Review> findByProduct(Product product);
 
-    List<Review> findAllByCreatedBy(Member member);
+    List<Review> findAllByMember(Member member);
 }

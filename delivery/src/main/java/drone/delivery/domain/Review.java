@@ -21,14 +21,12 @@ public class Review extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    private Member createdBy;
+    private Member member;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "order_id", unique = true, nullable = false)
+    private Order order;
 
-    
-//    private Order order;
     @Lob
     private String content;
 
@@ -41,9 +39,9 @@ public class Review extends BaseEntity {
     /**
      * 양방향 편의 메소드
      */
-    public void addReviewImage(ReviewImage reviewImage) {
-        reviewImages.add(reviewImage);
-        reviewImage.setReview(this);
+    public void addImage(ReviewImage image) {
+        image.bindReview(this);
+        reviewImages.add(image);
     }
 
 

@@ -38,7 +38,7 @@ public class ProductController {
                       HttpSession session,
                       RedirectAttributes ra) {
 
-        Member owner = (Member) session.getAttribute("loggedInMember");
+        Member owner = (Member) session.getAttribute("loginMember");
         if (owner == null || owner.getMemberType() != MemberType.OWNER) {
             ra.addFlashAttribute("pageError", "로그인이 필요합니다.");
             return "redirect:/login";
