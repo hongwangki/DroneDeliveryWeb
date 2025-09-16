@@ -142,7 +142,7 @@ public class CartController {
                            HttpSession session,
                            RedirectAttributes redirectAttributes) {
 
-        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+        Member sessionMember = (Member) session.getAttribute("loginMember");
 
         // 가게 정보 확인
         if (storeId == null) {
@@ -189,7 +189,7 @@ public class CartController {
 
             // 로그인된 사용자 정보 갱신
             Member refreshed = memberService.findById(sessionMember.getId());
-            session.setAttribute("loggedInMember", refreshed);
+            session.setAttribute("loginMember", refreshed);
 
             // 주문 성공 메시지
             redirectAttributes.addFlashAttribute("successMessage", "주문이 성공적으로 완료되었습니다! (주문번호 #" + orderId + ")");

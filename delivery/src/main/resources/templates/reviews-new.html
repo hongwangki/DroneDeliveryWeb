@@ -15,6 +15,7 @@
             --radius:18px; --radius-lg:22px;
             --star:#f59e0b;          /* ⭐ 노란색 */
             --star-empty:#e5e7eb;    /* 빈 별 색 */
+            --danger:#b91c1c;
         }
         *{box-sizing:border-box}
         body{
@@ -39,7 +40,7 @@
         .field{ margin:14px 0; }
         .label{ display:block; font-weight:800; margin-bottom:8px; }
         .help{ color:#64748b; font-size:13px; margin-top:4px; }
-        .error{ color:#b91c1c; font-size:13px; margin-top:6px; }
+        .error{ color:var(--danger); font-size:13px; margin-top:6px; }
 
         .star-rating{
             display:flex; gap:8px; align-items:center;
@@ -54,20 +55,10 @@
         .star-rating .icon{
             width:100%; height:100%; fill:var(--star-empty); transition:fill .12s ease;
         }
-
-        /* 선택된 별(자기 자신 + 그 왼쪽들)을 채우기 */
         .star-rating input:checked + label .icon,
-        .star-rating input:checked ~ label .icon{
-            fill:var(--star);
-        }
-
-        /* 호버 시 미리보기(자기 자신 + 그 왼쪽들) */
+        .star-rating input:checked ~ label .icon{ fill:var(--star); }
         .star-rating label:hover .icon,
-        .star-rating label:hover ~ label .icon{
-            fill:var(--star);
-        }
-
-        /* 키보드 접근성 */
+        .star-rating label:hover ~ label .icon{ fill:var(--star); }
         .star-rating label:focus-visible{
             outline:2px solid var(--mint); outline-offset:2px;
         }
@@ -82,6 +73,24 @@
         .btn:hover{ background:#eef2f7; }
         .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; box-shadow:0 10px 18px rgba(42,193,188,.22); }
         .btn.primary:hover{ background:var(--mint-d); }
+
+        /* 파일 미리보기 그리드 */
+        .preview-grid{
+            display:grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+            gap:12px; margin-top:10px;
+        }
+        .thumb{
+            border:1px solid var(--border); border-radius:12px; padding:6px; background:#fff;
+            display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center;
+        }
+        .thumb img{
+            max-width:100%; height:96px; object-fit:cover; border-radius:8px;
+        }
+        .thumb .name{
+            font-size:12px; color:#475569; text-align:center; word-break:break-all;
+        }
+        .counter{ font-size:13px; color:#475569; margin-top:6px; }
+        .counter.bad{ color:var(--danger); font-weight:700; }
     </style>
 </head>
 <body>
@@ -110,7 +119,8 @@
     </section>
 
     <section class="card">
-        <form th:action="@{/reviews}" th:object="${form}" method="post">
+        <!-- ✅ 한 번에 제출: 본문 + 이미지 -->
+        <form th:action="@{/reviews}" th:object="${form}" method="post" enctype="multipart/form-data">
             <!-- CSRF (스프링 시큐리티 사용 시) -->
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <input type="hidden" th:field="*{orderId}">
@@ -119,8 +129,6 @@
             <!-- 별점 -->
             <div class="field">
                 <label class="label">별점</label>
-
-                <!-- ⭐ 별점: 5(오른쪽) ~ 1(왼쪽) 순서로 배치하고 row-reverse로 좌→우 표시 -->
                 <div class="star-rating" role="radiogroup" aria-label="별점">
                     <input id="rate5" type="radio" th:field="*{rating}" value="5"/>
                     <label for="rate5" aria-label="5점">
@@ -157,17 +165,25 @@
                         </svg>
                     </label>
                 </div>
-
                 <div class="error" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}">별점 에러</div>
                 <div class="help">노란 별이 선택된 개수만큼 별점이 등록됩니다. (1~5)</div>
             </div>
-
 
             <!-- 내용 -->
             <div class="field">
                 <label for="content" class="label">리뷰 내용</label>
                 <textarea id="content" th:field="*{content}" placeholder="맛/양/배송 속도 등 솔직한 후기를 남겨주세요. (최대 1000자)"></textarea>
                 <div class="error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}">내용 에러</div>
+            </div>
+
+            <!-- 사진 첨부 -->
+            <div class="field">
+                <label class="label" for="files">사진 첨부</label>
+                <input id="files" type="file" name="files" accept="image/*" multiple />
+                <div class="help">최대 10장, JPG/PNG/WEBP/GIF / 파일당 최대 10MB</div>
+                <div id="fileCounter" class="counter"></div>
+                <div id="fileError" class="error" style="display:none;"></div>
+                <div id="preview" class="preview-grid" aria-live="polite"></div>
             </div>
 
             <div class="actions">
@@ -177,5 +193,72 @@
         </form>
     </section>
 </main>
+
+<script>
+    (function(){
+        const input = document.getElementById('files');
+        const preview = document.getElementById('preview');
+        const counter = document.getElementById('fileCounter');
+        const errBox = document.getElementById('fileError');
+
+        const MAX_FILES = 10;           // 서버 설정과 일치(app.upload.per-review-max)
+        const MAX_SIZE = 10 * 1024 * 1024; // 10MB (spring.servlet.multipart.max-file-size)
+
+        function resetPreview(){
+            preview.innerHTML = '';
+            counter.textContent = '';
+            errBox.style.display = 'none';
+            errBox.textContent = '';
+            counter.classList.remove('bad');
+        }
+
+        function formatBytes(bytes){
+            const units = ['B','KB','MB','GB'];
+            let i = 0, v = bytes;
+            while(v >= 1024 && i < units.length-1){ v /= 1024; i++; }
+            return (Math.round(v * 10) / 10) + ' ' + units[i];
+        }
+
+        input.addEventListener('change', () => {
+            resetPreview();
+
+            const files = Array.from(input.files || []);
+            let tooMany = files.length > MAX_FILES;
+            let tooBig = files.some(f => f.size > MAX_SIZE);
+
+            // 카운터 표시
+            counter.textContent = `선택된 파일: ${files.length}개 / 최대 ${MAX_FILES}개`;
+            if (tooMany) counter.classList.add('bad');
+
+            if (tooMany || tooBig) {
+                errBox.style.display = 'block';
+                errBox.textContent =
+                    (tooMany ? `파일은 최대 ${MAX_FILES}개까지 선택할 수 있어요. ` : '') +
+                    (tooBig ? `파일당 크기는 최대 10MB까지예요.` : '');
+            }
+
+            // 미리보기 생성
+            files.forEach(file => {
+                const wrap = document.createElement('div');
+                wrap.className = 'thumb';
+
+                const img = document.createElement('img');
+                img.alt = file.name;
+                const name = document.createElement('div');
+                name.className = 'name';
+                name.textContent = `${file.name} (${formatBytes(file.size)})`;
+
+                // 이미지 프리뷰
+                const reader = new FileReader();
+                reader.onload = e => { img.src = e.target.result; };
+                reader.readAsDataURL(file);
+
+                wrap.appendChild(img);
+                wrap.appendChild(name);
+                preview.appendChild(wrap);
+            });
+        });
+    })();
+</script>
 </body>
 </html>

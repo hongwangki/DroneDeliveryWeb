@@ -34,7 +34,7 @@ public class OwnerOptionController {
                        Model model,
                        RedirectAttributes ra) {
 
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         if (m == null || m.getMemberType() != MemberType.OWNER) return "redirect:/login";
 
         // 권한 체크
@@ -60,7 +60,7 @@ public class OwnerOptionController {
                               @RequestParam(defaultValue = "0") int sortOrder,
                               HttpSession session,
                               RedirectAttributes ra) {
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         Long ownerId = m.getId();
 
         optionService.createGroupAndAttach(storeId, productId, form, sortOrder, ownerId);
@@ -76,7 +76,7 @@ public class OwnerOptionController {
                           @ModelAttribute OptionItemForm form,
                           HttpSession session,
                           RedirectAttributes ra) {
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         optionService.addItem(storeId, productId, groupId, form, m.getId());
         ra.addFlashAttribute("ok", "옵션이 추가되었습니다.");
         return "redirect:/owner/stores/" + storeId + "/products/" + productId + "/options#group-" + groupId;
@@ -90,7 +90,7 @@ public class OwnerOptionController {
                        @RequestParam int sortOrder,
                        HttpSession session,
                        RedirectAttributes ra) {
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         optionService.updateSort(storeId, productId, linkId, sortOrder, m.getId());
         ra.addFlashAttribute("ok", "정렬이 변경되었습니다.");
         return "redirect:/owner/stores/" + storeId + "/products/" + productId + "/options";
@@ -103,7 +103,7 @@ public class OwnerOptionController {
                               @PathVariable Long groupId,
                               HttpSession session,
                               RedirectAttributes ra) {
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         optionService.deleteGroup(storeId, productId, groupId, m.getId());
         ra.addFlashAttribute("ok", "그룹을 삭제했습니다.");
         return "redirect:/owner/stores/" + storeId + "/products/" + productId + "/options";
@@ -115,7 +115,7 @@ public class OwnerOptionController {
                              @PathVariable Long itemId,
                              HttpSession session,
                              RedirectAttributes ra) {
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         optionService.deleteItem(storeId, productId, itemId, m.getId());
         ra.addFlashAttribute("ok", "옵션을 삭제했습니다.");
         return "redirect:/owner/stores/" + storeId + "/products/" + productId + "/options";
@@ -131,7 +131,7 @@ public class OwnerOptionController {
                                  HttpSession session,
                                  RedirectAttributes ra) {
 
-        Member m = (Member) session.getAttribute("loggedInMember");
+        Member m = (Member) session.getAttribute("loginMember");
         if (m == null || m.getMemberType() != MemberType.OWNER) {
             return "redirect:/login";
         }

@@ -39,9 +39,9 @@ public class Review extends BaseEntity {
     /**
      * 양방향 편의 메소드
      */
-    public void addReviewImage(ReviewImage reviewImage) {
-        reviewImages.add(reviewImage);
-        reviewImage.setReview(this);
+    public void addImage(ReviewImage image) {
+        image.bindReview(this);
+        reviewImages.add(image);
     }
 
 

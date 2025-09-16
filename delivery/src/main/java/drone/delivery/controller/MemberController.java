@@ -43,7 +43,7 @@ public class MemberController {
         Member loggedInMember = memberService.validateLogin(email, password);
 
         if (loggedInMember != null) {
-            session.setAttribute("loggedInMember", loggedInMember);
+            session.setAttribute("loginMember", loggedInMember);
 
             switch (loggedInMember.getMemberType()) {
                 case USER:
@@ -137,7 +137,7 @@ public class MemberController {
     @GetMapping("/account")
     public String accountInfo(Model model, HttpSession session) {
         // 세션에서 로그인한 사용자 정보를 가져옵니다.
-        Member member = (Member) session.getAttribute("loggedInMember");
+        Member member = (Member) session.getAttribute("loginMember");
 
         if (member == null) {
             model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
@@ -155,7 +155,7 @@ public class MemberController {
     @GetMapping("/account/edit")
     public String editAccountInfo(Model model, HttpSession session) {
         // 세션에서 로그인한 사용자 정보를 가져옵니다.
-        Member member = (Member) session.getAttribute("loggedInMember");
+        Member member = (Member) session.getAttribute("loginMember");
 
         if (member == null) {
             model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
@@ -175,7 +175,7 @@ public class MemberController {
                                     Model model) {
 
         // 1. 세션에서 현재 로그인한 회원 가져오기
-        Member member = (Member) session.getAttribute("loggedInMember");
+        Member member = (Member) session.getAttribute("loginMember");
         if (member == null) {
             model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
             return "error";
@@ -189,7 +189,7 @@ public class MemberController {
                                  .orElseThrow(() -> new IllegalStateException("회원이 존재하지 않습니다."));
 
         // 4. 세션과 모델에 최신 정보 반영
-        session.setAttribute("loggedInMember", updatedMember);
+        session.setAttribute("loginMember", updatedMember);
 
         MemberDTO memberDTO = new MemberDTO(updatedMember);
         model.addAttribute("member", memberDTO);
@@ -202,7 +202,7 @@ public class MemberController {
 
     @GetMapping("/recharge")
     public String showRechargeForm(HttpSession session, Model model) {
-        Member member = (Member) session.getAttribute("loggedInMember");
+        Member member = (Member) session.getAttribute("loginMember");
         MemberDTO memberDTO= new MemberDTO(member);
         model.addAttribute("member", memberDTO);
         return "recharge"; // templates/recharge.html
@@ -218,14 +218,14 @@ public class MemberController {
         }
 
         // 세션에서 로그인한 회원 정보 가져오기
-        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+        Member sessionMember = (Member) session.getAttribute("loginMember");
 
         // 충전 로직 위임 (DB 반영)
         memberService.chargeMoney(sessionMember.getId(), money);
 
         // 최신 정보로 세션 갱신
         Member updated = memberService.findById(sessionMember.getId());
-        session.setAttribute("loggedInMember", updated);
+        session.setAttribute("loginMember", updated);
 
         redirectAttributes.addFlashAttribute("successMessage", "충전이 완료되었습니다!");
         return "redirect:/recharge";
