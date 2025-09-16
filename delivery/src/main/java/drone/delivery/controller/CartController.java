@@ -2,19 +2,26 @@ package drone.delivery.controller;
 
 import drone.delivery.domain.CartItem;
 import drone.delivery.domain.Member;
+import drone.delivery.domain.Order;
 import drone.delivery.domain.Product;
 import drone.delivery.dto.AddToCartRequestDTO;
 import drone.delivery.dto.ProductOptionsDTO;
+import drone.delivery.dto.SendInfoDTO;
+import drone.delivery.mapper.OrderToSendInfoMapper;
+import drone.delivery.repository.OrderRepository;
 import drone.delivery.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +33,11 @@ public class CartController {
     private final ProductService productService;
     private final OrderService orderService;
     private final MemberService memberService;
+
+
+    private final OrderRepository orderRepository;
+    private final WebClient pythonClient;
+    private final OrderToSendInfoMapper mapper;
 
     // ★ 추가: 옵션 조회/검증 서비스
     private final ProductOptionQueryService productOptionQueryService;
@@ -193,6 +205,27 @@ public class CartController {
 
             // 주문 성공 메시지
             redirectAttributes.addFlashAttribute("successMessage", "주문이 성공적으로 완료되었습니다! (주문번호 #" + orderId + ")");
+
+            /**
+             * 주문 후 파이썬 측 서버에 필요한 정보 dto로 변환해서 쏴주기
+             */
+            Order order = orderRepository.findGraphById(orderId)
+                    .orElseThrow(() -> new IllegalStateException("주문을 찾을 수 없습니다."));
+
+
+            SendInfoDTO payload = mapper.map(order);
+
+            // Python으로 전송 (동기 보장 필요시 block, 2~3초 타임아웃 권장)
+            pythonClient.post()
+                    .uri("/orders/webhook")   // 최종: http://localhost:8000/orders/webhook
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block(Duration.ofSeconds(3));
+
+
+            //성공적이면 최종 주문 완료
             return "redirect:/realtime";
 
         } catch (IllegalArgumentException | EntityNotFoundException e) {
