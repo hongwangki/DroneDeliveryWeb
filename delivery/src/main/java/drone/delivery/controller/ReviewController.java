@@ -1,13 +1,11 @@
 package drone.delivery.controller;
 
-import drone.delivery.domain.Member;
-import drone.delivery.domain.Order;
-import drone.delivery.domain.OrderItem;
-import drone.delivery.domain.Store;
+import drone.delivery.domain.*;
 import drone.delivery.dto.ReviewCreateForm;
 import drone.delivery.dto.ReviewDto;
 import drone.delivery.repository.StoreRepository;
 import drone.delivery.service.OrderService;
+import drone.delivery.service.ReviewQueryService;
 import drone.delivery.service.ReviewService;
 import drone.delivery.service.StoreService;
 import drone.delivery.service.reviewImage.ReviewImageService;
@@ -37,6 +35,7 @@ public class ReviewController {
     private final ReviewImageService reviewImageService; // ★ 추가
     private final StoreRepository storeRepository;
     private final StoreService storeService;
+    private final ReviewQueryService reviewQueryService;
 
     @GetMapping("/new")
     public String newReview(HttpSession session,
@@ -123,17 +122,32 @@ public class ReviewController {
         }
 
         ra.addFlashAttribute("message", "리뷰가 등록되었습니다.");
-        return "redirect:/orders";
+        return "redirect:/reviews/" + reviewId;
     }
 
     @GetMapping
     public String reviewList(HttpSession session, Model model) {
         Member member = (Member) session.getAttribute("loginMember");
-        if (member == null) { // ★ 방어코드
+        if (member == null) {
             return "redirect:/login?redirect=/reviews";
         }
         model.addAttribute("reviews", reviewService.findAllByMember(member));
         return "review-list";
+    }
+
+    @GetMapping("/{id}")
+    public String detail(@PathVariable("id") Long reviewId,
+                         HttpSession session,
+                         Model model) {
+        Member login = (Member) session.getAttribute("loginMember");
+        Long loginId = (login != null) ? login.getId() : null;
+
+        Review review = reviewQueryService.getDetail(reviewId);
+        boolean owner = (loginId != null) && reviewQueryService.isOwner(reviewId, loginId);
+
+        model.addAttribute("review", review);
+        model.addAttribute("owner", owner);
+        return "review-detail"; // templates/review-detail.html
     }
 
     private ReviewDto toDto(Store store, Member member, String content, Integer rating, Order order) {
