@@ -22,6 +22,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
     select distinct r
     from Review r
+    left join fetch r.member m
     left join fetch r.order o
     left join fetch r.reviewImages ri
     where r.id = :reviewId

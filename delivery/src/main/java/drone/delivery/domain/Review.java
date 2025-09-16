@@ -19,8 +19,8 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -32,7 +32,7 @@ public class Review extends BaseEntity {
 
     private Integer rating;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<ReviewImage> reviewImages = new ArrayList<>();
 
 

@@ -12,6 +12,7 @@ import drone.delivery.service.reviewImage.ReviewImageService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +29,7 @@ import java.util.Objects;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/reviews")
+@Slf4j
 public class ReviewController {
 
     private final OrderService orderService;
@@ -113,6 +115,7 @@ public class ReviewController {
                 reviewImageService.addImages(reviewId, memberId, files);
             } catch (IOException e) {
                 // 이미지 저장 실패 시, 리뷰는 이미 생성됨 → 사용자에게 안내하고 리뷰 상세/주문으로 이동
+                log.info(e.getMessage());
                 ra.addFlashAttribute("message", "리뷰는 등록되었으나 이미지 업로드에 실패했습니다. 다시 시도해주세요.");
                 return "redirect:/orders"; // 필요 시 리뷰 상세로 리다이렉트 경로 조정
             } catch (IllegalArgumentException | SecurityException ex) {
