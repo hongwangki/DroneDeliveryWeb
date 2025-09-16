@@ -1,19 +1,18 @@
 package drone.delivery.controller;
 
-import drone.delivery.domain.Member;
-import drone.delivery.domain.Order;
-import drone.delivery.domain.OrderItem;
-import drone.delivery.domain.Store;
+import drone.delivery.domain.*;
 import drone.delivery.dto.ReviewCreateForm;
 import drone.delivery.dto.ReviewDto;
 import drone.delivery.repository.StoreRepository;
 import drone.delivery.service.OrderService;
+import drone.delivery.service.ReviewQueryService;
 import drone.delivery.service.ReviewService;
 import drone.delivery.service.StoreService;
 import drone.delivery.service.reviewImage.ReviewImageService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +29,7 @@ import java.util.Objects;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/reviews")
+@Slf4j
 public class ReviewController {
 
     private final OrderService orderService;
@@ -37,6 +37,7 @@ public class ReviewController {
     private final ReviewImageService reviewImageService; // ★ 추가
     private final StoreRepository storeRepository;
     private final StoreService storeService;
+    private final ReviewQueryService reviewQueryService;
 
     @GetMapping("/new")
     public String newReview(HttpSession session,
@@ -114,6 +115,7 @@ public class ReviewController {
                 reviewImageService.addImages(reviewId, memberId, files);
             } catch (IOException e) {
                 // 이미지 저장 실패 시, 리뷰는 이미 생성됨 → 사용자에게 안내하고 리뷰 상세/주문으로 이동
+                log.info(e.getMessage());
                 ra.addFlashAttribute("message", "리뷰는 등록되었으나 이미지 업로드에 실패했습니다. 다시 시도해주세요.");
                 return "redirect:/orders"; // 필요 시 리뷰 상세로 리다이렉트 경로 조정
             } catch (IllegalArgumentException | SecurityException ex) {
@@ -123,17 +125,32 @@ public class ReviewController {
         }
 
         ra.addFlashAttribute("message", "리뷰가 등록되었습니다.");
-        return "redirect:/orders";
+        return "redirect:/reviews/" + reviewId;
     }
 
     @GetMapping
     public String reviewList(HttpSession session, Model model) {
         Member member = (Member) session.getAttribute("loginMember");
-        if (member == null) { // ★ 방어코드
+        if (member == null) {
             return "redirect:/login?redirect=/reviews";
         }
         model.addAttribute("reviews", reviewService.findAllByMember(member));
         return "review-list";
+    }
+
+    @GetMapping("/{id}")
+    public String detail(@PathVariable("id") Long reviewId,
+                         HttpSession session,
+                         Model model) {
+        Member login = (Member) session.getAttribute("loginMember");
+        Long loginId = (login != null) ? login.getId() : null;
+
+        Review review = reviewQueryService.getDetail(reviewId);
+        boolean owner = (loginId != null) && reviewQueryService.isOwner(reviewId, loginId);
+
+        model.addAttribute("review", review);
+        model.addAttribute("owner", owner);
+        return "review-detail"; // templates/review-detail.html
     }
 
     private ReviewDto toDto(Store store, Member member, String content, Integer rating, Order order) {

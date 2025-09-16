@@ -40,6 +40,7 @@ public class ReviewImage {
     private String thumbnailUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "review_id")
     private Review review; // <-- Review 쪽에 mappedBy="reviewImages" 맞춰줄 것
 
     public void bindReview(Review review) {

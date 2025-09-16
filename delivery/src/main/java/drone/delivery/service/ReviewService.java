@@ -30,8 +30,8 @@ public class ReviewService {
         review.setMember(reviewDto.getMember());
         review.setContent(reviewDto.getContent());
         review.setRating(reviewDto.getRating());
-        review.setReviewImages(reviewDto.getReviewImages());
         review.setOrder(reviewDto.getOrder());
+
 
         Review savedReview = reviewRepository.save(review);
 

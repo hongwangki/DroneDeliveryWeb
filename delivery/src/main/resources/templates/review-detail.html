@@ -1,0 +1,111 @@
+﻿<!-- src/main/resources/templates/review-detail.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>배달의 드론 | 리뷰 상세</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root{
+            --mint:#2AC1BC; --ink:#0f172a; --muted:#64748b; --bg:#f6f7fb; --card:#fff;
+            --border:#e5e7eb; --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+            --radius:18px; --star:#f59e0b; --star-empty:#e5e7eb;
+        }
+        *{box-sizing:border-box}
+        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+        .wrap{ max-width:1100px; margin:24px auto 80px; padding:0 18px; }
+        .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+        .head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+        .title{ font-size:22px; font-weight:800; margin:0; }
+        .meta{ color:var(--muted); font-size:14px; }
+        .stars{ display:flex; gap:6px; }
+        .star{ width:22px; height:22px; display:inline-block; }
+        .star svg{ width:100%; height:100%; fill:var(--star-empty); }
+        .star.on svg{ fill:var(--star); }
+        .content{ margin-top:14px; line-height:1.7; white-space:pre-wrap; }
+        .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; margin-top:16px; }
+        .grid img{ width:100%; height:180px; object-fit:cover; border-radius:12px; border:1px solid var(--border); background:#fff; }
+        .toolbar{ margin-top:16px; display:flex; gap:10px; }
+        .btn{ border:1px solid var(--border); background:#fff; padding:8px 12px; border-radius:10px; text-decoration:none; color:#111; font-weight:700; }
+        .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; }
+        .divider{ height:1px; background:var(--border); margin:16px 0; }
+        .muted{ color:var(--muted); }
+    </style>
+</head>
+<body>
+<main class="wrap">
+    <section class="card">
+        <div class="head">
+            <h1 class="title">리뷰 상세</h1>
+            <div class="meta">
+                <span th:text="'작성자: ' + ${review.member.name}">작성자: 홍길동</span> ·
+                <span th:text="'작성일: ' + ${#temporals.format(review.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:34</span>
+            </div>
+        </div>
+
+        <div class="meta" style="margin-top:6px;">
+            <span th:if="${review.order != null}">
+                주문번호 <strong th:text="${review.order.id}">1</strong> ·
+                주문시간 <strong th:text="${#temporals.format(review.order.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:30</strong>
+            </span>
+            <span th:if="${review.order != null and review.order.orderStatus != null}">
+                · 상태 <strong th:text="${review.order.orderStatus.name()}">DELIVERED</strong>
+            </span>
+            <span th:if="${review.order != null and review.order.orderItems != null and !#lists.isEmpty(review.order.orderItems)}">
+                · 매장
+                <strong th:text="${review.order.orderItems[0].product.store.name}">가게이름</strong>
+            </span>
+        </div>
+
+        <!-- 별점 -->
+        <div class="stars" style="margin-top:10px;">
+            <span class="star" th:classappend="${review.rating >= 1} ? ' on'">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </span>
+            <span class="star" th:classappend="${review.rating >= 2} ? ' on'">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </span>
+            <span class="star" th:classappend="${review.rating >= 3} ? ' on'">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </span>
+            <span class="star" th:classappend="${review.rating >= 4} ? ' on'">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </span>
+            <span class="star" th:classappend="${review.rating >= 5} ? ' on'">
+                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </span>
+        </div>
+
+        <!-- 본문 -->
+        <div class="content" th:text="${review.content}">맛있었어요!</div>
+
+        <div class="divider"></div>
+
+        <!-- 이미지 그리드 -->
+        <div th:if="${review.reviewImages != null and !#lists.isEmpty(review.reviewImages)}">
+            <div class="grid">
+                <img th:each="img : ${review.reviewImages}" th:src="${img.thumbnailUrl != null ? img.thumbnailUrl : img.url}" alt="">
+            </div>
+        </div>
+        <div th:if="${review.reviewImages == null or #lists.isEmpty(review.reviewImages)}" class="muted">
+            첨부된 사진이 없습니다.
+        </div>
+
+        <!-- 소유자만 보이는 툴바 -->
+        <div class="toolbar" th:if="${owner}">
+            <a th:href="@{|/reviews/${review.id}/edit|}" class="btn">수정</a>
+            <form th:action="@{|/reviews/${review.id}|}" method="post" onsubmit="return confirm('정말 삭제하시겠어요?')">
+                <input type="hidden" name="_method" value="delete"/>
+                <button type="submit" class="btn">삭제</button>
+            </form>
+        </div>
+
+        <div class="toolbar">
+            <a th:href="@{/orders}" class="btn">주문 목록으로</a>
+            <a th:href="@{/reviews}" class="btn">내 리뷰 목록</a>
+            <a th:if="${review.order != null}" th:href="@{|/orders/${review.order.id}|}" class="btn primary">해당 주문 보기</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

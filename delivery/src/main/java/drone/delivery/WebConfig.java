@@ -8,7 +8,9 @@ import org.springframework.http.CacheControl;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.config.annotation.*;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 
 @Configuration
@@ -39,20 +41,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(LOGIN_WHITELIST);
     }
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 정적 업로드 폴더 노출: /uploads/** → 실제 파일시스템
-        // reviewUploadBaseDir: e.g., "uploads/reviews" → 상위 "uploads"를 웹 루트에 매핑
-        String uploadsRoot = toUploadsRoot(reviewUploadBaseDir);
-        String absolute = Paths.get(uploadsRoot).toAbsolutePath().toString().replace("\\", "/");
-        if (!absolute.endsWith("/")) absolute += "/";
-
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + absolute)
-                .setCacheControl(CacheControl.maxAge(java.time.Duration.ofHours(1)).cachePublic());
-
-        // registry.addResourceHandler("/assets/**").addResourceLocations("classpath:/static/assets/");
-    }
 
     private String toUploadsRoot(String reviewBase) {
         // "uploads/reviews" → "uploads"
@@ -75,4 +63,26 @@ public class WebConfig implements WebMvcConfigurer {
         // (선택) 트레일링 슬래시 허용
         configurer.setUseTrailingSlashMatch(true);
     }
+
+
+    private Path resolveUploadsRoot() {
+        Path base = Paths.get(reviewUploadBaseDir);
+        if (!base.isAbsolute()) {
+            base = Paths.get(System.getProperty("user.home")).resolve(base).normalize();
+        }
+        // base == .../uploads/reviews → 부모 uploads 디렉터리를 리소스 루트로
+        Path root = base.getParent() != null ? base.getParent() : base;
+        return root;
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        Path root = resolveUploadsRoot();         // e.g. C:/Users/me/uploads
+        String location = root.toUri().toString(); // "file:/C:/Users/me/uploads/"
+
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(location)
+                .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic());
+    }
+
 }
