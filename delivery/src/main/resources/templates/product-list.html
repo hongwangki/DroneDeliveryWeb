@@ -1,166 +1,302 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title th:text="${store.name} + ' 메뉴판'">Store Menu</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title th:text="${store.name} + ' | 메뉴 & 리뷰'">배달의 드론 | 메뉴</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f8f9fc;
-      padding: 40px;
-      position: relative;
+    :root{
+      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --ink:#0f172a; --muted:#6b7280;
+      --card:#ffffff; --bg:#f6f7fb; --line:#e5e7eb;
+      --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+      --radius:18px;
+      --danger:#ef4444;
     }
-    h1 {
-      text-align: center;
-      color: #333;
+    *{box-sizing:border-box}
+    body{ margin:0; color:var(--ink);
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(180deg,#fafbff 0%, var(--bg) 100%); }
+
+    /* 상단바 */
+    .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.8);
+      backdrop-filter:blur(6px); border-bottom:1px solid var(--line)}
+    .appbar-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#0b3d3b}
+    .logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.25)}
+    .app-actions a{padding:8px 12px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:#111827;font-weight:800;background:#fff}
+    .app-actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+    /* 배너 */
+    .banner { max-width:1200px; margin:20px auto 0; padding:0 20px; }
+    .banner-inner{
+      border-radius:24px; min-height:120px; display:flex; align-items:center;
+      border:1px solid rgba(2,6,23,.08); box-shadow:var(--shadow);
+      background:linear-gradient(135deg,#e7f7f6,#f5fafc);
+      padding:20px 22px;
     }
-    .home-btn {
-      position: absolute;
-      top: 20px;
-      right: 40px;
-      background-color: #4e73df;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
+    .banner h1{margin:0; font-size:22px; font-weight:900;color:#0b3d3b}
+    .banner-chip{display:inline-flex; gap:8px; margin-top:8px}
+    .chip{background:#ffffff; border:1px solid rgba(2,6,23,.08); color:#0b3d3b;
+      padding:6px 10px; border-radius:999px; font-weight:800; font-size:12px;}
+
+    /* 레이아웃 */
+    .wrap{max-width:1200px; margin:16px auto 80px; padding:0 20px; display:grid; grid-template-columns: 1fr 340px; gap:18px}
+    @media (max-width: 1000px){ .wrap{ grid-template-columns: 1fr } }
+
+    /* 탭 */
+    .tabs{display:flex; gap:10px; margin:14px 0}
+    .tab-btn{ appearance:none; border:1px solid var(--line); background:#fff; color:#111827;
+      font-weight:800; padding:8px 12px; border-radius:999px; cursor:pointer; }
+    .tab-btn[aria-selected="true"]{ background:var(--brand); color:#fff; border-color:var(--brand); box-shadow:0 8px 18px rgba(42,193,188,.25) }
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    /* 메뉴 리스트 */
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item{
+      display:flex; gap:14px; align-items:center;
+      background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px;
+      box-shadow:var(--shadow);
+      text-decoration:none; color:inherit;
     }
-    .success, .error {
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 20px;
+    .item.disabled{pointer-events:none; opacity:.5}
+    .thumb{ width:84px; height:84px; border-radius:10px; overflow:hidden;
+      background:#f2f5f7; border:1px solid #e6ecef; display:grid; place-items:center; color:#0b3d3b; font-weight:900; flex:0 0 84px; }
+    .thumb img{width:100%; height:100%; object-fit:cover}
+    .meta{display:flex; gap:6px; align-items:center}
+    .name{font-weight:900; font-size:16px}
+    .price{font-weight:800}
+    .muted{color:var(--muted); font-size:13px}
+    .badge{background:#111827; color:#fff; font-weight:900; font-size:11px; padding:3px 8px; border-radius:999px}
+    .badge.soldout{background:var(--danger)}
+    .grow{flex:1}
+
+    /* 우측: 장바구니 */
+    .side{ position:sticky; top:84px; height:fit-content; background:#fff; border:1px solid var(--line);
+      border-radius:18px; box-shadow:var(--shadow); padding:16px; }
+    .side h3{margin:0 0 8px; font-size:18px}
+    .line{height:1px; background:var(--line); margin:12px 0}
+
+    .alert{padding:12px 14px;border-radius:12px;border:1px solid;margin:6px 0;font-weight:700}
+    .ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+    .warn{background:#fff7ed;border-color:#ffedd5;color:#9a3412}
+    .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+
+    .empty{color:var(--muted); text-align:center; padding:24px 0}
+
+    /* ===== 모달 ===== */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(2,6,23,.45);
+      display:none; align-items:center; justify-content:center; z-index:1000;
     }
-    .success { color: green; }
-    .error { color: red; }
-    .products {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    .product {
-      border: 1px solid #ddd;
-      padding: 20px;
-      border-radius: 10px;
-      background: white;
-      width: 220px;
-      text-align: center;
-      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-    }
-    .product h3 { margin-bottom: 10px; }
-    input[type='number'] {
-      width: 50px;
-      padding: 5px;
-    }
-    .order-btn {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .order-btn:hover { background-color: #218838; }
-    .remove-btn {
-      background: none;
-      border: none;
-      color: red;
-      font-weight: bold;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    .cart-box {
-      background: #fffbea;
-      border: 1px solid #f5e79e;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 30px auto;
-      width: 400px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-    }
-    .cart-box h4 { margin-bottom: 10px; }
-    .cart-box ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    .cart-box li { margin-bottom: 5px; }
+    .modal{ width:min(520px, 92vw); background:#fff; border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--line); }
+    .modal header{padding:14px 16px; border-bottom:1px solid var(--line); font-weight:900}
+    .modal .body{padding:14px 16px; max-height:min(62vh,520px); overflow:auto}
+    .modal .row{display:flex; justify-content:space-between; gap:12px; margin:8px 0}
+    .modal .total{display:flex; justify-content:space-between; margin-top:10px; font-weight:900}
+    .modal footer{padding:14px 16px; border-top:1px solid var(--line); display:flex; gap:8px; justify-content:flex-end}
+    .btn{appearance:none; border:1px solid var(--line); background:#fff; padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer}
+    .btn.primary{background:var(--brand); color:#fff; border-color:var(--brand)}
+    .btn.ghost{background:#fff}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
   </style>
 </head>
-<body>
-<h1 th:text="${store.name} + ' 메뉴판'">Store Name</h1>
-<a href="/delivery" class="home-btn">🏠 홈으로 가기</a>
 
-<div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
-<div th:if="${success}" class="success" th:text="${success}"></div>
-<div th:if="${successMessage}" class="success" th:text="${successMessage}"></div>
+<body
+        th:with="
+    cart=${session['cart_' + store.id]},
+    total=${session.totalPrice != null ? session.totalPrice : 0},
+    money=${session.loggedInMember != null ? session.loggedInMember.money : 0},
+    min=${store.minOrderPrice != null ? store.minOrderPrice : 0},
+    lackMin=${total < min},
+    lackMoney=${money < total}
+  ">
 
-<!-- 장바구니 -->
-<div th:if="${cart}" class="cart-box">
-  <h4>🛒 현재 장바구니</h4>
-  <ul>
-    <li th:each="item : ${cart}">
-      <span th:text="${item.productName}"></span> -
-      <span th:text="${item.quantity}"></span>개 /
-      <span th:text="${item.totalPrice}"></span>원
-      <form method="post" action="/cart/remove" style="display:inline;">
-        <input type="hidden" name="productId" th:value="${item.productId}" />
-        <button type="submit" class="remove-btn">❌</button>
-      </form>
-    </li>
-  </ul>
-  <hr>
-  <p><strong>총 결제 금액:</strong> <span th:text="${totalPrice}"></span>원</p>
-  <button type="button" class="order-btn" onclick="openConfirmModal()">📋 주문확정</button>
-</div>
-
-<!-- 주문 확인 목록 Modal -->
-<div id="confirmModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.4); z-index:9999;">
-  <div style="background:white; padding:30px; border-radius:10px; width:500px; margin:100px auto; box-shadow:0 2px 10px rgba(0,0,0,0.2);">
-    <h3>📅 주문 확인</h3>
-    <p><strong>주문자:</strong> <span th:text="${session.loggedInMember.name}">홍길동</span></p>
-    <p><strong>주소:</strong>
-      <span th:text="${session.loggedInMember.address.city} + ' ' + ${session.loggedInMember.address.street}"></span>
-    </p>
-
-    <h4>🧾 주문 목록</h4>
-    <ul>
-      <li th:each="item : ${cart}">
-        <span th:text="${item.productName}">상품명</span> -
-        <span th:text="${item.quantity}">1</span>개 /
-        <span th:text="${item.totalPrice}">10000</span>원
-      </li>
-    </ul>
-
-    <hr>
-    <p><strong>총 결제 금액:</strong> <span th:text="${totalPrice}"></span>원</p>
-
-    <form method="post" action="/cart/checkout">
-      <button type="submit" class="order-btn">✅ 주문 확정</button>
-      <button type="button" onclick="closeConfirmModal()" class="remove-btn">취소</button>
-    </form>
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand"><span class="logo">드</span><span>배달의 드론</span></div>
+    <div class="app-actions"><a th:href="@{/delivery}">← 목록으로</a></div>
   </div>
-</div>
+</header>
 
-<!-- 상품 목록 -->
-<div class="products">
-  <div class="product" th:each="product : ${store.products}">
-    <h3 th:text="${product.foodName}">상품명</h3>
-    <p th:text="${product.foodPrice} + '원'">가격</p>
-    <form method="post" th:action="@{/cart/add}">
-      <input type="hidden" name="productId" th:value="${product.id}" />
-      <input type="number" name="quantity" value="1" min="1" />
-      <button type="submit" class="order-btn">담기</button>
-    </form>
+<!-- 배너 -->
+<section class="banner">
+  <div class="banner-inner">
+    <div>
+      <h1 th:text="${store.name}">가게 이름</h1>
+      <div class="banner-chip">
+        <span class="chip" th:text="${store.category}">카테고리</span>
+        <span class="chip" th:text="'최소주문 ' + ${#numbers.formatInteger(min,0,'COMMA')} + '원'">최소주문 0원</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <!-- 좌측 -->
+  <section>
+    <div class="tabs" role="tablist">
+      <button id="tab-menu" class="tab-btn" role="tab" aria-controls="panel-menu" aria-selected="true">메뉴</button>
+      <button id="tab-review" class="tab-btn" role="tab" aria-controls="panel-review" aria-selected="false">리뷰</button>
+    </div>
+
+    <!-- 메뉴 -->
+    <section id="panel-menu" class="tab-panel active">
+      <div class="list">
+        <a class="item"
+           th:each="p : ${store.products}"
+           th:href="@{/delivery/{sid}/menu/{pid}(sid=${store.id}, pid=${p.id})}"
+           th:classappend="${p.quantity <= 0} ? ' disabled' : ''">
+          <span class="badge soldout" th:if="${p.quantity <= 0}">품절</span>
+
+          <div class="thumb">
+            <img th:if="${p.productImageUrl != null and !#strings.isEmpty(p.productImageUrl)}"
+                 th:src="${p.productImageUrl}" alt="상품 이미지">
+            <span th:unless="${p.productImageUrl != null and !#strings.isEmpty(p.productImageUrl)}"
+                  th:text="${#strings.substring(store.name,0,1)}">드</span>
+          </div>
+
+          <div class="grow">
+            <div class="meta">
+              <div class="name" th:text="${p.foodName}">메뉴명</div>
+            </div>
+            <div class="price" th:text="${#numbers.formatInteger(p.foodPrice,0,'COMMA')} + '원'">0원</div>
+            <div class="muted" th:if="${p.quantity > 0}" th:text="'재고 ' + ${p.quantity} + '개'"></div>
+            <div class="muted" th:if="${p.quantity <= 0}" style="color:var(--danger);font-weight:800">현재 품절</div>
+          </div>
+        </a>
+      </div>
+
+      <p th:if="${#lists.isEmpty(store.products)}" class="empty">등록된 메뉴가 없습니다.</p>
+    </section>
+
+    <!-- 리뷰 -->
+    <section id="panel-review" class="tab-panel">
+      <div class="side" style="box-shadow:none">
+        <h3>리뷰</h3>
+        <p class="muted">아직 리뷰 API가 없다면 목업 데이터나 안내 문구를 보여주세요.</p>
+      </div>
+    </section>
+  </section>
+
+  <!-- 우측: 장바구니 -->
+  <aside class="side">
+    <h3>장바구니</h3>
+    <div th:if="${cart == null or #lists.isEmpty(cart)}" class="empty">담긴 상품이 없습니다.</div>
+
+    <div th:if="${cart != null and !#lists.isEmpty(cart)}">
+      <div th:each="item : ${cart}" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+        <div>
+          <div style="font-weight:900" th:text="${item.productName}">메뉴명</div>
+          <div class="muted" th:text="${item.quantity} + '개 · ' + ${#numbers.formatInteger(item.price,0,'COMMA')} + '원'"></div>
+        </div>
+        <form th:action="@{/cart/remove}" method="post">
+          <input type="hidden" name="productId" th:value="${item.productId}">
+          <input type="hidden" name="storeId" th:value="${store.id}">
+          <button class="btn ghost" type="submit">삭제</button>
+        </form>
+      </div>
+
+      <div class="line"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="muted">총 결제 금액</span>
+        <span class="price" th:text="${#numbers.formatInteger(total,0,'COMMA')} + '원'">0원</span>
+      </div>
+
+      <div class="alert warn" th:if="${lackMin}">
+        최소주문 금액 미달: <b th:text="${#numbers.formatInteger(min,0,'COMMA')} + '원'">0원</b> 이상 주문해 주세요.
+      </div>
+      <div class="alert err" th:if="${!lackMin and lackMoney}">
+        잔액 부족: 보유 <b th:text="${#numbers.formatInteger(money,0,'COMMA')} + '원'">0원</b>
+      </div>
+
+      <!-- 기존 즉시 제출 → 모달 열기 버튼으로 변경 -->
+      <button id="openConfirm" class="btn primary" style="width:100%; margin-top:12px"
+              th:disabled="${lackMin or lackMoney}">주문 확정</button>
+
+      <!-- 실제 제출용 폼(모달에서 submit) -->
+      <form id="checkoutForm" th:action="@{/cart/checkout}" method="post" style="display:none">
+        <input type="hidden" name="storeId" th:value="${store.id}">
+      </form>
+    </div>
+  </aside>
+</main>
+
+<!-- ===== 주문 확인 모달 ===== -->
+<div class="modal-backdrop" id="confirmModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <header id="confirmTitle">주문 내역 확인</header>
+    <div class="body">
+      <div th:if="${cart != null and !#lists.isEmpty(cart)}">
+        <div class="row" th:each="ci : ${cart}">
+          <div style="font-weight:800" th:text="${ci.productName}">메뉴명</div>
+          <div class="muted" th:text="${ci.quantity} + '개 · ' + ${#numbers.formatInteger(ci.price,0,'COMMA')} + '원'">1개 · 0원</div>
+        </div>
+        <div class="line" style="margin:12px 0"></div>
+        <div class="total">
+          <span>총 결제 금액</span>
+          <span th:text="${#numbers.formatInteger(total,0,'COMMA')} + '원'">0원</span>
+        </div>
+      </div>
+      <p class="muted" th:if="${cart == null or #lists.isEmpty(cart)}">장바구니가 비어 있습니다.</p>
+      <p style="margin-top:10px">정말로 주문하시겠습니까?</p>
+    </div>
+    <footer>
+      <button class="btn ghost" id="cancelConfirm">취소</button>
+      <button class="btn primary" id="submitOrder"
+              th:disabled="${cart == null or #lists.isEmpty(cart)}">주문하기</button>
+    </footer>
   </div>
 </div>
 
 <script>
-  function openConfirmModal() {
-    document.getElementById('confirmModal').style.display = 'block';
+  // 탭
+  const tabs=[...document.querySelectorAll('.tab-btn')];
+  const panels=[...document.querySelectorAll('.tab-panel')];
+  tabs.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      tabs.forEach(b=>b.setAttribute('aria-selected','false'));
+      panels.forEach(p=>p.classList.remove('active'));
+      btn.setAttribute('aria-selected','true');
+      document.getElementById(btn.getAttribute('aria-controls')).classList.add('active');
+    });
+  });
+
+  // 모달
+  const modal = document.getElementById('confirmModal');
+  const openBtn = document.getElementById('openConfirm');
+  const cancelBtn = document.getElementById('cancelConfirm');
+  const submitBtn = document.getElementById('submitOrder');
+  const form = document.getElementById('checkoutForm');
+
+  function openModal(){
+    if(!openBtn || openBtn.disabled) return;
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+    // 포커스 이동
+    submitBtn?.focus();
   }
-  function closeConfirmModal() {
-    document.getElementById('confirmModal').style.display = 'none';
+  function closeModal(){
+    modal.style.display='none';
+    modal.setAttribute('aria-hidden','true');
+    openBtn?.focus();
   }
+
+  openBtn && openBtn.addEventListener('click', openModal);
+  cancelBtn && cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.getAttribute('aria-hidden')==='false') closeModal(); });
+
+  // 주문 제출
+  submitBtn && submitBtn.addEventListener('click', ()=>{
+    // 실제 서버로 POST
+    form.submit();
+  });
 </script>
 </body>
 </html>

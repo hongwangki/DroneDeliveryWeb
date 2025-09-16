@@ -3,11 +3,13 @@ package drone.delivery.controller;
 import drone.delivery.domain.Member;
 import drone.delivery.domain.Order;
 import drone.delivery.domain.OrderStatus;
-import drone.delivery.repository.OrderRepository;
+import drone.delivery.repository.MemberRepository;
 import drone.delivery.service.MemberService;
 import drone.delivery.service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final MemberService memberService;
-    private final OrderRepository orderRepository;
+    private final MemberRepository memberRepository;
 
     //실제 주문이 이루어진 후 메서드
     @GetMapping("/realtime")
@@ -49,7 +51,12 @@ public class OrderController {
         return "{\"message\": \"주문이 취소되었습니다.\", \"redirect\": \"/delivery\"}";
     }
 
+    @PostMapping("/test")
+    public ResponseEntity<Member> test() {
+        Member member= memberService.findById(2L);
 
+        return ResponseEntity.ok(member); // DTO 없이 엔티티 그대로 반환
+    }
     // 주문 내역
     @GetMapping("/orders")
     public String orderList(HttpSession session,
@@ -112,3 +119,5 @@ public class OrderController {
 
 
 }
+
+

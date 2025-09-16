@@ -3,16 +3,16 @@ package drone.delivery.controller;
 import drone.delivery.domain.CartItem;
 import drone.delivery.domain.Member;
 import drone.delivery.domain.Product;
-import drone.delivery.service.MemberService;
-import drone.delivery.service.OrderService;
-import drone.delivery.service.ProductService;
+import drone.delivery.dto.AddToCartRequestDTO;
+import drone.delivery.dto.ProductOptionsDTO;
+import drone.delivery.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
@@ -27,149 +27,209 @@ public class CartController {
     private final OrderService orderService;
     private final MemberService memberService;
 
-    //장바구니에 음식을 넣는 로직
-    @PostMapping("/cart/add")
-    public String addToCart(@RequestParam Long productId,
-                            @RequestParam(defaultValue = "1") int quantity,
-                            HttpSession session,
-                            RedirectAttributes redirectAttributes) {
+    // ★ 추가: 옵션 조회/검증 서비스
+    private final ProductOptionQueryService productOptionQueryService;
+    private final CartFactoryService cartFactoryService;
 
-        Product product = productService.findById(productId);
+    /** 가게별 장바구니 키 생성 */
+    private String cartKey(Long storeId) { return "cart_" + storeId; }
 
-        // 세션에서 장바구니 가져오기
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-        if (cart == null) cart = new ArrayList<>();
-
-        // 이미 담긴 상품이면 수량만 증가
-        Optional<CartItem> existing = cart.stream()
-                .filter(item -> item.getProductId().equals(productId))
-                .findFirst();
-
-        if (existing.isPresent()) {
-            existing.get().setQuantity(existing.get().getQuantity() + quantity);
-        } else {
-            CartItem item = new CartItem();
-            item.setProductId(product.getId());
-            item.setProductName(product.getFoodName());
-            item.setPrice(product.getFoodPrice());
-            item.setQuantity(quantity);
-            cart.add(item);
-        }
-
-        // 세션 저장 + flash 메시지 전달
-        int total = cart.stream().mapToInt(CartItem::getTotalPrice).sum();
-        session.setAttribute("cart", cart);
-        session.setAttribute("totalPrice", total); // 총액 저장
-        // 장바구니에 담을 때
-        session.setAttribute("lastStoreId", product.getStore().getId());
-        redirectAttributes.addFlashAttribute("cart", cart);
-        redirectAttributes.addFlashAttribute("success", product.getFoodName() + "이(가) 장바구니에 담겼습니다.");
-
-        return "redirect:/delivery/" + product.getStore().getId();
+    /** 합계 계산 헬퍼 - 항상 (단가 × 수량)로 계산 */
+    private int calcTotal(List<CartItem> cart) {
+        if (cart == null || cart.isEmpty()) return 0;
+        return cart.stream()
+                .mapToInt(ci -> Math.max(0, ci.getPrice()) * Math.max(1, ci.getQuantity()))
+                .sum();
     }
 
-    //주문 확인 전 실제로 원하는 주문이 맞는지 확인하는 로직
-    @PostMapping("/cart/checkout")
-    public String checkout(HttpSession session, RedirectAttributes redirectAttributes) {
-
-        Member sessionMember = (Member) session.getAttribute("loggedInMember");
-        @SuppressWarnings("unchecked")
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-
-        // 어떤 가게 페이지로 돌려보낼지 계산
-        Long storeId = null;
+    /** (레거시) 공통 cart에서 가게ID 추론 */
+    private Long inferStoreIdFromCart(List<CartItem> cart) {
+        if (cart == null || cart.isEmpty()) return null;
         try {
-            if (cart != null && !cart.isEmpty()) {
-                Product first = productService.findById(cart.get(0).getProductId());
-                if (first != null && first.getStore() != null) {
-                    storeId = first.getStore().getId();
-                }
-            }
+            Product first = productService.findById(cart.get(0).getProductId());
+            if (first != null && first.getStore() != null) return first.getStore().getId();
         } catch (Exception ignore) {}
-        if (storeId == null) {
-            storeId = (Long) session.getAttribute("lastStoreId");
+        return null;
+    }
+
+    // =========================================
+    // 1) 메뉴 상세 보기 (옵션 트리 포함)
+    // URL 패턴은 /delivery/{storeId}/menu/{productId}
+    // =========================================
+    @GetMapping("/delivery/{storeId}/menu/{productId}")
+    public String viewProductDetail(@PathVariable Long storeId,
+                                    @PathVariable Long productId,
+                                    Model model,
+                                    HttpSession session,
+                                    RedirectAttributes ra) {
+
+        // 상품 + 옵션 트리 조회
+        ProductOptionsDTO dto;
+        try {
+            dto = productOptionQueryService.getProductWithOptions(productId);
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/delivery/" + storeId;
         }
 
-        // 로그인/장바구니 기본 검증 (UI 친화적 선검증)
+        // 화면에 필요한 값 세팅 (사이드바용 세션 장바구니 꺼내기)
+        @SuppressWarnings("unchecked")
+        List<CartItem> cart = (List<CartItem>) session.getAttribute(cartKey(storeId));
+
+        model.addAttribute("storeId", storeId);
+        model.addAttribute("product", dto);      // 상세 화면용 DTO
+        model.addAttribute("cart", cart);        // 우측 장바구니
+        model.addAttribute("totalPrice", calcTotal(cart));
+
+        // 로그인/잔액/최소주문금액 등은 기존처럼 필요시 추가
+        return "product-detail"; // ← Thymeleaf 템플릿명 (resources/templates/product-detail.html)
+    }
+
+    // =========================================
+    // 2) 장바구니 담기 (옵션 포함)
+    // 기존 /cart/add 를 DTO로 교체
+    // =========================================
+    @PostMapping("/cart/add")
+    public String addToCart(@ModelAttribute AddToCartRequestDTO req,
+                            @RequestParam(required = false) Long storeId,
+                            HttpSession session,
+                            RedirectAttributes ra) {
+
+        // 상세 페이지에서 hidden으로 storeId를 못 받았을 때 대비
+        if (storeId == null) {
+            try {
+                Product p = productService.findById(req.getProductId());
+                storeId = p.getStore().getId();
+            } catch (Exception ignore) {}
+        }
+
+        try {
+            // 옵션 검증 + 스냅샷 (여기서 필수 미선택 시 예외 발생)
+            CartItem cartItem = cartFactoryService.buildCartItem(req);
+
+            // === 기존 장바구니 추가 로직 그대로 ===
+            String key = "cart_" + storeId;
+            @SuppressWarnings("unchecked")
+            List<CartItem> cart = (List<CartItem>) session.getAttribute(key);
+            if (cart == null) cart = new ArrayList<>();
+            cart.add(cartItem);
+            session.setAttribute(key, cart);
+            session.setAttribute("totalPrice", cart.stream().mapToInt(ci -> ci.getPrice() * ci.getQuantity()).sum());
+            session.setAttribute("lastStoreId", storeId);
+            session.removeAttribute("cart");
+
+            String msg = cartItem.getProductName() + "이(가) 장바구니에 담겼습니다.";
+            ra.addFlashAttribute("success", msg);
+            ra.addFlashAttribute("successMessage", msg);
+            return "redirect:/delivery/" + storeId;
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // 사용자 친화적 메시지로 상세 페이지로 되돌리기
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            String back = (storeId != null)
+                    ? "/delivery/" + storeId + "/menu/" + req.getProductId()
+                    : "/delivery";
+            return "redirect:" + back;
+        }
+    }
+
+
+    // =========================================
+    // 3) 주문 확정 (기존 유지) 실제 주문
+    // =========================================
+    @PostMapping("/cart/checkout")
+    public String checkout(@RequestParam(required = false) Long storeId,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
+
+        Member sessionMember = (Member) session.getAttribute("loggedInMember");
+
+        // 가게 정보 확인
+        if (storeId == null) {
+            Long last = (Long) session.getAttribute("lastStoreId");
+            if (last != null) storeId = last;
+            if (storeId == null) {
+                @SuppressWarnings("unchecked")
+                List<CartItem> legacy = (List<CartItem>) session.getAttribute("cart");
+                storeId = inferStoreIdFromCart(legacy);
+            }
+        }
+
+        if (storeId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "가게 정보를 찾을 수 없습니다.");
+            return "redirect:/delivery";
+        }
+
+        String key = cartKey(storeId);
+        @SuppressWarnings("unchecked")
+        List<CartItem> cart = (List<CartItem>) session.getAttribute(key);
+
         if (sessionMember == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
-            return "redirect:/delivery/" + (storeId != null ? storeId : "");
+            return "redirect:/delivery/" + storeId;
         }
         if (cart == null || cart.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "🛒 장바구니가 비어 있어 주문할 수 없습니다.");
-            return "redirect:/delivery/" + (storeId != null ? storeId : "");
+            return "redirect:/delivery/" + storeId;
         }
 
-        // 총액(클라이언트 계산) 0원 방지 — 실제 검증은 서비스에서 다시 함
-        int totalAmount = cart.stream().mapToInt(CartItem::getTotalPrice).sum();
+        int totalAmount = calcTotal(cart);
+        session.setAttribute("totalPrice", totalAmount);
+
         if (totalAmount <= 0) {
             redirectAttributes.addFlashAttribute("errorMessage", "❌ 결제 금액이 0원입니다. 주문할 수 없습니다.");
-            return "redirect:/delivery/" + (storeId != null ? storeId : "");
+            return "redirect:/delivery/" + storeId;
         }
 
         try {
-            // 실제 주문/검증/재고차감/잔액차감은 서비스에서 원자적으로 처리
+            // 주문 처리
             Long orderId = orderService.order(sessionMember, cart);
+            session.removeAttribute(key);
+            session.setAttribute("totalPrice", 0);
 
-            // 세션 장바구니 비우기
-            session.removeAttribute("cart");
-
-            // 세션의 회원 정보 잔액 갱신(서비스에서 차감했으므로 DB 기준으로 새로 로드하는 게 안전)
+            // 로그인된 사용자 정보 갱신
             Member refreshed = memberService.findById(sessionMember.getId());
             session.setAttribute("loggedInMember", refreshed);
 
+            // 주문 성공 메시지
             redirectAttributes.addFlashAttribute("successMessage", "주문이 성공적으로 완료되었습니다! (주문번호 #" + orderId + ")");
             return "redirect:/realtime";
 
         } catch (IllegalArgumentException | EntityNotFoundException e) {
-            // 잘못된 요청(수량≤0, 존재하지 않는 상품 등)
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/delivery/" + (storeId != null ? storeId : "");
+            return "redirect:/delivery/" + storeId;
         } catch (IllegalStateException e) {
-            // 재고 부족/최소주문금액/잔액 부족 등 비즈니스 규칙 위반
-            // (서비스에서 "재고 부족: 메뉴명 (남은 n개, 요청 m개)" 같은 메시지를 던지도록 구현)
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/delivery/" + (storeId != null ? storeId : "");
+            return "redirect:/delivery/" + storeId;
         } catch (Exception e) {
-            // 예기치 못한 오류
             redirectAttributes.addFlashAttribute("errorMessage", "알 수 없는 오류가 발생했습니다. 다시 시도해 주세요.");
-            return "redirect:/delivery/" + (storeId != null ? storeId : "");
+            return "redirect:/delivery/" + storeId;
         }
     }
 
+    // =========================================
+    // 4) 삭제 (기존 유지, storeId hidden 필요)
+    // =========================================
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam Long productId,
+                                 @RequestParam Long storeId,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
+
+        String key = cartKey(storeId);
+
         @SuppressWarnings("unchecked")
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        List<CartItem> cart = (List<CartItem>) session.getAttribute(key);
 
-        // 리다이렉트용 storeId를 먼저 확보
-        Long storeId = null;
-        try {
-            Product p = productService.findById(productId); // 삭제 대상 상품의 가게
-            if (p != null && p.getStore() != null) {
-                storeId = p.getStore().getId();
-            }
-        } catch (Exception ignore) {}
-        if (storeId == null) { // fallback
-            storeId = (Long) session.getAttribute("lastStoreId");
-        }
-
-        // 삭제 수행
         if (cart != null) {
             cart.removeIf(item -> item.getProductId().equals(productId));
-            session.setAttribute("cart", cart);
-
-            int total = cart.stream().mapToInt(CartItem::getTotalPrice).sum();
-            session.setAttribute("totalPrice", total);
-
+            session.setAttribute(key, cart);
+            session.setAttribute("totalPrice", calcTotal(cart));
             redirectAttributes.addFlashAttribute("successMessage", "상품을 장바구니에서 삭제했습니다.");
         } else {
             redirectAttributes.addFlashAttribute("warnMessage", "장바구니가 비어 있습니다.");
         }
 
-        //  storeId로 리다이렉트
-        return "redirect:/delivery/" + (storeId != null ? storeId : "");
+        return "redirect:/delivery/" + storeId;
     }
 }

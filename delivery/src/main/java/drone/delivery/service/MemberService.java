@@ -37,11 +37,6 @@ public class MemberService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 이름 중복 체크
-        if (memberRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
-        }
-
         // 이메일 중복 체크 (권장)
         if (memberRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
@@ -65,7 +60,6 @@ public class MemberService {
         member.setMemberType(request.getMemberType());
 
 
-        validateDuplicateMember(member);
         validateDuplicateEmail(member);
         memberRepository.save(member);
 
@@ -107,16 +101,6 @@ public class MemberService {
         return !members.isEmpty();  // 중복된 이름이 있으면 true, 없으면 false 반환
     }
 
-    /**
-     중복 검증 회원 로직
-     */
-    private void validateDuplicateMember(Member member) {
-        List<Member> findMembers =
-                memberRepository.findByName(member.getName());
-        if (!findMembers.isEmpty()) {
-            throw new IllegalStateException("이미 존재하는 회원입니다.");
-        }
-    }
 
     /**
      * 이메일 중복 검증 로직

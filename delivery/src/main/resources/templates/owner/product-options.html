@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${product.foodName} + ' | 옵션 관리'">옵션 관리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Fonts (동일 톤) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --mint:#2AC1BC; --mint-d:#21a7a2;
+      --ink:#0f172a; --muted:#64748b;
+      --bg:#f6f7fb; --card:#ffffff; --border:#e5e7eb;
+      --chip:#eef6f6;
+      --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
+      --radius:18px; --radius-lg:22px;
+      --warn:#f59e0b; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; color:var(--ink);
+      font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:
+              radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+              linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+      background-size:18px 18px, auto; background-attachment:fixed;
+    }
+
+    /* header */
+    .appbar{position:sticky; top:0; z-index:50; backdrop-filter:blur(6px); background:rgba(255,255,255,.85); border-bottom:1px solid var(--border);}
+    .appbar-inner{max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between;}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b;}
+    .logo{width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff; border-radius:10px; font-weight:900; box-shadow:0 6px 14px rgba(42,193,188,.25);}
+    .back{ text-decoration:none; color:#0b3d3b; border:1px solid var(--border); border-radius:12px; padding:8px 12px; font-weight:800; background:#fff;}
+    .back:hover{ background:var(--mint); color:#fff; border-color:var(--mint);}
+
+    /* frame */
+    .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
+    .page-head{ background:linear-gradient(180deg,#e9fbfa,#f7fffe); border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg); box-shadow:var(--shadow); }
+    .page-head h1{ margin:0 0 6px; font-size:28px; letter-spacing:-.2px }
+    .page-head p{ margin:0; color:var(--muted) }
+
+    .panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:16px; margin-top:16px }
+    .ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;padding:10px 12px;border-radius:12px;margin-top:12px}
+
+    /* group card */
+    .group{ border:1px solid #eef1f4; border-radius:16px; overflow:hidden; margin:14px 0 }
+    .group-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:#fbfefe; border-bottom:1px solid #eef1f4;}
+    .g-title{display:flex; align-items:center; gap:10px; font-weight:900}
+    .chip{ background:#f5fbfb; border:1px solid #e2f3f1; color:#0b3d3b; font-weight:800; padding:4px 8px; border-radius:999px; font-size:12px }
+    .sort-tools{display:flex; align-items:center; gap:8px}
+    .sort-tools input{height:36px; width:80px; border:1px solid var(--border); border-radius:10px; padding:0 10px}
+    .items{ padding:10px 14px }
+
+    /* item row */
+    .row{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px dashed #f0f2f6}
+    .row:last-child{ border-bottom:none }
+    .i-left{ display:flex; flex-direction:column }
+    .i-name{ font-weight:900 }
+    .muted{ color:var(--muted) }
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-weight:800;font-size:12px;border:1px solid #fecaca;background:#fee2e2;color:#991b1b}
+    .btn{height:36px; padding:0 12px; border:none; border-radius:10px; font-weight:800; cursor:pointer}
+    .btn.primary{background:var(--mint); color:#fff}
+    .btn.ghost{background:#fff; border:1px solid var(--border); color:#0f172a}
+    .btn.warn{background:var(--warn); color:#fff}
+    .btn.danger{background:var(--danger); color:#fff}
+
+    form.inline{display:flex; gap:8px; align-items:center}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width:800px){ .grid2{ grid-template-columns:1fr } }
+    label > span{display:block; font-size:12px; color:var(--muted); margin-bottom:4px}
+    input[type="text"], input[type="number"]{height:36px; border:1px solid var(--border); border-radius:10px; padding:0 10px}
+  </style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand"><span class="logo">드</span>배달의 드론</div>
+    <a class="back" th:href="@{'/owner/stores/' + ${storeId}}">← 가게로 돌아가기</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page-head">
+    <h1 th:text="${product.foodName} + ' 옵션 관리'">옵션 관리</h1>
+    <p class="muted">품절 토글·정렬·옵션 추가/삭제를 간편하게 관리하세요.</p>
+  </section>
+
+  <div th:if="${ok}" class="ok" th:text="${ok}"></div>
+
+  <!-- 연결된 옵션그룹 -->
+  <section class="panel">
+    <h3 style="margin:0 0 8px">연결된 옵션그룹</h3>
+    <p class="muted" th:if="${#lists.isEmpty(links)}">아직 연결된 옵션그룹이 없습니다.</p>
+
+    <div th:each="link : ${links}" class="group" th:id="${'group-' + link.optionGroup.id}">
+      <div class="group-head">
+        <div class="g-title">
+          <span th:text="${link.optionGroup.name}">그룹명</span>
+          <span class="chip" th:text="${link.optionGroup.required ? '필수' : '선택'}">필수</span>
+          <span class="chip" th:text="${link.optionGroup.multiSelect ? '다중선택' : '단일선택'}">단일선택</span>
+        </div>
+
+        <!-- 정렬 -->
+        <form class="sort-tools" method="post"
+              th:action="@{'/owner/stores/' + ${storeId} + '/products/' + ${product.id} + '/options/links/' + ${link.id} + '/sort'}">
+          <span class="muted">정렬</span>
+          <input type="number" name="sortOrder" th:value="${link.sortOrder != null ? link.sortOrder : 0}" min="0">
+          <button class="btn ghost" type="submit">적용</button>
+          <!-- 빠른 이동 -->
+          <button class="btn ghost" type="submit" formaction="" onclick="this.form.sortOrder.value=Number(this.form.sortOrder.value||0)-1">▲</button>
+          <button class="btn ghost" type="submit" formaction="" onclick="this.form.sortOrder.value=Number(this.form.sortOrder.value||0)+1">▼</button>
+        </form>
+      </div>
+
+      <div class="items">
+        <!-- 옵션 아이템 목록 -->
+        <div th:each="it : ${link.optionGroup.items}" class="row">
+          <div class="i-left">
+            <div>
+              <span class="i-name" th:text="${it.name}">옵션명</span>
+              <span class="muted" th:text="${(it.priceDelta>=0?'+':'') + #numbers.formatInteger(it.priceDelta,0,'COMMA')} + '원'">+0원</span>
+              <span th:if="${it.stock != null and it.stock <= 0}" class="badge">품절</span>
+            </div>
+            <small class="muted" th:text="${(it.stock == null or it.stock > 0) ? '현재 판매중' : '현재 비활성(선택 불가)'}">상태</small>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center">
+            <!-- 품절 토글 -->
+            <form class="inline" method="post"
+                  th:action="@{'/owner/stores/' + ${storeId} + '/products/' + ${product.id} + '/options/items/' + ${it.id} + '/soldout'}">
+              <!-- 판매중 -> 품절(true), 품절 -> 재개(false) -->
+              <input type="hidden" name="soldOut" th:value="${(it.stock == null or it.stock > 0) ? true : false}">
+              <button class="btn warn" type="submit"
+                      th:text="${(it.stock == null or it.stock > 0) ? '품절로 전환' : '판매 재개'}">품절로 전환</button>
+            </form>
+
+            <!-- 옵션 삭제 -->
+            <form class="inline" method="post"
+                  th:action="@{'/owner/stores/' + ${storeId} + '/products/' + ${product.id} + '/options/items/' + ${it.id} + '/delete'}">
+              <button class="btn danger" type="submit">삭제</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- 아이템 추가: 재고 입력 제거, '품절로 추가' 지원 -->
+        <form class="inline" method="post"
+              th:action="@{'/owner/stores/' + ${storeId} + '/products/' + ${product.id} + '/options/groups/' + ${link.optionGroup.id} + '/items'}"
+              th:object="${itemForm}" style="margin-top:8px">
+          <label><span>옵션명</span>
+            <input type="text" th:field="*{name}" placeholder="예: 라지" required>
+          </label>
+          <label><span>추가금(원)</span>
+            <input type="number" th:field="*{priceDelta}" placeholder="예: 1000" value="0">
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;margin-top:20px">
+            <input type="checkbox" id="soldInit-[[${link.id}]]" onchange="document.getElementById('stockHidden-[[${link.id}]]').value = this.checked ? 0 : ''">
+            품절로 추가
+          </label>
+          <input type="hidden" id="stockHidden-[[${link.id}]]" th:field="*{stock}" value="">
+          <button class="btn primary" type="submit">옵션 추가</button>
+        </form>
+
+        <!-- 그룹 삭제 -->
+        <form class="inline" method="post" style="margin-top:10px"
+              th:action="@{'/owner/stores/' + ${storeId} + '/products/' + ${product.id} + '/options/groups/' + ${link.optionGroup.id} + '/delete'}">
+          <button class="btn ghost" type="submit">그룹 삭제</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- 새 옵션그룹 생성 -->
+  <section class="panel">
+    <h3 style="margin:0 0 10px">새 옵션그룹 만들기 + 이 메뉴에 연결</h3>
+    <form method="post"
+          th:action="@{'/owner/stores/' + ${storeId} + '/products/' + ${product.id} + '/options/groups'}"
+          th:object="${groupForm}">
+      <div class="grid2">
+        <label><span>그룹명</span>
+          <input type="text" th:field="*{name}" placeholder="예: 사이즈" required>
+        </label>
+        <label><span>정렬순서(작을수록 위)</span>
+          <input type="number" name="sortOrder" placeholder="예: 0" value="0" min="0">
+        </label>
+
+        <label style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <input type="checkbox" th:field="*{required}"> 필수 선택
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <input id="multiChk" type="checkbox" th:field="*{multiSelect}" onchange="toggleMinMax()"> 다중 선택
+        </label>
+
+        <label><span>최소 선택수</span>
+          <input id="minSel" type="number" th:field="*{minSelect}" placeholder="예: 0" value="0" min="0" disabled>
+        </label>
+        <label><span>최대 선택수</span>
+          <input id="maxSel" type="number" th:field="*{maxSelect}" placeholder="예: 1" value="1" min="1" disabled>
+        </label>
+      </div>
+
+      <p class="muted" style="margin:8px 0 0">단일선택일 땐 최소/최대는 자동으로 (0,1) 처리됩니다.</p>
+
+      <div style="margin-top:12px">
+        <button class="btn primary" type="submit">그룹 생성</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script>
+  function toggleMinMax(){
+    const on = document.getElementById('multiChk')?.checked;
+    const minEl = document.getElementById('minSel');
+    const maxEl = document.getElementById('maxSel');
+    if(!minEl || !maxEl) return;
+    minEl.disabled = !on;
+    maxEl.disabled = !on;
+  }
+  toggleMinMax();
+</script>
+</body>
+</html>

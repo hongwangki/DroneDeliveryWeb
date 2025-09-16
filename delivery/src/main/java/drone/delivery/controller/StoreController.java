@@ -53,25 +53,23 @@ public class StoreController {
 
     @GetMapping("/delivery/{storeId}")
     public String showStoreMenu(@PathVariable Long storeId, Model model, HttpSession session) {
-        // 가게 정보
         Store store = storeService.findById(storeId);
         model.addAttribute("store", store);
         model.addAttribute("products", store.getProducts());
 
-        // 주문 목록 추가
-        model.addAttribute("orders", orderService.findAll());  // 여기가 추가 포인트
+        model.addAttribute("orders", orderService.findAll());
 
-        // 장바구니 처리
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        // per-store 세션 키 사용
+        @SuppressWarnings("unchecked")
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart_" + storeId);
         if (cart == null) cart = new ArrayList<>();
         model.addAttribute("cart", cart);
 
-        int totalPrice = cart.stream().mapToInt(CartItem::getTotalPrice).sum();
+        //  합계: item.price(옵션 포함 단가) * item.quantity
+        int totalPrice = cart.stream().mapToInt(ci -> ci.getPrice() * ci.getQuantity()).sum();
         model.addAttribute("totalPrice", totalPrice);
 
-        // 마지막 본 가게 저장
         session.setAttribute("lastStoreId", storeId);
-
         return "product-list";
     }
 
@@ -110,6 +108,15 @@ public class StoreController {
         return "redirect:/owner/stores/" + storeId;
     }
 
+    //가게 삭제 메서드
+    @PostMapping("/owner/stores/{storeId}/delete")
+    public String storeDelete(@PathVariable Long storeId, RedirectAttributes ra) {
+        // 팝업을 띄우기 위한 URL 전달 (팝업을 띄우고 사용자 확인 후 삭제)
+        ra.addFlashAttribute("confirmationMessage", "정말로 삭제하시겠습니까? 복구할 수 없습니다.");
+        storeService.deleteStore(storeId);  // 실제 삭제 실행
+        ra.addFlashAttribute("message", "삭제가 완료되었습니다.");
+        return "redirect:/owner";
+    }
 
 
 
