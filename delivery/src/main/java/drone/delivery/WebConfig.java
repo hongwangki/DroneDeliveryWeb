@@ -16,11 +16,10 @@ import java.util.List;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    /** 업로드 베이스(예: uploads). application.yml의 app.upload.base-dir과 맞춰 사용 */
     @Value("${app.upload.base-dir:uploads/reviews}")
     private String reviewUploadBaseDir;
 
-    /** 로그인 체크에서 허용(예외)할 경로 패턴들 */
+    //화이트리스트
     private static final List<String> LOGIN_WHITELIST = List.of(
             "/", "/index", "/error", "/favicon.ico",
             // Auth
@@ -39,6 +38,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .order(1)
                 .addPathPatterns("/**")
                 .excludePathPatterns(LOGIN_WHITELIST);
+    }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        // 루트로 접근 시 항상 /delivery로 보냄
+        registry.addViewController("/").setViewName("redirect:/delivery");
     }
 
 
