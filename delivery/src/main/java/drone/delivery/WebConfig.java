@@ -19,26 +19,30 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.upload.base-dir:uploads/reviews}")
     private String reviewUploadBaseDir;
 
-    //화이트리스트
-    private static final List<String> LOGIN_WHITELIST = List.of(
-            "/", "/index", "/error", "/favicon.ico",
-            // Auth
-            "/login", "/join", "/logout", "/register",
-            "/users", "/login/**", "/users/oauth/**",
-            "/oauth2/**", "/login/oauth2/**",
-            // 정적 리소스
-            "/css/**", "/js/**", "/images/**", "/webjars/**",
-            // 공개 업로드(프로필/리뷰 이미지 등)
-            "/uploads/**"
-    );
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LoginCheckInterceptor(LOGIN_WHITELIST))
+        // 로그인 검사 제외 경로(화이트리스트)
+        // 필요에 따라 추가/수정하세요.
+        List<String> whitelist = List.of(
+                "/", "/index",
+                "/login", "/logout", "/join",
+                "/oauth2/**",
+                "/css/**", "/js/**", "/images/**", "/uploads/**",
+                "/favicon.ico",
+                "/error", "/error/**"
+        );
+
+        registry.addInterceptor(new LoginCheckInterceptor(whitelist))
                 .order(1)
-                .addPathPatterns("/**")
-                .excludePathPatterns(LOGIN_WHITELIST);
+                .addPathPatterns("/**")                    // 기본적으로 전부
+                .excludePathPatterns(
+                        "/css/**", "/js/**", "/images/**", "/uploads/**",
+                        "/favicon.ico",
+                        "/error", "/error/**"              // 에러 페이지는 항상 제외
+                );
     }
+
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
