@@ -25,7 +25,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "where o.member = :member and " +
             "o.orderStatus = :status " +
             "order by o.createdDate desc")
-    List<Order> findByMemberAndOrder(@Param("member")Member member, @Param("status") OrderStatus status);
+    List<Order> findByMemberAndOrder(@Param("member") Member member, @Param("status") OrderStatus status);
 
     @Query("""
         select distinct o
@@ -39,5 +39,17 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                         @Param("orderId") Long orderId);
 
     Optional<Order> findByIdAndMemberId(Long orderId, Long memberId);
-}
 
+
+    //파이썬 측 서버로 보내기 위해 필요한 정보 한번에 조인
+    @Query("""
+        select o
+        from Order o
+        join fetch o.member m
+        left join fetch o.orderItems oi
+        left join fetch oi.product p
+        join fetch p.store s
+        where o.id = :orderId
+        """)
+    Optional<Order> findGraphById(@Param("orderId") Long orderId);
+}
