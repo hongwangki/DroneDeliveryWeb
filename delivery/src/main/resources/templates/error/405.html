@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>허용되지 않은 메서드 (405) · Drone Delivery</title>
+    <!-- 공통 스타일 (각 파일 <head> 안에 그대로 복사) -->
+    <style>
+        :root{--brand:#2AC1BC;--ink:#0f172a;--muted:#6b7280;--bg:#f9fafb;--card:#fff;--line:#e5e7eb}
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR','Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+        .container{max-width:720px;margin:64px auto;padding:0 16px}
+        .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 16px rgba(0,0,0,.06);padding:24px}
+        .h{font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+        .p{color:var(--muted);margin:0 0 12px}
+        .badge{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;color:var(--muted);margin-right:8px}
+        .btn{display:inline-block;margin-top:16px;padding:10px 14px;border-radius:10px;border:1px solid var(--line);text-decoration:none}
+        .btn:hover{background:#f3f4f6}
+        .kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;margin-top:8px}
+        .kv div{padding:6px 0;border-bottom:1px dashed var(--line)}
+        .footer{margin-top:16px;color:var(--muted);font-size:12px}
+    </style>
+
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <span class="badge">에러 코드 <strong th:text="${status}">405</strong> · <span th:text="${code}">C006</span></span>
+        <h1 class="h">요청 방법이 올바르지 않아요.</h1>
+        <p class="p" th:text="${message}">올바른 링크로 접근해 주세요.</p>
+        <div class="kv">
+            <div>상태</div><div><span th:text="${status}">405</span> <small th:text="${error}">Method Not Allowed</small></div>
+            <div>경로</div><div th:text="${path}">/</div>
+        </div>
+        <a href="/" class="btn">홈으로</a>
+        <div class="footer">요청 메서드를 확인해 주세요.</div>
+    </div>
+</div>
+</body>
+</html>
