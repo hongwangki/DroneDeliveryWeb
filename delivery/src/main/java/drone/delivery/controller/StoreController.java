@@ -1,23 +1,26 @@
 package drone.delivery.controller;
 
 import drone.delivery.domain.CartItem;
+import drone.delivery.domain.Member;
 import drone.delivery.domain.Review;
 import drone.delivery.domain.Store;
+import drone.delivery.dto.StoreFavoriteDto;
 import drone.delivery.dto.StoreUpdateDTO;
+import drone.delivery.service.FavoriteService;
 import drone.delivery.service.OrderService;
 import drone.delivery.service.ReviewQueryService;
 import drone.delivery.service.StoreService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,31 +30,40 @@ public class StoreController {
     private final StoreService storeService;
     private final OrderService orderService;
     private final ReviewQueryService reviewQueryService;
+    private final FavoriteService favoriteService;
 
     // 카테고리별 가게 조회
     @GetMapping("/delivery")
-    public String showStores(@RequestParam(value = "category", required = false) String category,
+    public String showStores(@RequestParam(required=false) String category,
+                             @RequestParam(defaultValue="stores") String tab,
+                             @RequestParam(defaultValue="0") int page,
+                             @RequestParam(defaultValue="6") int size,
                              Model model, HttpSession session) {
-        List<Store> stores;
 
-        if (category == null || category.equals("전체")) {
-            stores = storeService.findAll();
-        } else {
-            stores = storeService.findByCategory(category);
-        }
-
+        // 항상 가게 리스트는 준비(카테고리 탭용)
+        List<Store> stores = (category == null || category.equals("전체"))
+                ? storeService.findAll() : storeService.findByCategory(category);
         model.addAttribute("stores", stores);
         model.addAttribute("selectedCategory", category == null ? "전체" : category);
+        model.addAttribute("tab", tab);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
 
-        // 주문 내역 최신화
-        model.addAttribute("orders", orderService.findAll());
+        // 하트표시용 Set
+        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+        Set<Long> favoriteStoreIds = Set.of();
+        if (loginMember != null) {
+            favoriteStoreIds = favoriteService.getFavoriteStoreIdSetManaged(loginMember.getId());
+        }
+        model.addAttribute("favoriteStoreIds", favoriteStoreIds);
 
-        // 장바구니 최신화
-        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
-        if (cart == null) cart = new ArrayList<>();
-        model.addAttribute("cart", cart);
-        model.addAttribute("totalPrice", cart.stream().mapToInt(CartItem::getTotalPrice).sum());
+        // 찜목록 탭이면 즐겨찾기 Store를 Page로
+        if ("favorites".equals(tab) && loginMember != null) {
+            Page<Store> favStores = favoriteService.getFavoriteStoresAsEntities(loginMember.getId(), page, size);
+            model.addAttribute("favStores", favStores);
+        }
 
+        // 기타 기존 바인딩 …
         return "store-list";
     }
 
