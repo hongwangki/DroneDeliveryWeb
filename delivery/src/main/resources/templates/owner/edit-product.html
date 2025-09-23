@@ -37,8 +37,31 @@
       border-bottom:1px solid rgba(15,23,42,.06);
     }
     .appbar{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-    .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.35);font-weight:900}
+    .brand{
+      display:flex;align-items:center;gap:10px;font-weight:900;
+      text-decoration:none;color:#0b3d3b; letter-spacing:-.2px;
+      outline: none;
+    }
+    .brand-badge{
+      width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+      background:var(--brand);color:#fff;font-weight:900;
+      box-shadow:0 6px 14px rgba(42,193,188,.35);
+      /* ✅ 부드러운 확대/명암 전환 */
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      will-change: transform;
+    }
+    /* 가까이(링크 영역) 올리면 살짝 커지고 명암 강조 */
+    .brand:hover .brand-badge,
+    .brand:focus-visible .brand-badge{
+      transform: translateY(-1px) scale(1.08);
+      box-shadow:0 12px 26px rgba(42,193,188,.38), inset 0 0 0 1px rgba(255,255,255,.55);
+      filter: saturate(1.05);
+    }
+    /* 모션 최소화 존중 */
+    @media (prefers-reduced-motion: reduce){
+      .brand-badge{ transition: none }
+    }
+
     .nav-actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
     .nav-actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
 
@@ -96,10 +119,11 @@
 <!-- Appbar -->
 <header>
   <div class="appbar">
-    <div class="brand">
+    <!-- ✅ 홈으로 이동 가능 + 배지 호버 확대/명암 -->
+    <a class="brand" th:href="@{/home}" aria-label="홈으로">
       <div class="brand-badge">드</div>
       <span>상품 수정</span>
-    </div>
+    </a>
     <div class="nav-actions">
       <a th:href="@{/owner/stores/{storeId}(storeId=${storeId})}">가게 상세</a>
     </div>

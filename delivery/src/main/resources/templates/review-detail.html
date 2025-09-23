@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>배달의 드론 | 리뷰 상세</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <style>
         :root{
             --mint:#2AC1BC; --ink:#0f172a; --muted:#64748b; --bg:#f6f7fb; --card:#fff;
@@ -12,20 +13,80 @@
             --radius:18px; --star:#f59e0b; --star-empty:#e5e7eb;
         }
         *{box-sizing:border-box}
-        body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+        html,body{height:100%}
+        body{
+            margin:0; font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            color:var(--ink);
+            background:
+                    radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
+                    linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+            background-size:18px 18px, auto; background-attachment:fixed;
+        }
+
+        /* ===== Glass App Bar (shrink + underline) ===== */
+        .appbar{
+            position:sticky; top:0; z-index:50;
+            background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom:1px solid var(--border);
+        }
+        .appbar::after{
+            content:""; position:absolute; inset:0 0 auto 0; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+            pointer-events:none;
+        }
+        .appbar-inner{
+            max-width:1100px; margin:0 auto; padding:14px 20px;
+            display:flex; align-items:center; justify-content:space-between;
+            transition:padding .18s ease;
+        }
+        .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b; text-decoration:none; }
+        .logo{
+            width:36px; height:36px; display:grid; place-items:center; background:var(--mint); color:#fff;
+            border-radius:12px; font-weight:900; box-shadow:0 8px 18px rgba(42,193,188,.28); transition:transform .18s ease;
+        }
+        .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+
+        .nav{ display:flex; align-items:center; gap:6px }
+        .nav a{
+            position:relative; text-decoration:none; color:var(--muted); padding:8px 12px; border-radius:10px; font-weight:800;
+            transition:color .15s ease, background-color .15s ease;
+        }
+        .nav a::after{
+            content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+            background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+            border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform .18s ease;
+        }
+        .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+        .nav a:hover::after{ transform:scaleX(1) }
+        .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+        .nav a.active::after{ transform:scaleX(1) }
+
+        @media (max-width:720px){
+            .nav a{ padding:8px 10px }
+        }
+
+        /* Page */
         .wrap{ max-width:1100px; margin:24px auto 80px; padding:0 18px; }
         .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+
         .head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
         .title{ font-size:22px; font-weight:800; margin:0; }
         .meta{ color:var(--muted); font-size:14px; }
-        .stars{ display:flex; gap:6px; }
+
+        .stars{ display:flex; gap:6px; margin-top:10px; }
         .star{ width:22px; height:22px; display:inline-block; }
         .star svg{ width:100%; height:100%; fill:var(--star-empty); }
         .star.on svg{ fill:var(--star); }
+
         .content{ margin-top:14px; line-height:1.7; white-space:pre-wrap; }
         .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; margin-top:16px; }
         .grid img{ width:100%; height:180px; object-fit:cover; border-radius:12px; border:1px solid var(--border); background:#fff; }
-        .toolbar{ margin-top:16px; display:flex; gap:10px; }
+
+        .toolbar{ margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; }
         .btn{ border:1px solid var(--border); background:#fff; padding:8px 12px; border-radius:10px; text-decoration:none; color:#111; font-weight:700; }
         .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; }
         .divider{ height:1px; background:var(--border); margin:16px 0; }
@@ -33,6 +94,31 @@
     </style>
 </head>
 <body>
+
+<!-- AppBar -->
+<header class="appbar" id="appbar">
+    <div class="appbar-inner">
+        <!-- 홈은 /home → 역할별 리다이렉트 -->
+        <a class="brand" th:href="@{/home}">
+            <span class="logo">드</span> 배달의 드론
+        </a>
+
+        <!-- 세션 분기: OWNER면 정보보기/로그아웃만 -->
+        <nav class="nav"
+             th:with="
+           loginMember=${session['loginMember']},
+           isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
+         ">
+            <a th:if="${!isOwner}" th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+            <a th:if="${!isOwner}" th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+            <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+
+            <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
 <main class="wrap">
     <section class="card">
         <div class="head">
@@ -44,47 +130,47 @@
         </div>
 
         <div class="meta" style="margin-top:6px;">
-            <span th:if="${review.order != null}">
-                주문번호 <strong th:text="${review.order.id}">1</strong> ·
-                주문시간 <strong th:text="${#temporals.format(review.order.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:30</strong>
-            </span>
+      <span th:if="${review.order != null}">
+        주문번호 <strong th:text="${review.order.id}">1</strong> ·
+        주문시간 <strong th:text="${#temporals.format(review.order.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:30</strong>
+      </span>
             <span th:if="${review.order != null and review.order.orderStatus != null}">
-                · 상태 <strong th:text="${review.order.orderStatus.name()}">DELIVERED</strong>
-            </span>
+        · 상태 <strong th:text="${review.order.orderStatus.name()}">DELIVERED</strong>
+      </span>
             <span th:if="${review.order != null and review.order.orderItems != null and !#lists.isEmpty(review.order.orderItems)}">
-                · 매장
-                <strong th:text="${review.order.orderItems[0].product.store.name}">가게이름</strong>
-            </span>
+        · 매장 <strong th:text="${review.order.orderItems[0].product.store.name}">가게이름</strong>
+      </span>
         </div>
 
         <!-- 별점 -->
-        <div class="stars" style="margin-top:10px;">
-            <span class="star" th:classappend="${review.rating >= 1} ? ' on'">
-                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </span>
+        <div class="stars">
+      <span class="star" th:classappend="${review.rating >= 1} ? ' on'">
+        <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </span>
             <span class="star" th:classappend="${review.rating >= 2} ? ' on'">
-                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </span>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </span>
             <span class="star" th:classappend="${review.rating >= 3} ? ' on'">
-                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </span>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </span>
             <span class="star" th:classappend="${review.rating >= 4} ? ' on'">
-                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </span>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </span>
             <span class="star" th:classappend="${review.rating >= 5} ? ' on'">
-                <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </span>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </span>
         </div>
 
         <!-- 본문 -->
         <div class="content" th:text="${review.content}">맛있었어요!</div>
 
-        <div class="divider"></div>
+        <div class="divider" style="height:1px;background:var(--border);margin:16px 0;"></div>
 
         <!-- 이미지 그리드 -->
         <div th:if="${review.reviewImages != null and !#lists.isEmpty(review.reviewImages)}">
             <div class="grid">
-                <img th:each="img : ${review.reviewImages}" th:src="${img.thumbnailUrl != null ? img.thumbnailUrl : img.url}" alt="">
+                <img th:each="img : ${review.reviewImages}"
+                     th:src="${img.thumbnailUrl != null ? img.thumbnailUrl : img.url}" alt="">
             </div>
         </div>
         <div th:if="${review.reviewImages == null or #lists.isEmpty(review.reviewImages)}" class="muted">
@@ -107,5 +193,19 @@
         </div>
     </section>
 </main>
+
+<script>
+    // 헤더 스크롤 축소
+    (function(){
+        const bar = document.getElementById('appbar');
+        const onScroll = () => {
+            if (window.scrollY > 8) bar.classList.add('is-scrolled');
+            else bar.classList.remove('is-scrolled');
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+</script>
+
 </body>
 </html>

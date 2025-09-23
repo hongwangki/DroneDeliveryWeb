@@ -10,16 +10,11 @@
 
   <style>
     :root{
-      --mint:#2AC1BC;
-      --mint-d:#21a7a2;
-      --ink:#0f172a;
-      --muted:#64748b;
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --border:#e5e7eb;
+      --mint:#2AC1BC; --mint-d:#21a7a2;
+      --ink:#0f172a; --muted:#64748b;
+      --bg:#f6f7fb; --card:#ffffff; --border:#e5e7eb;
       --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
-      --radius:18px;
-      --radius-lg:22px;
+      --radius:18px; --radius-lg:22px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -34,40 +29,76 @@
       background-attachment:fixed;
     }
 
-    /* App Bar */
+    /* ===== Glass Header (shrink on scroll) ===== */
     .appbar{
-      position:sticky; top:0; z-index:50;
-      backdrop-filter:blur(6px);
-      background:rgba(255,255,255,.8);
-      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:100;
+      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar::after{
+      content:""; position:absolute; inset:0 0 auto 0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+      pointer-events:none;
     }
     .appbar-inner{
-      max-width:1000px; margin:0 auto; padding:12px 20px;
+      max-width:1000px; margin:0 auto;
+      padding:14px 20px; transition:padding .18s ease;
       display:flex; align-items:center; justify-content:space-between;
     }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b;}
-    .logo{
-      width:32px; height:32px; display:grid; place-items:center;
-      background:var(--mint); color:#fff; border-radius:10px; font-weight:900;
-      box-shadow:0 6px 14px rgba(42,193,188,.25);
+    .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:900; color:#0b3d3b; text-decoration:none; letter-spacing:-.2px;
     }
-    .nav a{ color:var(--muted); text-decoration:none; margin-left:16px; font-weight:700; }
-    .nav a:hover{ color:#0b3d3b; }
+    .brand:hover{ color:#062f2d }
+    .logo{
+      width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
+      font-weight:900; color:#fff;
+      background:
+              radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+              linear-gradient(135deg,#2AC1BC,#16a39e);
+      box-shadow:0 8px 18px rgba(42,193,188,.25), inset 0 0 0 1px rgba(255,255,255,.35);
+      transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+    .brand span:last-child{
+      background:linear-gradient(90deg,#0b3d3b,#11615e);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .nav{ display:flex; align-items:center; gap:6px }
+    .nav a{
+      position:relative; padding:8px 12px; border-radius:10px;
+      text-decoration:none; color:var(--muted); font-weight:800;
+      transition:color .15s ease, background-color .15s ease, transform .15s ease;
+    }
+    .nav a::after{
+      content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+      background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+      border-radius:2px; transform:scaleX(0); transform-origin:left;
+      transition:transform .18s ease;
+    }
+    .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+    .nav a:hover::after{ transform:scaleX(1) }
+    .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+    .nav a.active::after{ transform:scaleX(1) }
+
+    @media (max-width:720px){
+      .brand span:last-child{ display:none }
+      .nav a{ padding:8px 10px }
+    }
 
     /* Page */
     .wrap{ max-width:1000px; margin:26px auto 64px; padding:0 20px; }
-
-    .page-title{
-      margin:0 0 16px;
-      font-size:28px; letter-spacing:-.3px;
-    }
+    .page-title{ margin:0 0 16px; font-size:28px; letter-spacing:-.3px; }
 
     .success{
       display:flex; align-items:center; gap:10px;
-      background:#e6f9f6; color:#056e6a;
-      border:1px solid #c9f4ef;
-      padding:12px 14px; border-radius:12px;
-      box-shadow:0 6px 14px rgba(6,95,91,.06);
+      background:#e6f9f6; color:#056e6a; border:1px solid #c9f4ef;
+      padding:12px 14px; border-radius:12px; box-shadow:0 6px 14px rgba(6,95,91,.06);
       font-weight:800; margin-bottom:16px;
     }
 
@@ -76,16 +107,10 @@
       border-radius:var(--radius-lg); box-shadow:var(--shadow);
       padding:20px;
     }
-
-    .grid{
-      display:grid; grid-template-columns:1fr 1fr; gap:16px;
-    }
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     @media (max-width:700px){ .grid{ grid-template-columns:1fr; } }
 
-    .item{
-      background:#fbfcfe; border:1px solid #edf0f5; border-radius:14px;
-      padding:14px 16px;
-    }
+    .item{ background:#fbfcfe; border:1px solid #edf0f5; border-radius:14px; padding:14px 16px; }
     .label{ color:var(--muted); font-weight:700; font-size:13px; margin-bottom:6px; }
     .value{ font-weight:900; font-size:16px; letter-spacing:-.2px; }
 
@@ -95,9 +120,7 @@
       padding:8px 10px; border-radius:999px; font-weight:900; font-size:14px;
     }
 
-    .actions{
-      display:flex; gap:12px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap;
-    }
+    .actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
     .btn{
       appearance:none; border:none; cursor:pointer; text-decoration:none;
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
@@ -112,11 +135,28 @@
 </head>
 <body>
 
-<header class="appbar">
+<header class="appbar" id="appbar">
   <div class="appbar-inner">
-    <div class="brand"><span class="logo">드</span>배달의 드론</div>
-    <nav class="nav">
-      <a th:href="@{/delivery}">가게목록</a>
+    <!-- 홈은 /home → HomeController가 역할별 리다이렉트 -->
+    <a class="brand" th:href="@{/home}">
+      <span class="logo">드</span>
+      <span>배달의 드론</span>
+    </a>
+
+    <!-- ✅ 세션 키는 실제 저장된 키 이름으로 접근해야 함 (예: "loginMember") -->
+    <!-- 아래에서 session['loginMember'] 의 'loginMember' 를 실제 SessionConst.LOGIN_MEMBER 값으로 바꾸면 됩니다 -->
+    <nav class="nav"
+         th:with="
+            loginMember=${session['loginMember']},
+            isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
+         ">
+      <!-- 일반회원 전용 -->
+      <a th:if="${!isOwner}" th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+      <a th:if="${!isOwner}" th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+      <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+
+      <!-- 공통 -->
+      <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
       <a th:href="@{/logout}">로그아웃</a>
     </nav>
   </div>
@@ -174,6 +214,19 @@
     </div>
   </section>
 </main>
+
+<!-- 헤더 축소 스크립트 -->
+<script>
+  (function(){
+    const bar = document.getElementById('appbar');
+    const onScroll = () => {
+      if (window.scrollY > 8) bar.classList.add('is-scrolled');
+      else bar.classList.remove('is-scrolled');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive:true});
+  })();
+</script>
 
 </body>
 </html>
