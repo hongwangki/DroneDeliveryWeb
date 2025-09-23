@@ -29,61 +29,40 @@
             background-attachment: fixed;
         }
 
-        /* ===== Glass App Bar (shrink + underline) ===== */
-        .appbar{
-            position:sticky; top:0; z-index:50;
+        /* App Bar */
+        .appbar{ position:sticky; top:0; z-index:50;
             background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
             border-bottom:1px solid var(--border);
         }
-        .appbar::after{
-            content:""; position:absolute; inset:0 0 auto 0; height:1px;
-            background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
-            pointer-events:none;
-        }
-        .appbar-inner{
-            max-width:1200px; margin:0 auto; padding:14px 20px;
-            display:flex; align-items:center; justify-content:space-between;
-            transition:padding .18s ease;
-        }
+        .appbar::after{ content:""; position:absolute; inset:0 0 auto 0; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent); pointer-events:none; }
+        .appbar-inner{ max-width:1200px; margin:0 auto; padding:14px 20px;
+            display:flex; align-items:center; justify-content:space-between; transition:padding .18s ease; }
         .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
 
         .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b3d3b; text-decoration:none; }
-        .logo{
-            width:36px; height:36px; display:grid; place-items:center; background:var(--mint); color:#fff;
-            border-radius:12px; font-weight:900; box-shadow:0 8px 18px rgba(42,193,188,.28);
-            transition:transform .18s ease;
-        }
+        .logo{ width:36px; height:36px; display:grid; place-items:center; background:var(--mint); color:#fff;
+            border-radius:12px; font-weight:900; box-shadow:0 8px 18px rgba(42,193,188,.28); transition:transform .18s ease; }
         .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
 
         .nav{ display:flex; align-items:center; gap:6px }
-        .nav a{
-            position:relative; text-decoration:none; color:var(--muted); margin:0; padding:8px 12px;
-            border-radius:10px; font-weight:800; transition:color .15s ease, background-color .15s ease;
-        }
-        .nav a::after{
-            content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
-            background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
-            border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform .18s ease;
-        }
+        .nav a{ position:relative; text-decoration:none; color:var(--muted); margin:0; padding:8px 12px;
+            border-radius:10px; font-weight:800; transition:color .15s ease, background-color .15s ease; }
+        .nav a::after{ content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+            background:linear-gradient(90deg,#2AC1BC,#0ea5a0); border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform .18s ease; }
         .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
         .nav a:hover::after{ transform:scaleX(1) }
         .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
         .nav a.active::after{ transform:scaleX(1) }
 
-        /* 컨텐트 프레임 */
         .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
 
-        .page-head{
-            background: linear-gradient(180deg,#e9fbfa,#f7fffe);
-            border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg);
-            box-shadow:var(--shadow);
-        }
+        .page-head{ background: linear-gradient(180deg,#e9fbfa,#f7fffe);
+            border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg); box-shadow:var(--shadow); }
         .page-head h1{ margin:0 0 6px; font-size:32px; letter-spacing:-.3px; }
         .page-head p{ margin:0; color:var(--muted); }
 
-        /* 상태 탭 */
         .cats{ display:flex; gap:10px; overflow:auto; padding:12px 2px 0; scrollbar-width:none; }
         .cats::-webkit-scrollbar{ display:none }
         .cat{ flex:0 0 auto; text-decoration:none; color:#0b3d3b; font-weight:700;
@@ -92,7 +71,6 @@
         .cat.active{ background:var(--mint); color:#fff; border-color:var(--mint);
             box-shadow: 0 6px 14px rgba(42,193,188,.28); }
 
-        /* 주문 카드 */
         .list{ margin-top:14px; display:grid; gap:var(--gap); }
         .card{ position:relative; background:var(--card); border:1px solid var(--border);
             border-radius:var(--radius-lg); padding:18px; box-shadow:var(--shadow); }
@@ -105,11 +83,13 @@
         .badge.info{ background:#eff6ff; border-color:#bfdbfe; color:#1e3a8a; }
 
         .items{ margin:12px 0 6px; color:#3b475a; font-size:14px; line-height:1.6; }
+
         .cta{ display:flex; gap:8px; flex-wrap:wrap; }
-        .btn{ background:#f8fafc; border:1px solid #e5e7eb; color:#0f172a; padding:9px 12px; border-radius:12px; font-weight:700; text-decoration:none; }
+        .btn{ background:#f8fafc; border:1px solid #e5e7eb; color:#0f172a; padding:9px 12px; border-radius:12px; font-weight:700; text-decoration:none; cursor:pointer; }
         .btn:hover{ background:#eef2f7 }
         .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; box-shadow:0 10px 18px rgba(42,193,188,.22); }
         .btn.primary:hover{ background:var(--mint-d) }
+        .btn[aria-busy="true"]{ opacity:.7; pointer-events:none }
 
         .empty{ margin:22px 0; padding:24px; border:1px dashed #cbd5e1; border-radius:16px; background:#fff; color:#64748b; text-align:center; }
         .empty strong{ color:#0b3d3b }
@@ -121,27 +101,20 @@
 </head>
 <body>
 
-<!-- Top App Bar -->
 <header class="appbar" id="appbar">
     <div class="appbar-inner">
-        <!-- 홈은 /home → 컨트롤러가 역할별 리다이렉트 -->
         <a class="brand" th:href="@{/home}">
             <span class="logo">드</span> 배달의 드론
         </a>
 
-        <!-- 세션 분기: OWNER면 정보보기/로그아웃만 -->
-        <!-- 'loginMember' 문자열은 SessionConst.LOGIN_MEMBER 실제 값으로 맞춰도 됩니다 -->
         <nav class="nav"
              th:with="
            loginMember=${session['loginMember']},
            isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
          ">
-            <!-- 일반회원 전용 -->
             <a th:if="${!isOwner}" th:href="@{/reviews}" th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
             <a th:if="${!isOwner}" th:href="@{/orders}"  th:classappend="${page=='orders'} ? ' active'">주문내역</a>
             <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
-
-            <!-- 공통 -->
             <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
             <a th:href="@{/logout}">로그아웃</a>
         </nav>
@@ -219,8 +192,10 @@
                 <a class="btn" th:if="${stName == 'SHIPPED'}"
                    th:href="@{|/orders/${o.id}/track|}">실시간 위치</a>
 
-                <a class="btn" th:if="${stName == 'PENDING'}"
-                   th:href="@{|/orders/${o.id}/cancel|}">주문 취소</a>
+                <!-- 주문 취소: JS로 POST 호출 (시큐리티 X, CSRF X) -->
+                <a href="#" class="btn js-cancel"
+                   th:if="${stName == 'PENDING'}"
+                   th:attr="data-id=${o.id}">주문 취소</a>
             </div>
         </article>
     </section>
@@ -236,6 +211,45 @@
         };
         onScroll();
         window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+
+    // 주문 취소: fetch POST (시큐리티/CSRF 미사용)
+    (function(){
+        async function cancelOrder(id, btn){
+            btn?.setAttribute?.('aria-busy','true');
+            try{
+                const res = await fetch(`/orders/cancel/${id}`, { method: 'POST' });
+                if(!res.ok){
+                    alert('취소 요청 실패 (HTTP ' + res.status + ')');
+                    return;
+                }
+
+                // 컨트롤러가 String JSON을 반환 → JSON 파싱 시도
+                let data = null;
+                const text = await res.text();
+                try{ data = JSON.parse(text); } catch(_){}
+
+                const msg = data?.message || '주문이 취소되었습니다.';
+                const redirect = data?.redirect || '/orders';
+                alert(msg);
+                location.href = redirect;
+            }catch(e){
+                console.error(e);
+                alert('네트워크 오류로 취소에 실패했습니다.');
+            }finally{
+                btn?.removeAttribute?.('aria-busy');
+            }
+        }
+
+        document.querySelectorAll('.js-cancel').forEach(el=>{
+            el.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const id = e.currentTarget.dataset.id;
+                if(!id) return;
+                if(!confirm('해당 주문을 취소할까요?')) return;
+                cancelOrder(id, e.currentTarget);
+            });
+        });
     })();
 </script>
 
