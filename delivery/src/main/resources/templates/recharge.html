@@ -7,16 +7,11 @@
 
   <style>
     :root{
-      --brand:#2AC1BC;
-      --brand-d:#1fa6a1;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --card:#ffffff;
-      --bg:#f6f8fb;
-      --line:#e5e7eb;
-      --radius:16px;
+      --brand:#2AC1BC; --brand-d:#1fa6a1;
+      --ink:#0f172a; --muted:#6b7280;
+      --card:#ffffff; --bg:#f6f8fb;
+      --line:#e5e7eb; --radius:16px;
       --shadow:0 12px 30px rgba(2,6,23,.06);
-      --action-h:78px;
     }
 
     *{box-sizing:border-box}
@@ -31,16 +26,65 @@
               var(--bg);
     }
 
-    /* App bar (옵션) */
-    .appbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.7);backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid rgba(15,23,42,.06)}
-    .appbar-inner{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-    .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;font-weight:900;box-shadow:0 6px 14px rgba(42,193,188,.35)}
-    .app-actions a{text-decoration:none;color:var(--muted);font-weight:700;margin-left:14px}
-    .app-actions a:hover{color:#111827}
+    /* ===== Glass App Bar (shrink + underline nav) ===== */
+    .appbar{
+      position:sticky; top:0; z-index:40;
+      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar::after{
+      content:""; position:absolute; inset:0 0 auto 0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+      pointer-events:none;
+    }
+    .appbar-inner{
+      max-width:960px; margin:0 auto; padding:14px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+      transition:padding .18s ease;
+    }
+    .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:900; color:#0b2b29; text-decoration:none;
+    }
+    .brand-badge{
+      width:36px; height:36px; border-radius:12px; display:grid; place-items:center; font-weight:900;
+      background:linear-gradient(135deg,#2AC1BC,#179e99); color:#fff;
+      box-shadow:0 8px 18px rgba(42,193,188,.28), inset 0 0 0 1px rgba(255,255,255,.35);
+      transition:transform .18s ease;
+    }
+    .brand:hover .brand-badge{ transform:translateY(-1px) scale(1.03) }
+    .brand span{
+      background:linear-gradient(90deg,#0b3d3b,#11615e);
+      -webkit-background-clip:text; background-clip:text; color:transparent; font-size:18px;
+    }
+
+    .nav{ display:flex; align-items:center; gap:6px }
+    .nav a{
+      position:relative; padding:8px 12px; border-radius:10px;
+      text-decoration:none; color:#6b7280; font-weight:800;
+      transition:color .15s ease, background-color .15s ease;
+    }
+    .nav a::after{
+      content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+      background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+      border-radius:2px; transform:scaleX(0); transform-origin:left;
+      transition:transform .18s ease;
+    }
+    .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+    .nav a:hover::after{ transform:scaleX(1) }
+    .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+    .nav a.active::after{ transform:scaleX(1) }
+
+    @media (max-width:720px){
+      .brand span{ display:none }
+      .nav a{ padding:8px 10px }
+    }
 
     /* Page */
-    .wrap{max-width:760px;margin:26px auto 120px;padding:0 20px}
+    .wrap{max-width:760px;margin:26px auto 40px;padding:0 20px}
     .hero h1{margin:0 0 6px;font-size:28px;font-weight:900}
     .hero p{margin:0;color:var(--muted);font-weight:600}
     .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px}
@@ -88,44 +132,39 @@
     .summary-row .label{color:#475569;font-weight:900}
     .summary .total{font-size:20px}
 
-    /* Messages */
-    .msg{padding:12px;border-radius:12px;font-weight:700}
-    .msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
-    .msg.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-
-    /* Bottom action */
-    .actions{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;
-      padding:14px 16px max(14px, env(safe-area-inset-bottom));background:
-            linear-gradient(180deg, rgba(246,248,251,0), rgba(246,248,251,.92) 40%, rgba(246,248,251,.98));
-      border-top:1px solid rgba(15,23,42,.06);backdrop-filter: blur(6px);min-height:var(--action-h)}
-    .actions-inner{width:100%;max-width:760px;display:flex;gap:10px}
-    .btn{appearance:none;border:none;border-radius:12px;padding:14px 18px;font-weight:900;cursor:pointer;transition:transform .05s ease, box-shadow .15s ease, background .15s ease}
-    .btn:active{transform:translateY(1px)}
-    .btn-ghost{background:#fff;border:1px solid var(--line);color:#111827}
-    .btn-brand{background:var(--brand);color:#fff;min-width:200px;box-shadow:0 8px 22px rgba(42,193,188,.35)}
-    .btn-brand:hover{background:var(--brand-d)}
-    .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
-
-    /* Footer space so content not hidden */
-    .wrap{padding-bottom:calc(var(--action-h) + 30px)}
-
-    @media (max-width: 640px){
-      .pay-grid{grid-template-columns:1fr 1fr}
-      .btn-brand{flex:1}
-      .actions-inner{flex-direction:column}
+    /* Single CTA */
+    .cta{
+      margin:18px 0 0;
+      display:flex; justify-content:center;
     }
+    .btn{appearance:none;border:none;border-radius:12px;padding:14px 22px;font-weight:900;cursor:pointer;transition:transform .05s ease, box-shadow .15s ease, background .15s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--brand);color:#fff;min-width:240px;box-shadow:0 8px 22px rgba(42,193,188,.35)}
+    .btn-primary:hover{background:var(--brand-d)}
+    .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none}
   </style>
 </head>
 <body>
 
-<header class="appbar">
+<header class="appbar" id="appbar">
   <div class="appbar-inner">
-    <div class="brand">
+    <!-- 홈은 /home → 역할별 리다이렉트 -->
+    <a class="brand" th:href="@{/home}">
       <div class="brand-badge">드</div><span>배달의 드론</span>
-    </div>
-    <nav class="app-actions">
-      <a href="/delivery">가게목록</a>
-      <a href="/realtime">실시간주문</a>
+    </a>
+
+    <!-- 세션 분기: OWNER면 정보보기/로그아웃만 -->
+    <nav class="nav"
+         th:with="
+           loginMember=${session['loginMember']},
+           isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
+         ">
+      <a th:if="${!isOwner}" th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+      <a th:if="${!isOwner}" th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+      <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+
+      <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
+      <a th:href="@{/logout}">로그아웃</a>
     </nav>
   </div>
 </header>
@@ -166,7 +205,6 @@
     <div class="card">
       <h3 class="section-title">결제 수단</h3>
       <div class="pay-grid" id="payGrid">
-        <!-- 신용/체크카드 -->
         <label class="pay" data-method="card">
           <input type="radio" name="paymentType" value="card">
           <img class="logo" alt="" src="data:image/svg+xml;utf8,
@@ -179,7 +217,6 @@
           <div class="sub">국내 모든 카드사</div>
         </label>
 
-        <!-- 카카오페이 -->
         <label class="pay" data-method="kakao">
           <input type="radio" name="paymentType" value="kakao">
           <img class="logo" alt="" src="data:image/svg+xml;utf8,
@@ -193,7 +230,6 @@
           <div class="sub">간편결제 · 송금</div>
         </label>
 
-        <!-- 토스 -->
         <label class="pay" data-method="toss">
           <input type="radio" name="paymentType" value="toss">
           <img class="logo" alt="" src="data:image/svg+xml;utf8,
@@ -217,10 +253,15 @@
       </div>
       <div class="msg error" id="errBox" style="display:none"></div>
       <div class="msg ok" th:if="${successMessage}" th:text="${successMessage}" style="margin-top:10px"></div>
+
+      <!-- 단일 CTA -->
+      <div class="cta">
+        <button class="btn btn-primary" id="payBtn" disabled>결제하기</button>
+      </div>
     </div>
   </div>
 
-  <!-- 실제 전송 폼 (requestSubmit 이용) -->
+  <!-- 실제 전송 폼 -->
   <form id="chargeForm" method="post" action="/recharge" style="display:none">
     <input type="hidden" name="money" id="formMoney">
     <input type="hidden" name="paymentType" id="formPay">
@@ -228,15 +269,19 @@
   </form>
 </main>
 
-<!-- Bottom Action -->
-<div class="actions">
-  <div class="actions-inner">
-    <a class="btn btn-ghost" href="/delivery">홈으로</a>
-    <button class="btn btn-brand" id="payBtn" disabled>결제하기</button>
-  </div>
-</div>
-
 <script>
+  // ===== 헤더 스크롤 축소
+  (function(){
+    const bar = document.getElementById('appbar');
+    const onScroll = () => {
+      if (window.scrollY > 8) bar.classList.add('is-scrolled');
+      else bar.classList.remove('is-scrolled');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive:true});
+  })();
+
+  // ===== 충전 인터랙션
   const moneyInput = document.getElementById('moneyInput');
   const chipGroup = document.getElementById('chipGroup');
   const payGrid = document.getElementById('payGrid');
@@ -270,44 +315,34 @@
     const method = currentMethod();
 
     sumAmount.textContent = (amount>0) ? `${fmt(amount)} 원` : '- 원';
-    sumMethod.textContent = method ? ({
-      card:'신용/체크카드', kakao:'카카오페이', toss:'토스'
-    }[method]) : '-';
+    sumMethod.textContent = method ? ({ card:'신용/체크카드', kakao:'카카오페이', toss:'토스' }[method]) : '-';
     sumTotal.textContent  = `${fmt(amount)} 원`;
 
-    // 유효성 & 버튼 상태
     const ok = amount>0 && method;
     payBtn.disabled = !ok;
     errBox.style.display = 'none';
   }
 
-  // 금액 칩 클릭
   chipGroup.addEventListener('click', (e)=>{
     const btn = e.target.closest('.chip');
     if(!btn || !btn.dataset.amt) return;
-    // 칩 active 상태
     chipGroup.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
     btn.setAttribute('aria-pressed','true');
-
     moneyInput.value = btn.dataset.amt;
     updateSummary();
   });
 
-  // 입력 변경
   moneyInput.addEventListener('input', ()=>{
-    // 칩 선택 해제
     chipGroup.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
     updateSummary();
   });
 
-  // 지우기
   btnAllClear.addEventListener('click', ()=>{
     moneyInput.value = '';
     chipGroup.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
     updateSummary();
   });
 
-  // 결제수단 타일 선택
   payGrid.addEventListener('change', (e)=>{
     if(e.target.name==='paymentType'){
       payGrid.querySelectorAll('.pay').forEach(p=>p.classList.remove('active'));
@@ -316,7 +351,6 @@
     }
   });
 
-  // 결제 버튼
   payBtn.addEventListener('click', ()=>{
     const amount = Number(moneyInput.value || 0);
     const method = currentMethod();
@@ -329,10 +363,9 @@
 
     formMoney.value = String(amount);
     formPay.value = method;
-    form.requestSubmit(); // 실제 POST
+    form.requestSubmit();
   });
 
-  // 초기 상태
   updateSummary();
 </script>
 

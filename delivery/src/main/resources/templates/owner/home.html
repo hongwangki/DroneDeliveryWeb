@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>배달의 드론 | 사장님 홈</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --brand:#2AC1BC; --brand-d:#1fa6a1;
@@ -12,17 +15,74 @@
       --radius:16px; --shadow:0 8px 20px rgba(2,6,23,.06);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    body{
+      margin:0;
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg); color:var(--ink);
+    }
 
-    /* Appbar */
-    header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.8);
-      backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid rgba(15,23,42,.06)}
-    .appbar-inner{max-width:1100px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#0b2b29}
-    .brand-badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--brand);color:#fff;font-weight:900;box-shadow:0 6px 14px rgba(42,193,188,.35)}
-    .actions a{margin-left:12px;text-decoration:none;font-weight:800;padding:8px 14px;border-radius:10px;background:#fff;color:#111827;border:1px solid var(--line);transition:.2s}
-    .actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
-    .actions a.logout{color:#ef4444;border-color:#fecaca}
+    /* Appbar (Glass + Shrink) */
+    .appbar{
+      position:sticky; top:0; z-index:100;
+      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar::after{
+      content:""; position:absolute; inset:0 0 auto 0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+      pointer-events:none;
+    }
+    .appbar-inner{
+      max-width:1200px; margin:0 auto;
+      padding:14px 20px; transition:padding .18s ease;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:900; color:#0b3d3b; text-decoration:none; letter-spacing:-.2px;
+    }
+    .brand:hover{ color:#062f2d }
+    .logo{
+      width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
+      font-weight:900; color:#fff;
+      background:
+              radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+              linear-gradient(135deg,#2AC1BC,#16a39e);
+      box-shadow:0 8px 18px rgba(42,193,188,.25), inset 0 0 0 1px rgba(255,255,255,.35);
+      transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+    .brand span:last-child{
+      background:linear-gradient(90deg,#0b3d3b,#11615e);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .nav{ display:flex; align-items:center; gap:6px }
+    .nav a{
+      position:relative; padding:8px 12px; border-radius:10px;
+      text-decoration:none; color:var(--muted); font-weight:700;
+      transition:color .15s ease, background-color .15s ease, transform .15s ease;
+      white-space:nowrap;
+    }
+    .nav a::after{
+      content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+      background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+      border-radius:2px; transform:scaleX(0); transform-origin:left;
+      transition:transform .18s ease;
+    }
+    .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+    .nav a:hover::after{ transform:scaleX(1) }
+    .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+    .nav a.active::after{ transform:scaleX(1) }
+
+    @media (max-width:720px){
+      .brand span:last-child{ display:none }
+      .nav a{ padding:8px 10px }
+    }
 
     /* Hero */
     .hero{max-width:1100px;margin:26px auto 0;padding:0 20px 18px;border-bottom:1px solid var(--line)}
@@ -48,32 +108,19 @@
     .store-link{display:block;text-decoration:none;color:inherit}
     .store-card{
       background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-      padding:16px;display:flex;flex-direction:column;transition:.2s;
-      min-height:260px;
+      padding:16px;display:flex;flex-direction:column;transition:.2s;min-height:260px;
     }
     .store-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.08)}
 
-    /* ✅ 썸네일: 'contain'으로 잘림 없이, 흰 배경/테두리/라운드 */
+    /* 썸네일 */
     .thumb-box{
-      width:100%;
-      height:168px;                /* 카드 규격에 맞춘 고정 높이 */
-      border-radius:12px;
-      border:1px solid #e6ecef;
-      background:#ffffff;
-      display:flex; align-items:center; justify-content:center;
-      overflow:hidden;
-      margin-bottom:12px;
+      width:100%;height:168px;border-radius:12px;border:1px solid #e6ecef;background:#ffffff;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;
     }
-    .thumb-img{
-      width:100%; height:100%;
-      object-fit:contain;          /* 잘리지 않게 전체 보이기 */
-      display:block;
-    }
+    .thumb-img{width:100%;height:100%;object-fit:contain;display:block}
     .thumb-placeholder{
-      width:100%; height:100%;
-      display:flex; align-items:center; justify-content:center;
-      background:linear-gradient(135deg,#c8f1ef,#e6fffd);
-      color:#0b2b29; font-size:24px; font-weight:900;
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#c8f1ef,#e6fffd);color:#0b2b29;font-size:24px;font-weight:900;
     }
 
     .store-name{font-size:18px;font-weight:900;margin:0 0 6px}
@@ -88,16 +135,30 @@
 </head>
 <body>
 
-<header>
+<!-- 상단바: OWNER이면 '정보보기/로그아웃'만 노출 -->
+<header class="appbar" id="appbar">
   <div class="appbar-inner">
-    <div class="brand">
-      <div class="brand-badge">드</div>
-      <span th:text="${ownerName != null} ? '안녕하세요, ' + ${ownerName} + ' 사장님' : '사장님 홈'">사장님 홈</span>
-    </div>
-    <div class="actions">
-      <a href="/account/edit">정보 수정</a>
-      <a href="/logout" class="logout">로그아웃</a>
-    </div>
+    <a class="brand" th:href="@{/home}">
+      <span class="logo">드</span>
+      <span>배달의 드론</span>
+    </a>
+
+    <!-- OWNER 전용 (정보보기/로그아웃만) -->
+    <nav class="nav"
+         th:if="${session.loginMember != null and session.loginMember.memberType != null and session.loginMember.memberType.name() == 'OWNER'}">
+      <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
+      <a th:href="@{/logout}">로그아웃</a>
+    </nav>
+
+    <!-- 일반 사용자 -->
+    <nav class="nav"
+         th:if="${!(session.loginMember != null and session.loginMember.memberType != null and session.loginMember.memberType.name() == 'OWNER')}">
+      <a th:href="@{/reviews}"  th:classappend="${page=='reviews'}  ? ' active'">나의리뷰</a>
+      <a th:href="@{/orders}"   th:classappend="${page=='orders'}   ? ' active'">주문내역</a>
+      <a th:href="@{/account}"  th:classappend="${page=='account'}  ? ' active'">정보보기</a>
+      <a th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+      <a th:href="@{/logout}">로그아웃</a>
+    </nav>
   </div>
 </header>
 
@@ -124,7 +185,7 @@
   <div class="stores" id="storeGrid" th:if="${stores != null and !#lists.isEmpty(stores)}">
     <a class="store-link" th:each="store : ${stores}" th:href="@{'/owner/stores/' + ${store.id}}">
       <article class="store-card">
-        <!-- ✅ 썸네일: 이미지 있으면 <img>, 없으면 플레이스홀더 -->
+        <!-- 썸네일 -->
         <div class="thumb-box" th:if="${store.imageUrl != null}">
           <img class="thumb-img" th:src="${store.imageUrl}" alt="가게 이미지"
                onerror="this.parentElement.replaceWith((()=>{const d=document.createElement('div');d.className='thumb-box';d.innerHTML='<div class=&quot;thumb-placeholder&quot;>이미지</div>';return d;})())">
@@ -148,7 +209,20 @@
   </p>
 </main>
 
+<!-- 헤더 축소 + 검색/정렬 스크립트 -->
 <script>
+  // 헤더 축소 효과
+  (function(){
+    const bar = document.getElementById('appbar');
+    const onScroll = () => {
+      if (window.scrollY > 8) bar.classList.add('is-scrolled');
+      else bar.classList.remove('is-scrolled');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive:true});
+  })();
+
+  // 검색/정렬
   const grid=document.getElementById('storeGrid');
   const search=document.getElementById('searchInput');
   const sort=document.getElementById('sortSelect');
@@ -170,6 +244,7 @@
         return an.localeCompare(bn,'ko');
       }).forEach(c=>grid.appendChild(c));
     }
+    // 'recent'는 createdAt을 data-*로 싣고 비교 정렬 추가 가능.
   }
   search&&search.addEventListener('input',updateView);
   sort&&sort.addEventListener('change',updateView);

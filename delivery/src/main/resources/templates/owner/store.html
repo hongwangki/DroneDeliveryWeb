@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title th:text="${store.name} + ' | 사장님 가게 관리'">사장님 가게 관리</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800;900&display=swap" rel="stylesheet">
 
@@ -14,8 +13,7 @@
       --ink:#0f172a; --muted:#6b7280;
       --bg:#f6f7fb; --card:#ffffff; --line:#e5e7eb;
       --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
-      --radius:18px;
-      --danger:#ef4444; --warn:#f59e0b;
+      --radius:18px; --danger:#ef4444; --warn:#f59e0b;
     }
     *{box-sizing:border-box}
     body{
@@ -32,7 +30,7 @@
     .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.86);
       backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
     .appbar-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--mint-ink)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--mint-ink);text-decoration:none}
     .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--mint);color:#fff;box-shadow:0 6px 14px rgba(42,193,188,.25)}
     .nav a{ text-decoration:none; color:var(--muted); margin-left:16px; font-weight:800 }
     .nav a:hover{ color:var(--mint-ink) }
@@ -42,84 +40,47 @@
     .store-chip{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:#e6fbf9;color:var(--mint-ink);font-weight:900;border:1px solid #b9efea}
     .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:800;color:#0b3d3b}
 
-    /* 주소 + 삭제 버튼 스택 */
     .hero-actions{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
     @media (max-width:720px){
       .hero{grid-template-columns:1fr}
       .hero-actions{align-items:flex-start}
     }
 
-    /* 패널 */
+    /* 패널 등 이하 동일 */
     .panel{ background:#fff; border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); padding:18px; }
     .panel + .panel{ margin-top:18px }
-
     .title{font-weight:900; font-size:24px; margin:0 0 6px}
     .subtitle{margin:0;color:var(--muted);font-weight:700}
-
-    /* 플래시 */
     .alert{padding:12px 14px;border-radius:12px;border:1px solid;margin:8px 0;font-weight:800}
     .ok{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
     .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
-
-    /* 메뉴 카드 */
     .list{display:grid;gap:10px}
     .item{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff}
-
-    /* 썸네일(이미지/기본 프사 공통 컨테이너) */
-    .thumb{
-      width:96px;height:96px;border-radius:14px;border:1px solid var(--line);
-      background:#f8fafc; display:grid; place-items:center; overflow:hidden;
-    }
+    .thumb{width:96px;height:96px;border-radius:14px;border:1px solid var(--line);background:#f8fafc; display:grid; place-items:center; overflow:hidden;}
     .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .thumb-fallback{
-      width:100%; height:100%; display:grid; place-items:center;
-      background:linear-gradient(135deg, var(--mint), var(--mint-d));
-      color:#fff; font-weight:900; font-size:22px; letter-spacing:-.5px;
-      user-select:none;
-    }
-
+    .thumb-fallback{width:100%; height:100%; display:grid; place-items:center;background:linear-gradient(135deg, var(--mint), var(--mint-d));color:#fff; font-weight:900; font-size:22px; letter-spacing:-.5px;user-select:none;}
     .item-name{margin:0 0 4px;font-weight:900;font-size:18px}
     .item-desc{margin:0 0 6px; color:var(--muted); font-weight:600; line-height:1.35; word-break:keep-all}
     .item-sub{margin:0;color:var(--muted);font-weight:700}
     .price{font-weight:900}
     .controls{display:flex;gap:10px;align-items:center}
-
-    /* 버튼 */
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      height:36px; min-width:84px; padding:0 14px;
-      border-radius:10px; border:1px solid transparent;
-      font-weight:800; font-size:14px; line-height:1; cursor:pointer;
-      transition:background .18s ease, color .18s ease, border-color .18s ease, transform .06s ease;
-      box-shadow:0 2px 0 rgba(15,23,42,.04);
-    }
+    .btn{display:inline-flex; align-items:center; justify-content:center;height:36px; min-width:84px; padding:0 14px;border-radius:10px; border:1px solid transparent;font-weight:800; font-size:14px; line-height:1; cursor:pointer;transition:background .18s ease, color .18s ease, border-color .18s ease, transform .06s ease;box-shadow:0 2px 0 rgba(15,23,42,.04);}
     .btn:active{ transform:translateY(1px); }
     .btn:focus-visible{ outline:3px solid rgba(42,193,188,.35); outline-offset:2px; }
-
     .btn-opt{ background:#fff; color:#0b3d3b; border-color:#d1f3f1; }
     .btn-opt:hover{ background:#2AC1BC; color:#fff; border-color:#2AC1BC; }
-
     .btn-edit{ background:#f59e0b; color:#fff; }
     .btn-edit:hover{ background:#d97706; }
-
     .btn-del{ background:#ef4444; color:#fff; }
     .btn-del:hover{ background:#b91c1c; }
-
-    /* 입력 */
-    input[type="text"], input[type="number"], textarea{
-      border:1px solid var(--line); border-radius:12px; background:#fff; padding:10px 12px; width:100%; font-weight:800; font-family:inherit;
-    }
+    input[type="text"], input[type="number"], textarea{border:1px solid var(--line); border-radius:12px; background:#fff; padding:10px 12px; width:100%; font-weight:800; font-family:inherit;}
     input[type="text"], input[type="number"]{ height:44px; }
     textarea{ min-height:44px; resize:vertical; }
     .add-grid{display:grid; grid-template-columns:2fr 1fr 1fr 2fr auto; gap:10px; align-items:end}
-    /* 설명 textarea는 한 줄을 차지 */
     .add-grid .col-span-5{ grid-column:1 / -1; }
     @media (max-width:980px){ .add-grid{grid-template-columns:1fr 1fr} .add-grid .col-span-5{ grid-column:1 / -1; } }
-
     .key{font-weight:900;color:#374151;margin-bottom:6px}
     .muted{color:var(--muted)}
-
-    /* 검색 */
     .search{display:flex;gap:10px;align-items:center}
     .search input{flex:1}
     .count{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700;text-align:right}
@@ -129,10 +90,14 @@
 
 <header class="appbar">
   <div class="appbar-inner">
-    <div class="brand"><span class="logo">드</span>배달의 드론 — 사장님</div>
+    <!-- ✅ 홈 버튼: /home 으로 이동 -->
+    <a class="brand" th:href="@{/home}" aria-label="홈으로">
+      <span class="logo">드</span>
+      배달의 드론 — 사장님
+    </a>
     <nav class="nav">
-      <a th:href="@{/owner}">내 가게들</a>
-      <a th:href="@{/realtime}">실시간 주문</a>
+      <!-- 사장님 페이지: 정보보기 / 로그아웃만 노출 -->
+      <a th:href="@{/account}">정보보기</a>
       <a th:href="@{/logout}">로그아웃</a>
     </nav>
   </div>
@@ -147,7 +112,6 @@
       <p class="subtitle" th:text="${store.description} ?: '사장님 센스가 빛나는 메뉴를 준비했어요.'">가게 설명</p>
     </div>
 
-    <!-- 주소 아래에 삭제 버튼 배치 -->
     <div class="hero-actions">
       <div class="pill">
         <span th:text="${store.address != null ? store.address.street : '주소 미등록'}">서울특별시 …</span>
@@ -179,7 +143,6 @@
 
     <div class="list" id="menuList">
       <div class="item" th:each="p, stat : ${store.products}" th:data-name="${p.foodName}">
-        <!-- 썸네일: 이미지 있으면 img, 없으면 '드' 기본 프사 -->
         <div class="thumb">
           <img th:if="${p.productImageUrl}" th:src="${p.productImageUrl}" alt="thumbnail">
           <div th:if="${p.productImageUrl == null or #strings.isEmpty(p.productImageUrl)}" class="thumb-fallback">드</div>
@@ -187,7 +150,6 @@
 
         <div>
           <h4 class="item-name" th:text="${p.foodName}">싸이순살</h4>
-          <!-- 설명 표시 (있을 때만) -->
           <p class="item-desc" th:if="${p.productDescription}" th:text="${p.productDescription}">겉바속촉, 특제소스와 환상궁합!</p>
           <p class="item-sub">
             <span class="price" th:text="${#numbers.formatInteger(p.foodPrice,0,'COMMA')} + '원'">0원</span>
@@ -234,7 +196,6 @@
         <input id="imageUrl" type="text" name="productImageUrl" placeholder="https://.../image.jpg" />
       </div>
 
-      <!-- 설명 입력 (한 줄 전체 차지) -->
       <div class="col-span-5">
         <label class="key" for="productDescription">메뉴 설명</label>
         <textarea id="productDescription"

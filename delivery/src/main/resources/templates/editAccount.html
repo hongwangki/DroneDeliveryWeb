@@ -30,26 +30,65 @@
               var(--bg);
     }
 
-    /* Top App Bar */
+    /* ===== Glass Header (shrink on scroll + underline nav) ===== */
     .appbar{
-      position:sticky; top:0; z-index:20;
-      backdrop-filter:saturate(1.1) blur(6px);
-      background:rgba(255,255,255,.7);
+      position:sticky; top:0; z-index:40;
+      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
       border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar::after{
+      content:""; position:absolute; inset:0 0 auto 0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+      pointer-events:none;
     }
     .appbar-inner{
       max-width:1100px; margin:0 auto; padding:14px 20px;
       display:flex; align-items:center; justify-content:space-between;
+      transition:padding .18s ease;
     }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b2b29;}
-    .brand-badge{
-      width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-weight:800;
-      background:var(--brand); color:#fff; box-shadow:0 6px 14px rgba(42,193,188,.35);
-    }
-    .brand span{ font-size:18px }
-    .app-actions a{ text-decoration:none; color:#ef4444; font-weight:800; }
+    .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
 
-    /* Page Hero */
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b2b29;
+      text-decoration:none;
+    }
+    .brand-badge{
+      width:36px; height:36px; border-radius:12px; display:grid; place-items:center; font-weight:900;
+      background:linear-gradient(135deg,#2AC1BC,#179e99); color:#fff;
+      box-shadow:0 8px 18px rgba(42,193,188,.28), inset 0 0 0 1px rgba(255,255,255,.35);
+      transition:transform .18s ease;
+    }
+    .brand:hover .brand-badge{ transform:translateY(-1px) scale(1.03) }
+    .brand span{
+      background:linear-gradient(90deg,#0b3d3b,#11615e);
+      -webkit-background-clip:text; background-clip:text; color:transparent; font-size:18px;
+    }
+
+    .nav{ display:flex; align-items:center; gap:6px }
+    .nav a{
+      position:relative; padding:8px 12px; border-radius:10px;
+      text-decoration:none; color:#6b7280; font-weight:800;
+      transition:color .15s ease, background-color .15s ease;
+    }
+    .nav a::after{
+      content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+      background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+      border-radius:2px; transform:scaleX(0); transform-origin:left;
+      transition:transform .18s ease;
+    }
+    .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+    .nav a:hover::after{ transform:scaleX(1) }
+    .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+    .nav a.active::after{ transform:scaleX(1) }
+
+    @media (max-width:720px){
+      .brand span{ display:none } /* 모바일: 텍스트 숨기고 로고만 */
+      .nav a{ padding:8px 10px }
+    }
+
+    /* Hero */
     .hero{
       max-width:1100px; margin:26px auto 0; padding:0 20px 6px;
       display:flex; align-items:end; justify-content:space-between;
@@ -121,14 +160,29 @@
 <body>
 
 <!-- App Bar -->
-<header class="appbar">
+<header class="appbar" id="appbar">
   <div class="appbar-inner">
-    <div class="brand">
+    <!-- 홈은 /home → 컨트롤러가 역할별 리다이렉트 -->
+    <a class="brand" th:href="@{/home}">
       <div class="brand-badge">드</div>
       <span>배달의 드론</span>
-    </div>
-    <nav class="app-actions">
-      <a href="/logout">로그아웃</a>
+    </a>
+
+    <!-- 세션으로 역할 분기 (OWNER면 정보보기/로그아웃만) -->
+    <!-- 'loginMember'는 SessionConst.LOGIN_MEMBER의 실제 값으로 맞춰주세요 -->
+    <nav class="nav"
+         th:with="
+           loginMember=${session['loginMember']},
+           isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
+         ">
+      <!-- 일반회원 전용 -->
+      <a th:if="${!isOwner}" th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+      <a th:if="${!isOwner}" th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+      <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+
+      <!-- 공통 -->
+      <a th:href="@{/account}" th:classappend="${page=='account' || page=='account-edit'} ? ' active'">정보보기</a>
+      <a th:href="@{/logout}">로그아웃</a>
     </nav>
   </div>
 </header>
@@ -217,6 +271,19 @@
     <button class="btn btn-brand" type="button" onclick="document.querySelector('form').requestSubmit()">변경 사항 저장</button>
   </div>
 </div>
+
+<!-- 헤더 축소 스크립트 -->
+<script>
+  (function(){
+    const bar = document.getElementById('appbar');
+    const onScroll = () => {
+      if (window.scrollY > 8) bar.classList.add('is-scrolled');
+      else bar.classList.remove('is-scrolled');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive:true});
+  })();
+</script>
 
 </body>
 </html>

@@ -13,8 +13,7 @@
             --ink:#0f172a; --muted:#64748b; --bg:#f6f7fb; --card:#ffffff;
             --border:#e5e7eb; --shadow:0 10px 24px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.06);
             --radius:18px; --radius-lg:22px;
-            --star:#f59e0b;          /* ⭐ 노란색 */
-            --star-empty:#e5e7eb;    /* 빈 별 색 */
+            --star:#f59e0b; --star-empty:#e5e7eb;
             --danger:#b91c1c;
         }
         *{box-sizing:border-box}
@@ -22,15 +21,53 @@
             margin:0; font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink);
             background:
                     radial-gradient(circle at 0 0, rgba(15,23,42,.06) 0, rgba(15,23,42,.06) 1px, transparent 1px),
-                    linear-gradient(180deg, #fafbff 0%, var(--bg) 100%); background-size:18px 18px, auto; background-attachment:fixed;
+                    linear-gradient(180deg, #fafbff 0%, var(--bg) 100%);
+            background-size:18px 18px, auto; background-attachment:fixed;
         }
-        .appbar{ position:sticky; top:0; z-index:50; backdrop-filter: blur(6px); background:rgba(255,255,255,.8); border-bottom:1px solid var(--border); }
-        .appbar-inner{ max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
-        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b3d3b; }
-        .logo{ width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff; border-radius:10px; font-weight:900; box-shadow:0 6px 14px rgba(42,193,188,.25); }
-        .nav a{ text-decoration:none; color:#64748b; margin-left:16px; font-weight:600; }
-        .nav a:hover, .nav a.active{ color:#0b3d3b; font-weight:800; }
 
+        /* ===== Glass App Bar (shrink + underline) ===== */
+        .appbar{
+            position:sticky; top:0; z-index:50;
+            background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom:1px solid var(--border);
+        }
+        .appbar::after{
+            content:""; position:absolute; inset:0 0 auto 0; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+            pointer-events:none;
+        }
+        .appbar-inner{
+            max-width:1200px; margin:0 auto; padding:14px 20px;
+            display:flex; align-items:center; justify-content:space-between;
+            transition:padding .18s ease;
+        }
+        .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b; text-decoration:none; }
+        .logo{
+            width:36px; height:36px; display:grid; place-items:center; background:var(--mint); color:#fff;
+            border-radius:12px; font-weight:900; box-shadow:0 8px 18px rgba(42,193,188,.28); transition:transform .18s ease;
+        }
+        .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+
+        .nav{ display:flex; align-items:center; gap:6px }
+        .nav a{
+            position:relative; text-decoration:none; color:var(--muted); padding:8px 12px; border-radius:10px; font-weight:800;
+            transition:color .15s ease, background-color .15s ease;
+        }
+        .nav a::after{
+            content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+            background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+            border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform .18s ease;
+        }
+        .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+        .nav a:hover::after{ transform:scaleX(1) }
+        .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+        .nav a.active::after{ transform:scaleX(1) }
+
+        /* Page */
         .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
         .page-head{ background:linear-gradient(180deg,#e9fbfa,#f7fffe); border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg); box-shadow:var(--shadow); }
         .page-head h1{ margin:0; font-size:28px; letter-spacing:-.3px; }
@@ -42,26 +79,16 @@
         .help{ color:#64748b; font-size:13px; margin-top:4px; }
         .error{ color:var(--danger); font-size:13px; margin-top:6px; }
 
-        .star-rating{
-            display:flex; gap:8px; align-items:center;
-            /* DOM 순서는 5→1인데 왼쪽부터 쌓이게 하려면 row-reverse가 편함 */
-            flex-direction:row-reverse;
-        }
-        .star-rating input{ display:none; }     /* 라디오 숨김 */
-        .star-rating label{
-            width:38px; height:38px; cursor:pointer; user-select:none;
-            display:grid; place-items:center; border-radius:10px;
-        }
-        .star-rating .icon{
-            width:100%; height:100%; fill:var(--star-empty); transition:fill .12s ease;
-        }
+        /* Star rating */
+        .star-rating{ display:flex; gap:8px; align-items:center; flex-direction:row-reverse; }
+        .star-rating input{ display:none; }
+        .star-rating label{ width:38px; height:38px; cursor:pointer; user-select:none; display:grid; place-items:center; border-radius:10px; }
+        .star-rating .icon{ width:100%; height:100%; fill:var(--star-empty); transition:fill .12s ease; }
         .star-rating input:checked + label .icon,
         .star-rating input:checked ~ label .icon{ fill:var(--star); }
         .star-rating label:hover .icon,
         .star-rating label:hover ~ label .icon{ fill:var(--star); }
-        .star-rating label:focus-visible{
-            outline:2px solid var(--mint); outline-offset:2px;
-        }
+        .star-rating label:focus-visible{ outline:2px solid var(--mint); outline-offset:2px; }
 
         textarea{
             width:100%; min-height:140px; resize:vertical; padding:12px; border:1px solid #e5e7eb;
@@ -74,35 +101,39 @@
         .btn.primary{ background:var(--mint); border-color:var(--mint); color:#fff; box-shadow:0 10px 18px rgba(42,193,188,.22); }
         .btn.primary:hover{ background:var(--mint-d); }
 
-        /* 파일 미리보기 그리드 */
-        .preview-grid{
-            display:grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
-            gap:12px; margin-top:10px;
-        }
-        .thumb{
-            border:1px solid var(--border); border-radius:12px; padding:6px; background:#fff;
-            display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center;
-        }
-        .thumb img{
-            max-width:100%; height:96px; object-fit:cover; border-radius:8px;
-        }
-        .thumb .name{
-            font-size:12px; color:#475569; text-align:center; word-break:break-all;
-        }
+        /* 파일 미리보기 */
+        .preview-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap:12px; margin-top:10px; }
+        .thumb{ border:1px solid var(--border); border-radius:12px; padding:6px; background:#fff; display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; }
+        .thumb img{ max-width:100%; height:96px; object-fit:cover; border-radius:8px; }
+        .thumb .name{ font-size:12px; color:#475569; text-align:center; word-break:break-all; }
         .counter{ font-size:13px; color:#475569; margin-top:6px; }
-        .counter.bad{ color:var(--danger); font-weight:700; }
+        .counter.bad{ color:#b91c1c; font-weight:700; }
+
+        @media (max-width:720px){
+            .nav a{ padding:8px 10px }
+        }
     </style>
 </head>
 <body>
 
-<header class="appbar">
+<header class="appbar" id="appbar">
     <div class="appbar-inner">
-        <div class="brand"><span class="logo">드</span>배달의 드론</div>
-        <nav class="nav">
-            <a th:href="@{/orders}" class="active">주문내역</a>
-            <a th:href="@{/account}">정보보기</a>
-            <a th:href="@{/recharge}">돈충전</a>
-            <a th:href="@{/settings}">설정</a>
+        <!-- 홈은 /home → 역할별 리다이렉트 -->
+        <a class="brand" th:href="@{/home}">
+            <span class="logo">드</span> 배달의 드론
+        </a>
+
+        <!-- 세션 분기: OWNER면 정보보기/로그아웃만 -->
+        <nav class="nav"
+             th:with="
+           loginMember=${session['loginMember']},
+           isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
+         ">
+            <a th:if="${!isOwner}" th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+            <a th:if="${!isOwner}" th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+            <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+
+            <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
             <a th:href="@{/logout}">로그아웃</a>
         </nav>
     </div>
@@ -119,9 +150,8 @@
     </section>
 
     <section class="card">
-        <!-- ✅ 한 번에 제출: 본문 + 이미지 -->
+        <!-- 한 번에 제출: 본문 + 이미지 -->
         <form th:action="@{/reviews}" th:object="${form}" method="post" enctype="multipart/form-data">
-            <!-- CSRF (스프링 시큐리티 사용 시) -->
             <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <input type="hidden" th:field="*{orderId}">
             <input type="hidden" th:field="*{storeId}">
@@ -130,40 +160,11 @@
             <div class="field">
                 <label class="label">별점</label>
                 <div class="star-rating" role="radiogroup" aria-label="별점">
-                    <input id="rate5" type="radio" th:field="*{rating}" value="5"/>
-                    <label for="rate5" aria-label="5점">
-                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                    </label>
-
-                    <input id="rate4" type="radio" th:field="*{rating}" value="4"/>
-                    <label for="rate4" aria-label="4점">
-                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                    </label>
-
-                    <input id="rate3" type="radio" th:field="*{rating}" value="3"/>
-                    <label for="rate3" aria-label="3점">
-                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                    </label>
-
-                    <input id="rate2" type="radio" th:field="*{rating}" value="2"/>
-                    <label for="rate2" aria-label="2점">
-                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                    </label>
-
-                    <input id="rate1" type="radio" th:field="*{rating}" value="1"/>
-                    <label for="rate1" aria-label="1점">
-                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
-                    </label>
+                    <input id="rate5" type="radio" th:field="*{rating}" value="5"/><label for="rate5" aria-label="5점"><svg class="icon" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                    <input id="rate4" type="radio" th:field="*{rating}" value="4"/><label for="rate4" aria-label="4점"><svg class="icon" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                    <input id="rate3" type="radio" th:field="*{rating}" value="3"/><label for="rate3" aria-label="3점"><svg class="icon" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                    <input id="rate2" type="radio" th:field="*{rating}" value="2"/><label for="rate2" aria-label="2점"><svg class="icon" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
+                    <input id="rate1" type="radio" th:field="*{rating}" value="1"/><label for="rate1" aria-label="1점"><svg class="icon" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></label>
                 </div>
                 <div class="error" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}">별점 에러</div>
                 <div class="help">노란 별이 선택된 개수만큼 별점이 등록됩니다. (1~5)</div>
@@ -195,14 +196,26 @@
 </main>
 
 <script>
+    // 헤더 스크롤 축소
+    (function(){
+        const bar = document.getElementById('appbar');
+        const onScroll = () => {
+            if (window.scrollY > 8) bar.classList.add('is-scrolled');
+            else bar.classList.remove('is-scrolled');
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+
+    // 파일 미리보기/검증
     (function(){
         const input = document.getElementById('files');
         const preview = document.getElementById('preview');
         const counter = document.getElementById('fileCounter');
         const errBox = document.getElementById('fileError');
 
-        const MAX_FILES = 10;           // 서버 설정과 일치(app.upload.per-review-max)
-        const MAX_SIZE = 10 * 1024 * 1024; // 10MB (spring.servlet.multipart.max-file-size)
+        const MAX_FILES = 10;
+        const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
         function resetPreview(){
             preview.innerHTML = '';
@@ -211,7 +224,6 @@
             errBox.textContent = '';
             counter.classList.remove('bad');
         }
-
         function formatBytes(bytes){
             const units = ['B','KB','MB','GB'];
             let i = 0, v = bytes;
@@ -221,12 +233,10 @@
 
         input.addEventListener('change', () => {
             resetPreview();
-
             const files = Array.from(input.files || []);
-            let tooMany = files.length > MAX_FILES;
-            let tooBig = files.some(f => f.size > MAX_SIZE);
+            const tooMany = files.length > MAX_FILES;
+            const tooBig  = files.some(f => f.size > MAX_SIZE);
 
-            // 카운터 표시
             counter.textContent = `선택된 파일: ${files.length}개 / 최대 ${MAX_FILES}개`;
             if (tooMany) counter.classList.add('bad');
 
@@ -237,18 +247,15 @@
                     (tooBig ? `파일당 크기는 최대 10MB까지예요.` : '');
             }
 
-            // 미리보기 생성
             files.forEach(file => {
                 const wrap = document.createElement('div');
                 wrap.className = 'thumb';
-
                 const img = document.createElement('img');
                 img.alt = file.name;
                 const name = document.createElement('div');
                 name.className = 'name';
                 name.textContent = `${file.name} (${formatBytes(file.size)})`;
 
-                // 이미지 프리뷰
                 const reader = new FileReader();
                 reader.onload = e => { img.src = e.target.result; };
                 reader.readAsDataURL(file);

@@ -6,7 +6,6 @@
     <title>배달의 드론 | 내 리뷰</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- 폰트 -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 
@@ -31,27 +30,48 @@
             background-attachment: fixed;
         }
 
-        /* 상단바 */
-        .appbar{ position: sticky; top:0; z-index:50; backdrop-filter: blur(6px);
-            background: rgba(255,255,255,.8); border-bottom:1px solid var(--border); }
-        .appbar-inner{ max-width:1200px; margin:0 auto; padding:12px 20px;
-            display:flex; align-items:center; justify-content:space-between; }
-        .left-group{ display:flex; align-items:center; gap:12px; }
-        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b3d3b; }
-        .logo{ width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff;
-            border-radius:10px; font-weight:900; box-shadow:0 6px 14px rgba(42,193,188,.25); }
-        .pill-btn{
-            display:inline-flex; align-items:center; gap:6px;
-            padding:8px 12px; border-radius:999px;
-            background:#eef7f7; border:1px solid #e4f0f0; color:#0b3d3b;
-            text-decoration:none; font-weight:800; font-size:14px;
+        /* ===== Glass App Bar (shrink + underline) ===== */
+        .appbar{
+            position:sticky; top:0; z-index:50;
+            background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom:1px solid var(--border);
         }
-        .pill-btn:hover{ background:#e3f2f2 }
-        .pill-btn.active{ background:var(--mint); color:#fff; border-color:var(--mint);
-            box-shadow:0 6px 14px rgba(42,193,188,.28); }
-        .nav a{ text-decoration:none; color:#64748b; margin-left:16px; font-weight:600; }
-        .nav a:hover{ color:#0b3d3b }
-        .nav a.active{ color:#0b3d3b; font-weight:800; }
+        .appbar::after{
+            content:""; position:absolute; inset:0 0 auto 0; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+            pointer-events:none;
+        }
+        .appbar-inner{
+            max-width:1200px; margin:0 auto; padding:14px 20px;
+            display:flex; align-items:center; justify-content:space-between;
+            transition:padding .18s ease;
+        }
+        .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; color:#0b3d3b; text-decoration:none; }
+        .logo{
+            width:36px; height:36px; display:grid; place-items:center; background:var(--mint); color:#fff;
+            border-radius:12px; font-weight:900; box-shadow:0 8px 18px rgba(42,193,188,.28);
+            transition:transform .18s ease;
+        }
+        .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+
+        .nav{ display:flex; align-items:center; gap:6px }
+        .nav a{
+            position:relative; text-decoration:none; color:var(--muted); margin:0; padding:8px 12px;
+            border-radius:10px; font-weight:800; transition:color .15s ease, background-color .15s ease;
+        }
+        .nav a::after{
+            content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+            background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+            border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform .18s ease;
+        }
+        .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+        .nav a:hover::after{ transform:scaleX(1) }
+        .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+        .nav a.active::after{ transform:scaleX(1) }
 
         /* 본문 레이아웃 */
         .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
@@ -91,22 +111,35 @@
             color:#64748b; text-align:center;
         }
         .empty strong{ color:#0b3d3b }
+
+        @media (max-width:720px){
+            .nav a{ padding:8px 10px }
+        }
     </style>
 </head>
 <body>
 
-<header class="appbar">
+<header class="appbar" id="appbar">
     <div class="appbar-inner">
-        <div class="left-group">
-            <a class="pill-btn" th:classappend="${nav} == 'my-reviews' ? ' active'"
-               th:href="@{/reviews/me}">⭐ 내 리뷰</a>
-            <div class="brand"><span class="logo">드</span>배달의 드론</div>
-        </div>
-        <nav class="nav">
-            <a th:href="@{/orders}">주문내역</a>
-            <a th:href="@{/account}">정보보기</a>
-            <a th:href="@{/recharge}">돈충전</a>
-            <a th:href="@{/settings}">설정</a>
+        <!-- 홈은 /home → 컨트롤러가 역할별 리다이렉트 -->
+        <a class="brand" th:href="@{/home}">
+            <span class="logo">드</span> 배달의 드론
+        </a>
+
+        <!-- 세션 분기: OWNER면 정보보기/로그아웃만 -->
+        <!-- 'loginMember'는 SessionConst.LOGIN_MEMBER 실제 값으로 맞추세요 -->
+        <nav class="nav"
+             th:with="
+           loginMember=${session['loginMember']},
+           isOwner=${loginMember != null and loginMember.memberType == T(drone.delivery.domain.MemberType).OWNER}
+         ">
+            <!-- 일반회원 전용 -->
+            <a th:if="${!isOwner}" th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+            <a th:if="${!isOwner}" th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+            <a th:if="${!isOwner}" th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+
+            <!-- 공통 -->
+            <a th:href="@{/account}" th:classappend="${page=='account'} ? ' active'">정보보기</a>
             <a th:href="@{/logout}">로그아웃</a>
         </nav>
     </div>
@@ -125,24 +158,18 @@
 
     <!-- 리뷰 리스트 -->
     <section class="list" th:if="${!#lists.isEmpty(reviews)}">
-        <article class="card" th:each="r : ${reviews}"
-                 th:with="rating=${r.rating != null ? r.rating : 0}">
-
-            <!-- 상단: 가게명(있을 때만) / 작성일 -->
+        <article class="card" th:each="r : ${reviews}" th:with="rating=${r.rating != null ? r.rating : 0}">
             <div class="card-head">
-                <!-- r.store가 있을 때만 가게명 출력 -->
                 <div class="store-name" th:if="${r.store != null}" th:text="${r.store.name}">가게 이름</div>
                 <div class="store-name" th:if="${r.store == null}">가게 정보 없음</div>
-
                 <div class="sub" th:text="${#temporals.format(r.createdDate,'yyyy.MM.dd HH:mm')}">2025.09.09 12:34</div>
             </div>
 
-            <!-- 별점(읽기 전용) -->
+            <!-- 별점 (읽기 전용) -->
             <div class="stars-read" aria-hidden="true">
-      <span class="star" th:each="i : ${#numbers.sequence(1,5)}"
-            th:classappend="${i <= rating} ? ' on'">
-        <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-      </span>
+        <span class="star" th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i <= rating} ? ' on'">
+          <svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        </span>
             </div>
 
             <!-- 리뷰 내용 -->
@@ -150,7 +177,6 @@
 
             <!-- 액션 -->
             <div class="cta">
-                <!-- 가게 보기: r.store 있을 때만 -->
                 <a class="btn" th:if="${r.store != null}" th:href="@{|/delivery/${r.store.id}|}">가게 보기</a>
                 <a class="btn" th:href="@{|/reviews/${r.id}/edit|}">수정</a>
 
@@ -162,9 +188,20 @@
             </div>
         </article>
     </section>
-
-
 </main>
+
+<script>
+    // 헤더 스크롤 축소
+    (function(){
+        const bar = document.getElementById('appbar');
+        const onScroll = () => {
+            if (window.scrollY > 8) bar.classList.add('is-scrolled');
+            else bar.classList.remove('is-scrolled');
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+</script>
 
 </body>
 </html>

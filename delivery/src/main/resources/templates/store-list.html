@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>배달의 드론 | 가게 목록</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 
@@ -26,16 +25,70 @@
             background-size:18px 18px, auto; background-attachment:fixed;
         }
 
-        /* header */
-        .appbar{ position:sticky; top:0; z-index:50; backdrop-filter:blur(6px); background:rgba(255,255,255,.85); border-bottom:1px solid var(--border); }
-        .appbar-inner{ max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
-        .brand{ display:flex; align-items:center; gap:10px; font-weight:900; color:#0b3d3b; }
-        .logo{ width:32px; height:32px; display:grid; place-items:center; background:var(--mint); color:#fff; border-radius:10px; font-weight:900; box-shadow:0 6px 14px rgba(42,193,188,.25); }
-        .nav a{ text-decoration:none; color:var(--muted); margin-left:16px; font-weight:600; }
-        .nav a:hover{ color:#0b3d3b }
+        /* ==== Header (Glass + Shrink on scroll) ==== */
+        .appbar{
+            position:sticky; top:0; z-index:100;
+            background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom:1px solid rgba(15,23,42,.06);
+        }
+        .appbar::after{
+            content:""; position:absolute; inset:0 0 auto 0; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+            pointer-events:none;
+        }
+        .appbar-inner{
+            max-width:1200px; margin:0 auto;
+            padding:14px 20px; transition:padding .18s ease;
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+        .brand{
+            display:flex; align-items:center; gap:12px;
+            font-weight:900; color:#0b3d3b; text-decoration:none; letter-spacing:-.2px;
+        }
+        .brand:hover{ color:#062f2d }
+        .logo{
+            width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
+            font-weight:900; color:#fff;
+            background:
+                    radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+                    linear-gradient(135deg,#2AC1BC,#16a39e);
+            box-shadow:0 8px 18px rgba(42,193,188,.25), inset 0 0 0 1px rgba(255,255,255,.35);
+            transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease;
+        }
+        .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+        .brand span:last-child{
+            background:linear-gradient(90deg,#0b3d3b,#11615e);
+            -webkit-background-clip:text; background-clip:text; color:transparent;
+        }
+
+        .nav{ display:flex; align-items:center; gap:6px }
+        .nav a{
+            position:relative; padding:8px 12px; border-radius:10px;
+            text-decoration:none; color:var(--muted); font-weight:700;
+            transition:color .15s ease, background-color .15s ease, transform .15s ease;
+        }
+        .nav a::after{
+            content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+            background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+            border-radius:2px; transform:scaleX(0); transform-origin:left;
+            transition:transform .18s ease;
+        }
+        .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+        .nav a:hover::after{ transform:scaleX(1) }
+        .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+        .nav a.active::after{ transform:scaleX(1) }
+
+        @media (max-width:720px){
+            .brand span:last-child{ display:none }
+            .nav a{ padding:8px 10px }
+        }
 
         /* frame */
-        .wrap{ max-width:1200px; margin:26px auto 80px; padding:0 20px; }
+        .wrap{ max-width:1200px; margin:26px auto 120px; padding:0 20px; }
         .page-head{ background:linear-gradient(180deg,#e9fbfa,#f7fffe); border:1px solid #dbf5f2; padding:22px; border-radius:var(--radius-lg); box-shadow:var(--shadow); }
         .page-head h1{ margin:0 0 6px; font-size:32px; letter-spacing:-.3px }
         .page-head p{ margin:0; color:var(--muted) }
@@ -56,44 +109,78 @@
         @media (max-width:640px){ .grid{ grid-template-columns:1fr } }
 
         /* card */
-        .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:16px; text-decoration:none; color:inherit; transition:transform .18s, box-shadow .18s, border-color .18s; display:block }
-        .card:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(15,23,42,.10),0 4px 10px rgba(15,23,42,.06); border-color:#dfe3ea }
-
+        .card-wrap{ position:relative; }
+        .card-link{
+            display:block; text-decoration:none; color:inherit;
+            background:var(--card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); box-shadow:var(--shadow);
+            padding:16px; transition:transform .18s, box-shadow .18s, border-color .18s;
+        }
+        .card-link:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(15,23,42,.10),0 4px 10px rgba(15,23,42,.06); border-color:#dfe3ea }
         .card-row{ display:flex; gap:14px }
-        .thumb{
-            width:92px; height:92px; border-radius:12px; flex-shrink:0; object-fit:cover; background:#f3f4f6;
-            border:1px solid #eef1f4;
-        }
-        .thumb.placeholder{
-            background:linear-gradient(135deg, #def7f5, #f4fffe);
-            border:1px solid #d4f0ed;
-        }
+        .thumb{ width:92px; height:92px; border-radius:12px; flex-shrink:0; object-fit:cover; background:#f3f4f6; border:1px solid #eef1f4; }
+        .thumb.placeholder{ background:linear-gradient(135deg, #def7f5, #f4fffe); border:1px solid #d4f0ed; }
         .content{ flex:1; min-width:0 }
 
-        .card-head{ display:flex; align-items:center; justify-content:space-between }
+        .card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px }
         .name{ font-weight:900; font-size:18px; letter-spacing:-.2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-        .badge{ background:#eef6f6; color:#0b3d3b; font-weight:800; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #dceeee }
+        .badge{ background:#eef6f6; color:#0b3d3b; font-weight:800; font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #dceeee; flex-shrink:0 }
         .meta{ margin-top:6px; color:var(--muted); font-size:14px; display:flex; gap:12px; flex-wrap:wrap }
         .chip{ background:#f5fbfb; border:1px solid #e2f3f1; color:#0b3d3b; font-weight:800; padding:4px 8px; border-radius:999px; font-size:12px }
         .desc{ margin-top:8px; color:#3b475a; font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
 
         .cta{ margin-top:12px; display:flex; justify-content:space-between; align-items:center; opacity:.9; }
-        .card:hover .cta{ opacity:1 }
-        .go{ background:var(--mint); color:#fff; border:none; padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 10px 18px rgba(42,193,188,.22) }
+        .card-link:hover .cta{ opacity:1 }
+        .go{ background:var(--mint); color:#fff; border:none; padding:10px 12px; border-radius:12px; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 10px 18px rgba(42,193,188,.22) }
         .go:hover{ background:var(--mint-d) }
+
+        /* heart */
+        .fav-form{ position:absolute; left:14px; bottom:14px; z-index:2; }
+        .heart-btn{
+            border:none; background:rgba(255,255,255,.96); cursor:pointer;
+            width:40px; height:40px; border-radius:50%;
+            display:grid; place-items:center;
+            box-shadow:0 6px 14px rgba(15,23,42,.10); border:1px solid #eef1f4;
+        }
+        .heart-btn:hover{ background:#fff }
+        .heart-btn svg{ width:24px; height:24px; color:#ef4444; }
+        .heart-outline{ fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+        .heart-filled{ fill:currentColor }
+
+        /* sticky pager (favorites) */
+        .pager-fixed{
+            position:fixed; left:0; right:0; bottom:16px; z-index:60;
+            display:flex; justify-content:center; pointer-events:none;
+        }
+        .pager-shell{
+            display:flex; gap:10px; align-items:center;
+            padding:8px; border-radius:999px; background:rgba(255,255,255,.92);
+            border:1px solid var(--border); box-shadow:var(--shadow);
+            backdrop-filter:blur(6px); pointer-events:auto;
+        }
+        .pager-btn{
+            display:inline-block; padding:10px 18px; border-radius:999px;
+            background:var(--mint); color:#fff; text-decoration:none; font-weight:800;
+            box-shadow:0 10px 18px rgba(42,193,188,.22);
+        }
+        .pager-btn:hover{ background:var(--mint-d) }
+        .pager-info{ color:var(--muted); font-weight:800; padding:0 6px }
     </style>
 </head>
 <body>
 
-<header class="appbar">
+<header class="appbar" id="appbar">
     <div class="appbar-inner">
-        <div class="brand"><span class="logo">드</span>배달의 드론</div>
+        <!-- 이제 홈은 /home 으로 → 컨트롤러가 역할별로 리다이렉트 -->
+        <a class="brand" th:href="@{/home}">
+            <span class="logo">드</span>
+            <span>배달의 드론</span>
+        </a>
         <nav class="nav">
-            <a th:href="@{/reviews}">나의리뷰</a>
-            <a th:href="@{/orders}">주문내역</a>
-            <a th:href="@{/account}">정보보기</a>
-            <a th:href="@{/recharge}">돈충전</a>
-            <a th:href="@{/settings}">설정</a>
+            <a th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+            <a th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+            <a th:href="@{/account}"  th:classappend="${page=='account'} ? ' active'">정보보기</a>
+            <a th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
             <a th:href="@{/logout}">로그아웃</a>
         </nav>
     </div>
@@ -105,64 +192,236 @@
         <p>가볍게 고르고, 드론으로 빠르게 받아보세요.</p>
     </section>
 
-    <a class="realtime" th:href="@{/realtime}">📦 실시간 주문 현황 보기</a>
+    <a class="realtime" th:href="@{/realtime}">✈️ 실시간 주문 현황 보기</a>
 
+    <!-- 탭 -->
     <div class="cats" aria-label="카테고리">
-        <a class="cat" th:classappend="${selectedCategory == '전체'} ? ' active'" th:href="@{/delivery(category='전체')}">전체</a>
-        <a class="cat" th:classappend="${selectedCategory == '치킨'} ? ' active'" th:href="@{/delivery(category='치킨')}">치킨</a>
-        <a class="cat" th:classappend="${selectedCategory == '한식'} ? ' active'" th:href="@{/delivery(category='한식')}">한식</a>
-        <a class="cat" th:classappend="${selectedCategory == '중식'} ? ' active'" th:href="@{/delivery(category='중식')}">중식</a>
-        <a class="cat" th:classappend="${selectedCategory == '피자'} ? ' active'" th:href="@{/delivery(category='피자')}">피자</a>
-        <a class="cat" th:classappend="${selectedCategory == '족발'} ? ' active'" th:href="@{/delivery(category='족발')}">족발</a>
-        <a class="cat" th:classappend="${selectedCategory == '카페'} ? ' active'" th:href="@{/delivery(category='카페')}">카페</a>
-        <a class="cat" th:classappend="${selectedCategory == '햄버거'} ? ' active'" th:href="@{/delivery(category='햄버거')}">햄버거</a>
-        <a class="cat" th:classappend="${selectedCategory == '분식'} ? ' active'" th:href="@{/delivery(category='분식')}">분식</a>
-        <a class="cat" th:classappend="${selectedCategory == '일식'} ? ' active'" th:href="@{/delivery(category='일식')}">일식</a>
-        <a class="cat" th:classappend="${selectedCategory == '디저트'} ? ' active'" th:href="@{/delivery(category='디저트')}">디저트</a>
+        <a class="cat" th:classappend="${selectedCategory == '전체' and (tab=='stores' || tab==null)} ? ' active'"
+           th:href="@{/delivery(category='전체', tab='stores')}">전체</a>
+        <a class="cat" th:classappend="${selectedCategory == '치킨' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='치킨', tab='stores')}">치킨</a>
+        <a class="cat" th:classappend="${selectedCategory == '한식' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='한식', tab='stores')}">한식</a>
+        <a class="cat" th:classappend="${selectedCategory == '중식' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='중식', tab='stores')}">중식</a>
+        <a class="cat" th:classappend="${selectedCategory == '피자' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='피자', tab='stores')}">피자</a>
+        <a class="cat" th:classappend="${selectedCategory == '족발' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='족발', tab='stores')}">족발</a>
+        <a class="cat" th:classappend="${selectedCategory == '카페' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='카페', tab='stores')}">카페</a>
+        <a class="cat" th:classappend="${selectedCategory == '햄버거' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='햄버거', tab='stores')}">햄버거</a>
+        <a class="cat" th:classappend="${selectedCategory == '분식' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='분식', tab='stores')}">분식</a>
+        <a class="cat" th:classappend="${selectedCategory == '일식' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='일식', tab='stores')}">일식</a>
+        <a class="cat" th:classappend="${selectedCategory == '디저트' and tab=='stores'} ? ' active'"
+           th:href="@{/delivery(category='디저트', tab='stores')}">디저트</a>
+        <a class="cat" th:classappend="${tab=='favorites'} ? ' active'"
+           th:href="@{/delivery(tab='favorites', page=0, size=6)}">💚 찜목록</a>
     </div>
 
-    <!-- Store grid -->
-    <section class="grid">
-        <a th:each="store : ${stores}"
-           th:href="@{'/delivery/' + ${store.id}}"
-           class="card" aria-label="가게 카드">
-
-            <div class="card-row">
-                <!-- 썸네일: 이미지 있으면 img, 없으면 placeholder -->
-                <img class="thumb"
-                     loading="lazy"
-                     th:if="${!#strings.isEmpty(store.imageUrl)}"
-                     th:src="${store.imageUrl}"
-                     alt="가게 이미지"
-                     onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb placeholder',ariaHidden:'true'}));">
-                <div class="thumb placeholder" th:if="${#strings.isEmpty(store.imageUrl)}" aria-hidden="true"></div>
-
-                <div class="content">
-                    <div class="card-head">
-                        <div class="name" th:text="${store.name}">가게 이름</div>
-                        <span class="badge" th:text="${store.category}">카테고리</span>
-                    </div>
-
-                    <div class="meta">
-            <span class="chip"
-                  th:if="${store.minOrderPrice != null}"
-                  th:text="'최소주문 ' + ${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">최소주문 0원</span>
-                        <span class="chip"
-                              th:if="${store.products != null}"
-                              th:text="'메뉴 ' + ${#lists.size(store.products)} + '개'">메뉴 0개</span>
-                    </div>
-
-                    <p class="desc" th:text="${store.description}">가게 설명</p>
-
-                    <div class="cta">
-                        <span style="color:var(--muted); font-weight:700;">바로 주문하기</span>
-                        <span class="go" aria-hidden="true">가게 보기 →</span>
+    <!-- 가게 목록 (stores) -->
+    <section class="grid" th:if="${tab == 'stores' || tab == null}">
+        <div th:each="store : ${stores}" class="card-wrap">
+            <a class="card-link" th:href="@{'/delivery/' + ${store.id}}" aria-label="가게 카드">
+                <div class="card-row">
+                    <img class="thumb" loading="lazy"
+                         th:if="${!#strings.isEmpty(store.imageUrl)}" th:src="${store.imageUrl}" alt="가게 이미지"
+                         onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb placeholder',ariaHidden:'true'}));">
+                    <div class="thumb placeholder" th:if="${#strings.isEmpty(store.imageUrl)}" aria-hidden="true"></div>
+                    <div class="content">
+                        <div class="card-head">
+                            <div class="name" th:text="${store.name}">가게 이름</div>
+                            <span class="badge" th:text="${store.category}">카테고리</span>
+                        </div>
+                        <div class="meta">
+              <span class="chip" th:if="${store.minOrderPrice != null}"
+                    th:text="'최소주문 ' + ${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">최소주문 0원</span>
+                        </div>
+                        <p class="desc" th:text="${store.description}">가게 설명</p>
+                        <div class="cta">
+                            <span style="color:var(--muted); font-weight:700;">바로 주문하기</span>
+                            <span class="go" aria-hidden="true">가게 보기 →</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </a>
+            </a>
+
+            <!-- 하트: AJAX submit -->
+            <form class="fav-form js-fav-form" method="post" th:action="@{/delivery/favorites/toggle}">
+                <input type="hidden" name="storeId" th:value="${store.id}">
+                <input type="hidden" name="category" th:value="${selectedCategory}">
+                <input type="hidden" name="tab" value="stores">
+                <button type="submit" class="heart-btn js-fav-btn" th:attr="data-store-id=${store.id}" aria-label="즐겨찾기 토글">
+                    <svg class="ico ico-outline"
+                         th:style="${favoriteStoreIds != null and favoriteStoreIds.contains(store.id)} ? 'display:none' : ''"
+                         viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="heart-outline"
+                              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.81 0-3.397 1.012-4.312 2.495-.915-1.483-2.502-2.495-4.313-2.495C5.1 3.75 3 5.765 3 8.25c0 7.22 9 11.25 9 11.25s9-4.03 9-11.25z"/>
+                    </svg>
+                    <svg class="ico ico-filled"
+                         th:style="${favoriteStoreIds != null and favoriteStoreIds.contains(store.id)} ? '' : 'display:none'"
+                         viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="heart-filled"
+                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6.5 3.5 4.5 6.5 4.5c1.9 0 3.29 1.02 4 2.26 .71-1.24 2.1-2.26 4-2.26C17.5 4.5 19 6.5 19 8.5c0 3.78-3.4 6.86-8.55 11.53L12 21.35z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 찜목록 (favorites, 6개씩) -->
+    <section th:if="${tab == 'favorites'}" class="grid" id="favGrid" th:attr="data-tab=${tab}">
+        <div th:if="${favStores == null or #lists.isEmpty(favStores.content)}"
+             class="card-link" style="text-align:center; padding:20px; border:1px dashed var(--border);">
+            아직 찜한 가게가 없어요. 가게 목록에서 하트를 눌러 추가해보세요!
+        </div>
+
+        <div th:each="store : ${favStores.content}" class="card-wrap">
+            <a class="card-link" th:href="@{'/delivery/' + ${store.id}}" aria-label="가게 카드">
+                <div class="card-row">
+                    <img class="thumb" loading="lazy"
+                         th:if="${!#strings.isEmpty(store.imageUrl)}" th:src="${store.imageUrl}" alt="가게 이미지"
+                         onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb placeholder',ariaHidden:'true'}));">
+                    <div class="thumb placeholder" th:if="${#strings.isEmpty(store.imageUrl)}" aria-hidden="true"></div>
+                    <div class="content">
+                        <div class="card-head">
+                            <div class="name" th:text="${store.name}">가게 이름</div>
+                            <span class="badge" th:text="${store.category}">카테고리</span>
+                        </div>
+                        <div class="meta">
+              <span class="chip" th:if="${store.minOrderPrice != null}"
+                    th:text="'최소주문 ' + ${#numbers.formatInteger(store.minOrderPrice,0,'COMMA')} + '원'">최소주문 0원</span>
+                        </div>
+                        <p class="desc" th:text="${store.description}">가게 설명</p>
+                        <div class="cta">
+                            <span style="color:var(--muted); font-weight:700;">바로 주문하기</span>
+                            <span class="go" aria-hidden="true">가게 보기 →</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 하트: AJAX submit (favorites) -->
+            <form class="fav-form js-fav-form" method="post" th:action="@{/delivery/favorites/toggle}">
+                <input type="hidden" name="storeId" th:value="${store.id}">
+                <input type="hidden" name="tab" value="favorites">
+                <input type="hidden" name="page" th:value="${favStores.number}">
+                <input type="hidden" name="size" value="6">
+                <button type="submit" class="heart-btn js-fav-btn" th:attr="data-store-id=${store.id}" aria-label="즐겨찾기 토글">
+                    <svg class="ico ico-outline"
+                         th:style="${favoriteStoreIds != null and favoriteStoreIds.contains(store.id)} ? 'display:none' : ''"
+                         viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="heart-outline"
+                              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.81 0-3.397 1.012-4.312 2.495-.915-1.483-2.502-2.495-4.313-2.495C5.1 3.75 3 5.765 3 8.25c0 7.22 9 11.25 9 11.25s9-4.03 9-11.25z"/>
+                    </svg>
+                    <svg class="ico ico-filled"
+                         th:style="${favoriteStoreIds != null and favoriteStoreIds.contains(store.id)} ? '' : 'display:none'"
+                         viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="heart-filled"
+                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6.5 3.5 4.5 6.5 4.5c1.9 0 3.29 1.02 4 2.26 .71-1.24 2.1-2.26 4-2.26C17.5 4.5 19 6.5 19 8.5c0 3.78-3.4 6.86-8.55 11.53L12 21.35z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
     </section>
 </main>
+
+<!-- 하단 고정 페이지네이션: favorites 탭에서만 표시 -->
+<nav class="pager-fixed"
+     th:if="${tab == 'favorites'} and ${favStores != null} and ${favStores.totalPages > 0}">
+    <div class="pager-shell">
+        <a class="pager-btn"
+           th:if="${!favStores.first}"
+           th:href="@{/delivery(tab='favorites', page=${favStores.number-1}, size=6)}">← 이전</a>
+        <span class="pager-info"
+              th:text="${favStores.number+1} + ' / ' + ${favStores.totalPages}">1 / 1</span>
+        <a class="pager-btn"
+           th:if="${!favStores.last}"
+           th:href="@{/delivery(tab='favorites', page=${favStores.number+1}, size=6)}">다음 →</a>
+    </div>
+</nav>
+
+<!-- 헤더 축소 + 하트 AJAX 스크립트 -->
+<script>
+    // 헤더 축소 효과
+    (function(){
+        const bar = document.getElementById('appbar');
+        const onScroll = () => {
+            if (window.scrollY > 8) bar.classList.add('is-scrolled');
+            else bar.classList.remove('is-scrolled');
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, {passive:true});
+    })();
+
+    // 즐겨찾기 토글 (AJAX)
+    (function(){
+        document.addEventListener('submit', function(e){
+            const form = e.target.closest('.js-fav-form');
+            if (!form) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const btn = form.querySelector('.js-fav-btn');
+            const storeId = btn?.dataset.storeId;
+            if (!storeId) { form.submit(); return; }
+
+            fetch('/api/favorites/toggle', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({ storeId })
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('toggle failed');
+                    return res.json();
+                })
+                .then(data => {
+                    const on = !!data.favorited;
+
+                    // 아이콘 즉시 토글
+                    const outlineSvg = btn.querySelector('.ico-outline');
+                    const filledSvg  = btn.querySelector('.ico-filled');
+                    if (outlineSvg && filledSvg) {
+                        outlineSvg.style.display = on ? 'none' : '';
+                        filledSvg.style.display  = on ? '' : 'none';
+                    }
+
+                    // 찜목록 탭이면, 해제 시 카드 제거 + 빈 페이지 처리
+                    const favGrid = document.getElementById('favGrid');
+                    const isFavoritesTab = favGrid && favGrid.dataset.tab === 'favorites';
+                    if (isFavoritesTab && !on) {
+                        const card = form.closest('.card-wrap');
+                        if (card) {
+                            card.style.transition = 'opacity .18s, transform .18s';
+                            card.style.opacity = '0';
+                            card.style.transform = 'scale(.98)';
+                            setTimeout(() => {
+                                card.remove();
+                                const remains = favGrid.querySelectorAll('.card-wrap').length;
+                                if (remains === 0) {
+                                    const page = parseInt(form.querySelector('input[name="page"]')?.value || '0', 10);
+                                    const size = parseInt(form.querySelector('input[name="size"]')?.value || '6', 10);
+                                    const prev = Math.max(0, page - 1);
+                                    const targetPage = page > 0 ? prev : 0;
+                                    window.location.href = `/delivery?tab=favorites&page=${targetPage}&size=${size}`;
+                                }
+                            }, 200);
+                        }
+                    }
+                })
+                .catch(() => { form.submit(); }); // 폴백
+        }, true);
+
+        // 하트 클릭이 카드 링크로 전파되지 않도록
+        document.addEventListener('click', function(e){
+            if (e.target.closest('.js-fav-btn')) e.stopPropagation();
+        }, true);
+    })();
+</script>
 
 </body>
 </html>
