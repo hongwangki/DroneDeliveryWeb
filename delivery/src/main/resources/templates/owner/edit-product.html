@@ -15,6 +15,7 @@
       --card:#ffffff; --bg:#f6f8fb; --line:#e5e7eb;
       --radius:20px; --shadow:0 18px 44px rgba(2,6,23,.10), 0 6px 18px rgba(2,6,23,.06);
       --glass:rgba(255,255,255,.75); --danger:#ef4444; --danger-d:#dc2626;
+      --success:#059669; --success-bg:#ecfdf5; --success-bd:#a7f3d0;
     }
 
     *{box-sizing:border-box}
@@ -29,7 +30,6 @@
       min-height:100vh;
     }
 
-    /* Appbar */
     header{
       position:sticky; top:0; z-index:20;
       background:rgba(255,255,255,.8);
@@ -46,18 +46,15 @@
       width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
       background:var(--brand);color:#fff;font-weight:900;
       box-shadow:0 6px 14px rgba(42,193,188,.35);
-      /* ✅ 부드러운 확대/명암 전환 */
       transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
       will-change: transform;
     }
-    /* 가까이(링크 영역) 올리면 살짝 커지고 명암 강조 */
     .brand:hover .brand-badge,
     .brand:focus-visible .brand-badge{
       transform: translateY(-1px) scale(1.08);
       box-shadow:0 12px 26px rgba(42,193,188,.38), inset 0 0 0 1px rgba(255,255,255,.55);
       filter: saturate(1.05);
     }
-    /* 모션 최소화 존중 */
     @media (prefers-reduced-motion: reduce){
       .brand-badge{ transition: none }
     }
@@ -65,7 +62,6 @@
     .nav-actions a{margin-left:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;text-decoration:none;font-weight:800;transition:.2s}
     .nav-actions a:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
 
-    /* Page */
     main{max-width:900px;margin:22px auto 60px;padding:0 20px;display:grid;gap:18px}
 
     .card{backdrop-filter:blur(8px) saturate(1.05);background:var(--glass);
@@ -73,20 +69,29 @@
     .card h1{margin:0 0 10px;font-size:20px;font-weight:900}
     .sub{margin:-4px 0 10px;color:var(--muted);font-weight:600}
 
-    /* Form */
+    /* Alerts */
+    .alert-error{
+      background:#fef2f2; border:1px solid #fecaca; color:#991b1b;
+      padding:10px 12px; border-radius:12px; margin-bottom:10px; font-weight:800;
+    }
+    .alert-success{
+      background:var(--success-bg); border:1px solid var(--success-bd); color:var(--success);
+      padding:10px 12px; border-radius:12px; margin-bottom:10px; font-weight:800;
+    }
+
     label{display:block;font-size:13px;font-weight:800;color:#334155;margin:0 0 6px}
     .input, textarea{
       width:100%;border-radius:12px;border:1px solid var(--line);background:#f9fafb;
       padding:12px 14px;font-size:15px;transition:border-color .15s,box-shadow .15s,background .15s
     }
     .input{height:52px;}
-    textarea{min-height:90px;resize:vertical;}
+    textarea{min-height:90px;resize:vertical;max-length:500}
     .input:focus, textarea:focus{outline:none;border-color:#8ee2df;background:#fff;box-shadow:0 0 0 4px rgba(42,193,188,.15)}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media (max-width:720px){.row{grid-template-columns:1fr}}
 
-    .error-global{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 12px;border-radius:12px;margin-bottom:10px;font-weight:700}
     .error{margin-top:6px;color:#b91c1c;font-size:13px}
+    .field-error{border-color:#dc2626 !important; background:#fff7f7}
 
     .actions{display:flex;gap:10px;margin-top:16px}
     .btn{border:none;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
@@ -97,7 +102,6 @@
     .btn-danger{background:var(--danger);color:#fff}
     .btn-danger:hover{background:var(--danger-d)}
 
-    /* Preview */
     .preview{
       margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;
       display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center
@@ -119,7 +123,6 @@
 <!-- Appbar -->
 <header>
   <div class="appbar">
-    <!-- ✅ 홈으로 이동 가능 + 배지 호버 확대/명암 -->
     <a class="brand" th:href="@{/home}" aria-label="홈으로">
       <div class="brand-badge">드</div>
       <span>상품 수정</span>
@@ -135,56 +138,65 @@
     <h1>상품 수정</h1>
     <p class="sub">상품명, 가격, 기본 수량, <b>이미지 URL</b>과 <b>상품 설명</b>을 수정하세요.</p>
 
+    <!-- ✅ 플래시 메시지 표시 (컨트롤러 RedirectAttributes 사용 시) -->
+    <div class="alert-error" th:if="${formError}" th:text="${formError}">오류가 발생했습니다.</div>
+    <div class="alert-success" th:if="${pageMessage}" th:text="${pageMessage}">수정 완료</div>
+
     <form th:action="@{/owner/stores/{storeId}/products/{productId}/edit(storeId=${storeId}, productId=${productId})}"
           th:object="${foodDTO}" method="post" novalidate>
-      <!-- 전역 에러 -->
-      <div class="error-global" th:if="${#fields.hasAnyErrors()}">
-        입력값을 다시 확인해주세요. 아래 항목의 오류를 수정 후 저장하세요.
-      </div>
-
       <!-- CSRF -->
       <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
       <div class="field">
         <label for="foodName">상품명</label>
-        <input id="foodName" class="input" type="text" th:field="*{foodName}" placeholder="예) 돼지고기 김치찌개" />
+        <input id="foodName" class="input" type="text" th:field="*{foodName}" required
+               minlength="1" maxlength="60"
+               th:classappend="${#fields.hasErrors('foodName')} ? ' field-error'">
         <div class="error" th:if="${#fields.hasErrors('foodName')}" th:errors="*{foodName}">오류</div>
       </div>
 
       <div class="row">
         <div class="field">
           <label for="foodPrice">가격(원)</label>
-          <input id="foodPrice" class="input" type="number" min="0" step="100" th:field="*{foodPrice}" placeholder="예) 8900" />
+          <input id="foodPrice" class="input" type="number" th:field="*{foodPrice}"
+                 min="0" step="100" required
+                 oninput="this.value = this.value < 0 ? 0 : this.value"
+                 th:classappend="${#fields.hasErrors('foodPrice')} ? ' field-error'">
           <div class="error" th:if="${#fields.hasErrors('foodPrice')}" th:errors="*{foodPrice}">오류</div>
         </div>
 
         <div class="field">
           <label for="quantity">수량</label>
-          <input id="quantity" class="input" type="number" min="1" step="1" th:field="*{quantity}" placeholder="예) 1" />
+          <input id="quantity" class="input" type="number" th:field="*{quantity}"
+                 min="1" step="1" required
+                 oninput="this.value = this.value < 1 ? 1 : this.value"
+                 th:classappend="${#fields.hasErrors('quantity')} ? ' field-error'">
           <div class="error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}">오류</div>
         </div>
       </div>
 
-      <!-- 이미지 URL -->
       <div class="field">
         <label for="productImageUrl">이미지 URL</label>
-        <input id="productImageUrl" class="input" type="text" th:field="*{productImageUrl}" placeholder="https://예시.com/image.jpg" />
+        <input id="productImageUrl" class="input" type="url" th:field="*{productImageUrl}"
+               placeholder="https://예시.com/image.jpg"
+               pattern="https?://.*\.(jpg|jpeg|png|gif|webp)(\?.*)?$"
+               title="http(s):// 로 시작하고 jpg/png/gif/webp 파일이어야 합니다.">
         <div class="hint">정적 URL을 넣으면 상품 목록/상세에 바로 표시됩니다. 비어 있으면 기본 플레이스홀더가 보여요.</div>
         <div class="error" th:if="${#fields.hasErrors('productImageUrl')}" th:errors="*{productImageUrl}">오류</div>
       </div>
 
-      <!-- 상품 설명 -->
       <div class="field">
         <label for="productDescription">상품 설명 <span style="font-weight:600; color:var(--muted)">(최대 500자)</span></label>
-        <textarea id="productDescription" th:field="*{productDescription}" placeholder="상품에 대한 설명을 입력하세요."></textarea>
+        <textarea id="productDescription" th:field="*{productDescription}" maxlength="500"
+                  placeholder="상품에 대한 설명을 입력하세요."></textarea>
         <div class="error" th:if="${#fields.hasErrors('productDescription')}" th:errors="*{productDescription}">오류</div>
         <div class="hint">현재 글자수:
           <span id="descCount"
-                th:text="${foodDTO.productDescription == null ? 0 : #strings.length(foodDTO.productDescription)}">0</span>자
+                th:text="${foodDTO != null && foodDTO.productDescription != null ? #strings.length(foodDTO.productDescription) : 0}">0</span>자
         </div>
       </div>
 
-      <!-- 미리보기 (이미지 + 금액 + 설명) -->
+      <!-- 미리보기 -->
       <div class="preview" aria-live="polite">
         <div class="pv-left">
           <div class="pv-thumb">
@@ -194,7 +206,7 @@
           <div>
             <div class="pv-label">총액(미리보기)</div>
             <div class="pv-value" id="pvTotal">- 원</div>
-            <p id="pvDesc" class="pv-desc" th:text="${foodDTO.productDescription} ?: ' '"> </p>
+            <p id="pvDesc" class="pv-desc" th:text="${foodDTO?.productDescription} ?: ' '"> </p>
           </div>
         </div>
         <div>
@@ -284,9 +296,7 @@
     const descInput = document.getElementById('productDescription');
     const descCount = document.getElementById('descCount');
     if (descInput && descCount){
-      const updateCount = () => {
-        descCount.textContent = descInput.value.length;
-      };
+      const updateCount = () => { descCount.textContent = descInput.value.length; };
       ['input','change'].forEach(ev => descInput.addEventListener(ev, updateCount));
       updateCount();
     }

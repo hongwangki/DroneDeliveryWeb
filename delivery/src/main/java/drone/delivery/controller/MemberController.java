@@ -4,6 +4,7 @@ import drone.delivery.domain.Member;
 import drone.delivery.dto.MemberDTO;
 import drone.delivery.dto.RegisterRequestDTO;
 import drone.delivery.dto.UpdateMemberDTO;
+import drone.delivery.exception.DuplicateEmailException;
 import drone.delivery.repository.MemberRepository;
 import drone.delivery.service.MemberService;
 import jakarta.servlet.http.HttpSession;
@@ -154,48 +155,79 @@ public class MemberController {
     //정보 수정 페이지
     @GetMapping("/account/edit")
     public String editAccountInfo(Model model, HttpSession session) {
-        // 세션에서 로그인한 사용자 정보를 가져옵니다.
-        Member member = (Member) session.getAttribute("loginMember");
-
-        if (member == null) {
-            model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
-            return "error";  // 에러 페이지로 리디렉션
-        }
-
-        // 사용자 정보를 모델에 추가하여 수정 폼에 전달
-        MemberDTO memberDTO= new MemberDTO(member);
-        model.addAttribute("member", memberDTO);
-
-        return "editAccount";  // editAccount.html 페이지로 이동
-    }
-
-    @PostMapping("/account/edit")
-    public String updateAccountInfo(@ModelAttribute UpdateMemberDTO dto,
-                                    HttpSession session,
-                                    Model model) {
-
-        // 1. 세션에서 현재 로그인한 회원 가져오기
         Member member = (Member) session.getAttribute("loginMember");
         if (member == null) {
             model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
             return "error";
         }
 
-        // 2. DB에 회원 정보 업데이트
-        memberService.updateMember(member.getId(), dto);
+        // 프로필 카드용
+        model.addAttribute("member", new MemberDTO(member));
 
-        // 3. DB에서 최신 회원 정보 다시 가져오기
-         Member updatedMember = memberRepository.findById(member.getId())
-                                 .orElseThrow(() -> new IllegalStateException("회원이 존재하지 않습니다."));
+        // 폼 바인딩용 (UpdateMemberDTO 채우기)
+        UpdateMemberDTO form = new UpdateMemberDTO();
+        form.setName(member.getName());
+        form.setEmail(member.getEmail());
+        if (member.getAddress() != null) {
+            form.setStreet(member.getAddress().getStreet());
+            form.setCity(member.getAddress().getCity());
+            form.setZipcode(member.getAddress().getZipcode());
+            form.setDetailAddress(member.getAddress().getDetailAddress());
+        }
+        // 필요 시 money/좌표 등도 미리 세팅
+        // form.setMoney(member.getMoney()); ...
 
-        // 4. 세션과 모델에 최신 정보 반영
-        session.setAttribute("loginMember", updatedMember);
+        model.addAttribute("updateMemberDTO", form);
+        model.addAttribute("page", "account-edit"); // 상단 네비 active 용(선택)
 
-        MemberDTO memberDTO = new MemberDTO(updatedMember);
-        model.addAttribute("member", memberDTO);
+        // 뷰 파일명: editAccount.html (질문 코드 기준)
+        return "editAccount";
+    }
+
+    @PostMapping("/account/edit")
+    public String updateAccountInfo(
+            @ModelAttribute("updateMemberDTO") @Valid UpdateMemberDTO dto,
+            BindingResult bindingResult,
+            HttpSession session,
+            Model model) {
+
+        Member sessionMember = (Member) session.getAttribute("loginMember");
+        if (sessionMember == null) {
+            model.addAttribute("error", "사용자 정보를 찾을 수 없습니다.");
+            return "error";
+        }
+
+        // 1) Bean Validation 에러면 폼으로 되돌아가기
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("member", new MemberDTO(sessionMember)); // 왼쪽 카드 데이터
+            model.addAttribute("page", "account-edit");
+            return "editAccount";
+        }
+
+        try {
+            // 2) 비즈니스 업데이트 (중복 이메일 검사 포함)
+            memberService.updateMember(sessionMember.getId(), dto);
+        } catch (DuplicateEmailException | IllegalStateException e ) {
+            // 서비스에서 중복 이메일 예외 던지면 필드 에러로 매핑
+            bindingResult.rejectValue("email", "duplicate", e.getMessage());
+            model.addAttribute("member", new MemberDTO(sessionMember));
+            model.addAttribute("page", "account-edit");
+            return "editAccount";
+        }
+
+        // 3) 최신 회원 재조회 후 세션/모델 반영
+        Member updated = memberRepository.findById(sessionMember.getId())
+                .orElseThrow(() -> new IllegalStateException("회원이 존재하지 않습니다."));
+        session.setAttribute("loginMember", updated);
+
+        model.addAttribute("member", new MemberDTO(updated)); // 왼쪽 카드 갱신
+        model.addAttribute("updateMemberDTO", dto);           // 사용자가 입력한 값 유지
         model.addAttribute("successMessage", "정보가 성공적으로 수정되었습니다.");
+        model.addAttribute("page", "account-edit");
 
-        return "account";
+        // 같은 화면에 성공 배지 노출
+        return "editAccount";
+
     }
 
 

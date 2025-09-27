@@ -68,15 +68,15 @@ public class ProductController {
     public String editForm(@PathVariable Long storeId,
                            @PathVariable Long productId,
                            Model model) {
-        // 기존 상품 불러와서 DTO로 채우기
         Product p = productService.findById(productId);
         FoodDTO dto = FoodDTO.builder()
                 .foodName(p.getFoodName())
                 .foodPrice(p.getFoodPrice())
                 .quantity(p.getQuantity())
+                .productImageUrl(p.getProductImageUrl())
+                .productDescription(p.getProductDescription())
                 .build();
 
-        // 뷰에서 참조할 키와 동일하게 넣기
         model.addAttribute("foodDTO", dto);
         model.addAttribute("storeId", storeId);
         model.addAttribute("productId", productId);
@@ -86,27 +86,38 @@ public class ProductController {
     @PostMapping("/owner/stores/{storeId}/products/{productId}/edit")
     public String menuEdit(@PathVariable Long storeId,
                            @PathVariable Long productId,
-                           @ModelAttribute FoodDTO dto,
+                           @ModelAttribute("foodDTO") @Valid FoodDTO dto,
+                           BindingResult binding,
+                           Model model,
                            RedirectAttributes ra) {
+
+        // 1) Bean Validation 에러면 같은 폼으로 되돌리기
+        if (binding.hasErrors()) {
+            model.addAttribute("storeId", storeId);
+            model.addAttribute("productId", productId);
+            return "owner/edit-product";
+        }
 
         Product product = productService.findById(productId);
 
-        // 🔎 중복 메뉴명 검사 (현재 상품 제외)
+        // 2) 중복 메뉴명 검사 (본인 제외)
         boolean dup = productRepository
                 .existsByStore_IdAndFoodNameIgnoreCaseAndIdNot(storeId, dto.getFoodName(), productId);
-
         if (dup) {
-            ra.addFlashAttribute("formError", "이미 등록된 메뉴입니다: " + dto.getFoodName());
-            return "redirect:/owner/stores/" + storeId + "#edit-menu";
+            binding.rejectValue("foodName", "duplicate", "이미 등록된 메뉴입니다: " + dto.getFoodName());
+            model.addAttribute("storeId", storeId);
+            model.addAttribute("productId", productId);
+            return "owner/edit-product";
         }
 
-        // 통과 시 수정
+        // 3) 통과 시 수정
         product.setFoodName(dto.getFoodName().trim());
         product.setFoodPrice(dto.getFoodPrice());
         product.setQuantity(dto.getQuantity());
         product.setProductImageUrl(dto.getProductImageUrl());
         product.setProductDescription(dto.getProductDescription());
 
+        // 4) 같은 화면에서 성공 메시지 보여주거나, PRG로 상세로 이동
         ra.addFlashAttribute("pageMessage", "상품 수정이 완료되었습니다.");
         return "redirect:/owner/stores/" + storeId + "#edit-menu";
     }
