@@ -210,7 +210,19 @@
       <form action="/account/edit" method="get">
         <button type="submit" class="btn btn-primary">정보 수정</button>
       </form>
-      <a class="btn btn-secondary" th:href="@{/delivery}">뒤로 가기</a>
+
+      <!-- ✅ 뒤로 가기: 세션의 회원유형에 따라 홈 결정 -->
+      <a class="btn btn-secondary"
+         th:if="${session['loginMember'] != null and session['loginMember'].memberType.name() == 'OWNER'}"
+         th:href="@{/owner}">
+        뒤로 가기
+      </a>
+      <a class="btn btn-secondary"
+         th:if="${session['loginMember'] == null or session['loginMember'].memberType.name() != 'OWNER'}"
+         th:href="@{/home}">
+        뒤로 가기
+      </a>
+      <!-- 참고: /home 자체가 역할별 리다이렉트라면 그냥 th:href="@{/home}" 로 단순화 가능 -->
     </div>
   </section>
 </main>

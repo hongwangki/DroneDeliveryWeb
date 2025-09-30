@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -113,6 +114,18 @@ public class MemberService {
     }
 
     /**
+     * 수정 시 이메일 중복 검증 (자기 자신 제외)
+     */
+    private void validateDuplicateEmailOnUpdate(Long memberId, String newEmail) {
+        // normalize (소문자/trim)
+        String normalized = newEmail == null ? null : newEmail.trim().toLowerCase();
+        if (normalized == null || normalized.isEmpty()) return; // 변경 안함
+
+        if (memberRepository.existsByEmailAndIdNot(normalized, memberId)) {
+            throw new IllegalStateException("이미 존재하는 이메일입니다.");
+        }
+    }
+    /**
      특정 전체 리스트로 반환하는 로직
      */
     public List<Member> findMembers() {
@@ -136,11 +149,28 @@ public class MemberService {
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 회원입니다."));
 
         member.setName(dto.getName());
-        member.setEmail(dto.getEmail());
-        member.setPassword(dto.getPassword());
+        // 이메일: 값이 있고 기존과 다르면 중복체크 후 반영
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
+            String newEmail = dto.getEmail().trim().toLowerCase();
+            if (!newEmail.equalsIgnoreCase(member.getEmail())) {
+                validateDuplicateEmailOnUpdate(memberId, newEmail);
+                member.setEmail(newEmail);
+            }
+        }
+
+        if (StringUtils.hasText(dto.getPassword())) {
+            member.setPassword(dto.getPassword());
+        }
         member.setAddress(new Address(dto.getStreet(), dto.getCity(), dto.getZipcode(), dto.getDetailAddress()));
-        member.setLatitude(dto.getLatitude());
-        member.setLongitude(dto.getLongitude());
+
+
+        // 정보 수정시 주소에 따른 위도, 경도 업데이트
+        try {
+            geoService.updateMemberCoordinates(member);  // 주소를 기반으로 위도, 경도 업데이트
+        } catch (Exception e) {
+            // 위도, 경도 업데이트 실패 시 예외 처리 로직 (선택 사항)
+            e.printStackTrace();
+        }
 
     }
 
