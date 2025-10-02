@@ -52,4 +52,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         where o.id = :orderId
         """)
     Optional<Order> findGraphById(@Param("orderId") Long orderId);
+
+    Optional<Long> findLatestOrderIdByMemberId(Long memberId);
 }

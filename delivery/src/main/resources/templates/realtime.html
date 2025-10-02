@@ -1,164 +1,369 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>실시간 주문 현황</title>
   <style>
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: #f9f9f9;
-      padding: 40px;
-    }
+    :root{ --bg:#f7f8fa; --card:#fff; --border:#e6e8ee; --ink:#111827; --muted:#6b7280; }
+    *{box-sizing:border-box}
+    body{font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,Arial; margin:0; background:var(--bg); color:var(--ink)}
+    .wrap{max-width:1080px; margin:28px auto 48px; padding:0 16px}
+    h1{margin:0 0 20px; text-align:center; font-size:28px}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 8px 20px rgba(0,0,0,.04)}
+    .hero{padding:14px}
+    #rt-image{width:100%; aspect-ratio:16/9; display:block; object-fit:contain; background:#eef2f7; border-radius:12px}
+    .section{margin-top:18px}
+    .status{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; padding:12px 16px}
+    .chip{padding:6px 12px; border-radius:999px; border:1px solid var(--border); background:#f3f6fc; font-weight:600}
+    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:16px; padding:16px}
+    .cell{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px}
+    .cell h3{margin:0 0 10px; font-size:16px}
+    .kv{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--border)}
+    .kv:last-child{border-bottom:none}
+    .muted{color:var(--muted)}
+    .items{padding:0; margin:0; list-style:none}
+    .item{display:grid; grid-template-columns: 1fr auto auto; gap:10px; padding:10px 0; border-bottom:1px dashed var(--border)}
+    .item:last-child{border-bottom:none}
+    .right{text-align:right}
+    .total{display:flex; justify-content:flex-end; gap:18px; padding-top:12px; font-weight:700}
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
 
-    h1 {
-      text-align: center;
-      color: #333;
+    /* --- 주문 상태 트래커 --- */
+    .tracker{position:relative; padding:18px 20px}
+    .tracker .rail{
+      position:absolute; left:40px; right:40px; top:44px; height:4px;
+      background:#e5e7eb; border-radius:999px;
     }
+    .tracker .rail .fill{
+      position:absolute; left:0; top:0; height:100%; width:0%;
+      background:#2563eb; border-radius:999px; transition:width .35s ease;
+    }
+    .tracker .steps{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+    .step{display:flex; flex-direction:column; align-items:center; gap:8px; width:25%}
+    .step .dot{
+      width:22px; height:22px; border-radius:50%; background:#d1d5db; border:3px solid #fff;
+      box-shadow:0 0 0 2px #e5e7eb; transition:all .25s ease;
+    }
+    .step .label{font-size:14px; color:#6b7280; font-weight:600}
+    .step.done .dot{background:#2563eb; box-shadow:0 0 0 2px #bfdbfe}
+    .step.done .label{color:#2563eb}
+    .step.active .dot{
+      background:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.35), 0 0 12px rgba(37,99,235,.45);
+      animation:blink 1.2s ease-in-out infinite;
+    }
+    .step.active .label{color:#111827}
+    @keyframes blink{
+      0%,100%{transform:scale(1); box-shadow:0 0 0 4px rgba(37,99,235,.35), 0 0 10px rgba(37,99,235,.35)}
+      50%{transform:scale(1.08); box-shadow:0 0 0 6px rgba(37,99,235,.25), 0 0 18px rgba(37,99,235,.55)}
+    }
+    .tracker .meta{margin-top:12px; text-align:center; color:#6b7280; font-size:13px}
+    .tracker .meta b{color:#111827}
 
-    table {
-      margin: 0 auto;
-      border-collapse: collapse;
-      width: 95%;
-      background-color: white;
+    /* --- 배달 완료 모달 --- */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.45);
+      display:none; align-items:center; justify-content:center; z-index:50;
     }
-
-    th, td {
-      padding: 12px 20px;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-
-    th {
-      background-color: #eee;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    li {
-      text-align: left;
-    }
-
-    .cancel-btn {
-      padding: 5px 10px;
-      background-color: #ff385c;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .cancel-btn:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-    .deliver-btn {
-      padding: 5px 10px;
-      background-color: #10b981; /* 초록 */
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-left: 6px;          /* 취소 버튼과 간격 */
-    }
-    .deliver-btn:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
+    .modal{width:min(520px, 92vw); background:#fff; border-radius:16px; overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.3); border:1px solid #e5e7eb}
+    .modal .hd{padding:16px 20px; background:#111827; color:#fff; font-weight:700}
+    .modal .bd{padding:22px 20px; color:#111827}
+    .modal .ft{padding:14px 20px; display:flex; justify-content:flex-end; gap:10px; background:#f9fafb; border-top:1px solid #eef2f7}
+    .btn{padding:10px 14px; border-radius:10px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; font-weight:600}
+    .btn.primary{background:#2563eb; color:#fff; border-color:#2563eb}
+    .modal-backdrop.show{display:flex}
+    .badge-done{display:inline-block; padding:2px 8px; border-radius:999px; background:#dcfce7; color:#065f46; font-size:12px; font-weight:700}
   </style>
 </head>
 <body>
+<div class="wrap">
+  <h1>📦 실시간 주문 현황</h1>
 
-<h1>📦 실시간 주문 현황</h1>
+  <!-- 상단 중앙 큰 이미지 -->
+  <div class="card hero">
+    <img id="rt-image" alt="드론 현재 위치 (PNG)" src="">
+  </div>
 
-<table>
-  <thead>
-  <tr>
-    <th>주문 번호</th>
-    <th>주문자</th>
-    <th>상품 내역</th>
-    <th>총 가격</th>
-    <th>상태</th>
-    <th>주문 취소</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="order : ${orders}">
-    <td th:text="${order.id}">1</td>
-    <td th:text="${order.member.name}">홍길동</td>
-    <td>
-      <ul>
-        <li th:each="item : ${order.orderItems}">
-          <span th:text="${item.product.foodName} + ' x ' + ${item.quantity}"></span>
+  <!-- 상태 요약 (트래커) -->
+  <div class="card section">
+    <div class="tracker" id="status-tracker" data-step="RECEIVED">
+      <div class="rail"><div class="fill" id="track-fill" style="width:0%"></div></div>
+      <div class="steps">
+        <div class="step" data-key="RECEIVED">
+          <div class="dot"></div><div class="label">주문 접수</div>
+        </div>
+        <div class="step" data-key="COOKING">
+          <div class="dot"></div><div class="label">조리 중</div>
+        </div>
+        <div class="step" data-key="DELIVERING">
+          <div class="dot"></div><div class="label">배달 중</div>
+        </div>
+        <div class="step" data-key="DONE">
+          <div class="dot"></div><div class="label">배달 완료</div>
+        </div>
+      </div>
+      <div class="meta">
+        주문번호 <b><span id="chip-orderId" th:text="${orderId}">-</span></b> ·
+        상태 <b id="chip-state">-</b> ·
+        단계 <b id="chip-phase">-</b> ·
+        예상 도착 <b id="chip-eta">-</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메타 + 품목 -->
+  <div class="grid section">
+    <!-- 주문 메타 -->
+    <div class="cell">
+      <h3>주문 정보</h3>
+
+      <div class="kv"><span class="muted">주문번호</span>
+        <span th:text="${order != null ? order.id : orderId}">-</span>
+      </div>
+
+      <div class="kv"><span class="muted">주문 시간</span>
+        <span th:text="${order != null ? #temporals.format(order.createdDate,'yyyy-MM-dd HH:mm') : '-'}">-</span>
+      </div>
+
+      <div class="kv"><span class="muted">주문자</span>
+        <span th:text="${(order != null and order.member != null) ? order.member.name : '-'}">-</span>
+      </div>
+
+      <div class="kv"><span class="muted">매장</span>
+        <span th:text="${(order != null and order.orderItems != null and !#lists.isEmpty(order.orderItems)
+                          and order.orderItems[0].product != null
+                          and order.orderItems[0].product.store != null)
+                          ? order.orderItems[0].product.store.name : '-'}">-</span>
+      </div>
+
+      <div class="kv"><span class="muted">현재 상태</span><span id="meta-state">-</span></div>
+      <div class="kv"><span class="muted">단계 코드</span><span id="meta-phase">-</span></div>
+      <div class="kv"><span class="muted">ETA</span><span id="meta-eta">-</span></div>
+    </div>
+
+    <!-- 품목/가격 -->
+    <div class="cell">
+      <h3>주문 품목 및 가격</h3>
+
+      <ul class="items">
+        <li class="item" th:each="it : ${order != null ? order.orderItems : #lists.list()}">
+          <span>
+            <strong th:text="${it.product.foodName}">메뉴</strong>
+            <span class="muted" th:text="| x ${it.quantity}|"> x 1</span>
+          </span>
+          <span class="muted right" th:text="|${#numbers.formatInteger(it.product.foodPrice, 0, 'COMMA')}원/개|">0원/개</span>
+          <span class="right" th:text="|${#numbers.formatInteger(it.product.foodPrice * it.quantity, 0, 'COMMA')}원|">0원</span>
         </li>
       </ul>
-    </td>
-    <td th:text="${order.totalPrice} + '원'">20000원</td>
-    <td>
-        <span th:switch="${order.orderStatus.name()}">
-          <span th:case="'PENDING'">주문 접수</span>
-          <span th:case="'SHIPPED'">배송 중</span>
-          <span th:case="'DELIVERED'">배송 완료</span>
-          <span th:case="'CANCELED'">주문 취소</span>
-          <span th:case="'RETURNED'">반품 완료</span>
-          <span th:case="*">상태 미정</span>
-        </span>
-    </td>
-    <td>
-      <button class="cancel-btn" th:attr="data-id=${order.id}" th:disabled="${order.orderStatus.name() != 'PENDING'}">
-        주문 취소
-      </button>
-      <!-- ✅ 테스트용 '배달 완료' 버튼: PENDING/SHIPPED에서만 활성 -->
-      <button class="deliver-btn"
-              th:attr="data-id=${order.id}"
-              th:disabled="${!(order.orderStatus.name() == 'PENDING' or order.orderStatus.name() == 'SHIPPED')}">
-        배달 완료
-      </button>
-    </td>
-  </tr>
-  </tbody>
-</table>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <div class="total">
+        <span class="muted">총 결제금액</span>
+        <span th:text="${order != null ? #numbers.formatInteger(order.totalPrice, 0, 'COMMA') + '원' : '-'}">-</span>
+      </div>
+
+      <!-- 디버그: 수신 원본 -->
+      <pre id="rt-raw" style="white-space:pre-wrap;word-break:break-all;color:#6b7280;font-size:12px;margin:12px 0 0;"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- 페이지 메타 (주문 생성시각 ISO) -->
+<div id="page-data"
+     th:attr="data-created=${order != null ? #temporals.format(order.createdDate,'yyyy-MM-dd''T''HH:mm:ss') : ''}"></div>
+
+<!-- 배달 완료 모달 -->
+<div id="done-backdrop" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="done-title">
+    <div class="hd" id="done-title">배달 완료</div>
+    <div class="bd">
+      <p style="margin:0 0 10px">
+        <span class="badge-done">완료</span>
+        <strong style="margin-left:8px">배달이 완료되었습니다!</strong>
+      </p>
+      <p id="elapsed-text" style="margin:0 0 6px; color:#374151"></p>
+      <p style="margin:0; color:#6b7280">리뷰를 작성하시겠어요?</p>
+    </div>
+    <div class="ft">
+      <button type="button" class="btn" id="done-later">나중에</button>
+      <button type="button" class="btn primary" id="done-confirm">확인</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  $(document).ready(function(){
+  (function(){
+    // === ORDER_ID 안전 획득 ===
+    const qs = new URLSearchParams(location.search);
+    let ORDER_ID = qs.get('orderId');
+    if (!ORDER_ID) {
+      const chip = document.getElementById('chip-orderId');
+      if (chip) ORDER_ID = (chip.textContent || '').trim();
+    }
 
-    $(".cancel-btn").click(function(){
-      const orderId = $(this).data("id");
-      $.ajax({
-        url: "/orders/cancel/" + orderId,
-        type: "POST",
-        contentType: "application/json",
-        success: function(response){
-          const res = typeof response === "string" ? JSON.parse(response) : response;
-          alert(res.message);
-          window.location.href = res.redirect;
-        },
-        error: function(){ alert("주문 취소 중 오류가 발생했습니다."); }
+    // 디버그 영역
+    const rawEl = document.getElementById('rt-raw');
+
+    // 없으면 폴링 비활성화 + 안내 후 종료
+    if (!ORDER_ID) {
+      console.warn('No orderId in realtime page.');
+      if (rawEl) rawEl.textContent = '최근 주문을 찾을 수 없습니다.';
+      return;
+    }
+
+    // ====== 요소 핸들 ======
+    const chipState = document.getElementById('chip-state');
+    const chipPhase = document.getElementById('chip-phase');
+    const chipEta   = document.getElementById('chip-eta');
+
+    const metaState = document.getElementById('meta-state');
+    const metaPhase = document.getElementById('meta-phase');
+    const metaEta   = document.getElementById('meta-eta');
+
+    const imgEl = document.getElementById('rt-image');
+
+    // API 베이스 구성
+    const API_BASE = `/api/realtime/${encodeURIComponent(ORDER_ID)}`;
+
+    // 단계 키 → 인덱스 매핑
+    const STEP_INDEX = { RECEIVED:0, COOKING:1, DELIVERING:2, DONE:3 };
+    const STEP_ORDER = ["RECEIVED","COOKING","DELIVERING","DONE"];
+
+    // 드론 상태/phase → 단계 키 변환
+    function computeStepKey(data){
+      const phase = (data.phase || "").toUpperCase();
+      const state = (data.state || "").replace(/\s+/g,'').toUpperCase();
+
+      if (phase === "DELIVERED" || state.includes("완료")) return "DONE";
+      if (phase === "IN_FLIGHT" || phase === "DELIVERING" || state.includes("배달중") || state.includes("배달")) return "DELIVERING";
+      if (phase === "COOKING" || state.includes("조리")) return "COOKING";
+      return "RECEIVED";
+    }
+
+    function updateTracker(stepKey){
+      const idx = STEP_INDEX[stepKey] ?? 0;
+      const steps = document.querySelectorAll('.tracker .step');
+      steps.forEach((el,i)=>{
+        el.classList.toggle('active', i === idx);
+        el.classList.toggle('done', i <= idx);
       });
+      const fill = document.getElementById('track-fill');
+      const pct = (idx / (STEP_ORDER.length-1)) * 100;
+      fill.style.width = pct + '%';
+    }
+
+    // 모달 핸들
+    const backdrop = document.getElementById('done-backdrop');
+    const btnLater = document.getElementById('done-later');
+    const btnOK    = document.getElementById('done-confirm');
+    const elapsedEl= document.getElementById('elapsed-text');
+
+    function reviewWriteUrl(orderId){
+      return `/reviews/new?orderId=${encodeURIComponent(orderId)}`;
+    }
+
+    function showDoneModal(elapsedStr){
+      elapsedEl.textContent = elapsedStr ? `걸린 시간: ${elapsedStr}` : '';
+      backdrop.classList.add('show');
+      backdrop.setAttribute('aria-hidden','false');
+    }
+    function hideDoneModal(){
+      backdrop.classList.remove('show');
+      backdrop.setAttribute('aria-hidden','true');
+    }
+    btnLater?.addEventListener('click', hideDoneModal);
+    btnOK?.addEventListener('click', async () => {
+      try {
+        const res = await fetch(`/orders/deliver/${encodeURIComponent(ORDER_ID)}`, { method: 'POST' });
+        if (!res.ok) console.warn('deliver POST failed with status', res.status);
+      } catch (e) {
+        console.warn('deliver POST error', e);
+      }
+      window.location.href = reviewWriteUrl(ORDER_ID);
     });
 
-    /* ✅ 배달 완료 */
-    $(".deliver-btn").click(function(){
-      const orderId = $(this).data("id");
-      $.ajax({
-        url: "/orders/deliver/" + orderId,   // ← 서버쪽 매핑 (아래 #3 참고)
-        type: "POST",
-        contentType: "application/json",
-        success: function(response){
-          const res = typeof response === "string" ? JSON.parse(response) : response;
-          alert(res.message || "배달 완료 처리되었습니다.");
-          window.location.href = res.redirect || "/realtime";
-        },
-        error: function(){ alert("배달 완료 처리 중 오류가 발생했습니다."); }
-      });
-    });
+    // 경과 시간 포맷
+    function formatDuration(ms){
+      const s = Math.max(0, Math.floor(ms/1000));
+      const hh = Math.floor(s/3600);
+      const mm = Math.floor((s%3600)/60);
+      const ss = s%60;
+      if(hh>0) return `${hh}시간 ${mm}분 ${ss}초`;
+      if(mm>0) return `${mm}분 ${ss}초`;
+      return `${ss}초`;
+    }
 
-  });
+    // 페이지 주입된 주문 생성시각
+    const pageDataEl = document.getElementById('page-data');
+    const createdIso = pageDataEl?.dataset?.created || null;
+    const createdAt  = createdIso ? new Date(createdIso) : null;
+
+    // 완료 모달은 세션 스토리지 기준 주문별 1회만 표시
+    function doneKey(orderId){ return `done-modal-shown-${orderId}`; }
+
+    // 상태 폴링
+    async function refreshStatus(){
+      try{
+        const res = await fetch(`${API_BASE}/status`, {cache:'no-store'});
+        if(!res.ok) throw new Error('status http ' + res.status);
+        const data = await res.json();
+
+        const state = data.state ?? '-';
+        const phase = data.phase ?? '-';
+        const eta   = data.eta ? new Date(data.eta).toLocaleString() : '-';
+
+        chipState.textContent = state;
+        chipPhase.textContent = phase;
+        chipEta.textContent   = eta;
+
+        metaState.textContent = state;
+        metaPhase.textContent = phase;
+        metaEta.textContent   = eta;
+
+        rawEl.textContent = JSON.stringify(data, null, 2);
+
+        const stepKey = computeStepKey(data);
+        updateTracker(stepKey);
+
+        if(stepKey === 'DONE'){
+          if(sessionStorage.getItem(doneKey(ORDER_ID)) !== '1'){
+            const finishedAt = data.eta ? new Date(data.eta) : new Date();
+            let elapsedStr = '';
+            try{
+              const start = createdAt || new Date();
+              elapsedStr = formatDuration(finishedAt - start);
+            }catch(e){ /* noop */ }
+            showDoneModal(elapsedStr);
+            sessionStorage.setItem(doneKey(ORDER_ID),'1');
+          }
+        }
+      }catch(e){
+        chipState.textContent = '연결 대기';
+        chipPhase.textContent = '-';
+        chipEta.textContent = '-';
+        metaState.textContent = '연결 대기';
+        metaPhase.textContent = '-';
+        metaEta.textContent = '-';
+        updateTracker("RECEIVED");
+        console.debug(e);
+      }
+    }
+
+    async function refreshImage(){
+      try{
+        const t = Date.now();
+        const res = await fetch(`${API_BASE}/image.png?t=${t}`, {cache:'no-store'});
+        if(!res.ok) throw new Error('image http ' + res.status);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        imgEl.src = url;
+      }catch(e){ console.debug(e); }
+    }
+
+    // 최초 + 주기 갱신
+    refreshStatus(); refreshImage();
+    setInterval(refreshStatus, 3000);
+    setInterval(refreshImage, 3000);
+  })();
 </script>
-
 </body>
 </html>

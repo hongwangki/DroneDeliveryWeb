@@ -25,12 +25,42 @@ public class OrderController {
     private final MemberRepository memberRepository;
 
     //실제 주문이 이루어진 후 메서드
+    // RealtimeController.java
     @GetMapping("/realtime")
-    public String realtime(Model model) {
-        List<Order> orders = orderService.findAll();
-        model.addAttribute("orders", orders);
+    public String realtime(
+            @RequestParam(required = false) Long orderId,
+            HttpSession session,
+            Model model
+    ) {
+        // 1) URL 파라미터가 최우선
+        if (orderId == null) {
+            // 2) 세션에 저장된 최근 주문
+            orderId = (Long) session.getAttribute("currentOrderId");
+        }
+        if (orderId == null) {
+            // 3) 회원의 최근 주문으로 복원 (없으면 안내)
+            Member login = (Member) session.getAttribute("loginMember");
+            if (login != null) {
+                orderId = orderService.findLatestOrderIdByMember(login.getId()).orElse(null);
+            }
+        }
+        if (orderId == null) {
+            // 아무것도 못 찾으면 빈 화면 + 안내
+            model.addAttribute("orderId", null);
+            model.addAttribute("order", null);
+            return "realtime";
+        }
+
+        // 정상 흐름: 상세 조회
+        Order order = orderService.findDetail(orderId).get();
+        // 세션에 “현재 주문” 저장 (재진입 대비)
+        session.setAttribute("currentOrderId", orderId);
+
+        model.addAttribute("orderId", orderId);
+        model.addAttribute("order", order);
         return "realtime";
     }
+
 
     //주문 취소 메서드
     @PostMapping("/orders/cancel/{id}")

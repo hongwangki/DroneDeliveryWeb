@@ -31,7 +31,7 @@ public class Favorite extends BaseEntity {
 
     public static Favorite create(Member member, Store store) {
         Favorite f = new Favorite(store, member);
-        member.getFavorites().add(f);
+        //member.getFavorites().add(f);
         store.getFavorites().add(f);
         return f;
     }

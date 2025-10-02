@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -204,5 +205,13 @@ public class OrderService {
             throw new IllegalStateException("해당 상태에서는 배달 완료로 변경할 수 없습니다.");
         }
         o.setOrderStatus(OrderStatus.DELIVERED);
+    }
+
+    public Optional<Order> findDetail(Long orderId) {
+        return orderRepository.findGraphById(orderId);
+    }
+
+    public Optional<Long> findLatestOrderIdByMember(Long memberId) {
+        return orderRepository.findLatestOrderIdByMemberId(memberId);
     }
 }
