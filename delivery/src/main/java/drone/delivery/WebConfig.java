@@ -26,11 +26,12 @@ public class WebConfig implements WebMvcConfigurer {
         // 필요에 따라 추가/수정하세요.
         List<String> whitelist = List.of(
                 "/", "/index",
-                "/login", "/logout", "/join",
+                "/login", "/logout", "/join","/register",
                 "/oauth2/**",
                 "/css/**", "/js/**", "/images/**", "/uploads/**",
                 "/favicon.ico",
-                "/error", "/error/**"
+                "/error", "/error/**",
+                "/test/**" // ✅ 테스트용 API는 로그인 검사 제외
         );
 
         registry.addInterceptor(new LoginCheckInterceptor(whitelist))

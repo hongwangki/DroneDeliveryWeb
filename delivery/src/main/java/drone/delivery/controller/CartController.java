@@ -1,5 +1,6 @@
 package drone.delivery.controller;
 
+import drone.delivery.async.OrderSendQueue;
 import drone.delivery.domain.CartItem;
 import drone.delivery.domain.Member;
 import drone.delivery.domain.Order;
@@ -13,6 +14,7 @@ import drone.delivery.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -28,6 +30,7 @@ import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class CartController {
 
     private final ProductService productService;
@@ -39,9 +42,10 @@ public class CartController {
     private final WebClient pythonClient;
     private final OrderToSendInfoMapper mapper;
 
-    // ★ 추가: 옵션 조회/검증 서비스
     private final ProductOptionQueryService productOptionQueryService;
     private final CartFactoryService cartFactoryService;
+
+    private final OrderSendQueue orderSendQueue;
 
     /** 가게별 장바구니 키 생성 */
     private String cartKey(Long storeId) { return "cart_" + storeId; }
@@ -212,17 +216,11 @@ public class CartController {
             Order order = orderRepository.findGraphById(orderId)
                     .orElseThrow(() -> new IllegalStateException("주문을 찾을 수 없습니다."));
 
-
             SendInfoDTO payload = mapper.map(order);
 
-            // Python으로 전송 (동기 보장 필요시 block, 2~3초 타임아웃 권장)
-            pythonClient.post()
-                    .uri("/orders/webhook")   // 최종: http://localhost:8000/orders/webhook
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(payload)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block(Duration.ofSeconds(3));
+            // ✅ 비동기 큐에 적재
+            orderSendQueue.enqueue(payload);
+            log.info("📨 enqueue 완료 (orderId={}): 현재 큐 사이즈={}", orderId, orderSendQueue.getQueueSize());
 
 
             //성공적이면 최종 주문 완료
@@ -239,6 +237,8 @@ public class CartController {
             return "redirect:/delivery/" + storeId;
         }
     }
+
+
 
     // =========================================
     // 4) 삭제 (기존 유지, storeId hidden 필요)
