@@ -23,8 +23,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * - DB 수준에서 SELECT ... FOR UPDATE 실행
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select p from Product p where p.id in :ids")
+    @Query("select p from Product p where p.id in :ids order by p.id asc")
     List<Product> findAllByIdInForUpdate(@Param("ids") Collection<Long> ids);
+
+
+//    //낙관적 락 사용
+//    @Query("select p from Product p where p.id in :ids order by p.id asc")
+//    List<Product> findAllByIdIn(@Param("ids") Collection<Long> ids);
 
     /**
      * 특정 가게(storeId) 안에서 메뉴명이 중복되는지 여부를 검사한다.
@@ -61,4 +66,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 같은 가게 내, 동일 이름(대소문자 무시) 상품이 존재하는지 (현재 상품 제외)
     boolean existsByStore_IdAndFoodNameIgnoreCaseAndIdNot(Long storeId, String foodName, Long excludeProductId);
+
+    //성능 테스트용
+    Optional<Product> findTopByStoreIdOrderByIdAsc(Long storeId);
 }
