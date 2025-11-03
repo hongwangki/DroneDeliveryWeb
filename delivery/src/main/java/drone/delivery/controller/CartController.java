@@ -218,13 +218,31 @@ public class CartController {
 
             SendInfoDTO payload = mapper.map(order);
 
-            // ✅ 비동기 큐에 적재
-            orderSendQueue.enqueue(payload);
-            log.info("📨 enqueue 완료 (orderId={}): 현재 큐 사이즈={}", orderId, orderSendQueue.getQueueSize());
+            // Python으로 전송 (동기 보장 필요시 block, 2~3초 타임아웃 권장)
+            /*pythonClient.post()
+                    .uri("/orders/webhook")   // 최종: http://localhost:8000/orders/webhook
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block(Duration.ofSeconds(3));*/
+
+            // ✅ 드론 웹훅: URI에 orderId 포함 (예: /orders/123/webhook)
+            pythonClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/orders/{orderId}/webhook")
+                            .build(orderId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block(Duration.ofSeconds(3));
 
 
-            //성공적이면 최종 주문 완료
-            return "redirect:/realtime";
+            // checkout 성공 직후
+            session.setAttribute("currentOrderId", orderId);
+            return "redirect:/realtime?orderId=" + orderId;
+
 
         } catch (IllegalArgumentException | EntityNotFoundException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

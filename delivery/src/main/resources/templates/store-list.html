@@ -345,21 +345,21 @@
 </nav>
 
 <!-- 헤더 축소 + 하트 AJAX 스크립트 -->
-<script>
+<script defer src="/notify-sse.js">
     // 헤더 축소 효과
-    (function(){
+    (function () {
         const bar = document.getElementById('appbar');
         const onScroll = () => {
             if (window.scrollY > 8) bar.classList.add('is-scrolled');
             else bar.classList.remove('is-scrolled');
         };
         onScroll();
-        window.addEventListener('scroll', onScroll, {passive:true});
+        window.addEventListener('scroll', onScroll, {passive: true});
     })();
 
     // 즐겨찾기 토글 (AJAX)
-    (function(){
-        document.addEventListener('submit', function(e){
+    (function () {
+        document.addEventListener('submit', function (e) {
             const form = e.target.closest('.js-fav-form');
             if (!form) return;
 
@@ -368,12 +368,15 @@
 
             const btn = form.querySelector('.js-fav-btn');
             const storeId = btn?.dataset.storeId;
-            if (!storeId) { form.submit(); return; }
+            if (!storeId) {
+                form.submit();
+                return;
+            }
 
             fetch('/api/favorites/toggle', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({ storeId })
+                body: new URLSearchParams({storeId})
             })
                 .then(res => {
                     if (!res.ok) throw new Error('toggle failed');
@@ -384,10 +387,10 @@
 
                     // 아이콘 즉시 토글
                     const outlineSvg = btn.querySelector('.ico-outline');
-                    const filledSvg  = btn.querySelector('.ico-filled');
+                    const filledSvg = btn.querySelector('.ico-filled');
                     if (outlineSvg && filledSvg) {
                         outlineSvg.style.display = on ? 'none' : '';
-                        filledSvg.style.display  = on ? '' : 'none';
+                        filledSvg.style.display = on ? '' : 'none';
                     }
 
                     // 찜목록 탭이면, 해제 시 카드 제거 + 빈 페이지 처리
@@ -413,14 +416,17 @@
                         }
                     }
                 })
-                .catch(() => { form.submit(); }); // 폴백
+                .catch(() => {
+                    form.submit();
+                }); // 폴백
         }, true);
 
         // 하트 클릭이 카드 링크로 전파되지 않도록
-        document.addEventListener('click', function(e){
+        document.addEventListener('click', function (e) {
             if (e.target.closest('.js-fav-btn')) e.stopPropagation();
         }, true);
     })();
+
 </script>
 
 </body>

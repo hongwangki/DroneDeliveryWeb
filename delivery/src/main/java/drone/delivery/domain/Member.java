@@ -39,6 +39,8 @@ public class Member extends BaseEntity {
     private List<Favorite> favorites=new ArrayList<>();
 
 
+
+
     private Double latitude;  // 위도
     private Double longitude; // 경도
 
