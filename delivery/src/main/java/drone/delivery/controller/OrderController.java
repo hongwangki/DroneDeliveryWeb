@@ -8,6 +8,7 @@ import drone.delivery.service.MemberService;
 import drone.delivery.service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -19,13 +20,13 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
     private final OrderService orderService;
     private final MemberService memberService;
     private final MemberRepository memberRepository;
 
     //실제 주문이 이루어진 후 메서드
-    // RealtimeController.java
     @GetMapping("/realtime")
     public String realtime(
             @RequestParam(required = false) Long orderId,
@@ -35,6 +36,7 @@ public class OrderController {
         // 1) URL 파라미터가 최우선
         if (orderId == null) {
             // 2) 세션에 저장된 최근 주문
+            log.info("order 없음");
             orderId = (Long) session.getAttribute("currentOrderId");
         }
         if (orderId == null) {
@@ -53,6 +55,7 @@ public class OrderController {
 
         // 정상 흐름: 상세 조회
         Order order = orderService.findDetail(orderId).get();
+        log.info(order.toString());
         // 세션에 “현재 주문” 저장 (재진입 대비)
         session.setAttribute("currentOrderId", orderId);
 

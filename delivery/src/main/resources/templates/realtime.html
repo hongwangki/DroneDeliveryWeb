@@ -73,9 +73,89 @@
     .btn.primary{background:#2563eb; color:#fff; border-color:#2563eb}
     .modal-backdrop.show{display:flex}
     .badge-done{display:inline-block; padding:2px 8px; border-radius:999px; background:#dcfce7; color:#065f46; font-size:12px; font-weight:700}
+    /* ===== Appbar ===== */
+    .appbar{
+      position:sticky; top:0; z-index:100;
+      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .appbar::after{
+      content:""; position:absolute; inset:0 0 auto 0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
+      pointer-events:none;
+    }
+    .appbar-inner{
+      max-width:1200px; margin:0 auto;
+      padding:14px 20px; transition:padding .18s ease;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:900; color:#0b3d3b; text-decoration:none; letter-spacing:-.2px;
+    }
+    .brand:hover{ color:#062f2d }
+    .logo{
+      width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
+      font-weight:900; color:#fff;
+      background:
+              radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.35), transparent 60%),
+              linear-gradient(135deg,#2AC1BC,#16a39e);
+      box-shadow:0 8px 18px rgba(42,193,188,.25), inset 0 0 0 1px rgba(255,255,255,.35);
+      transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
+    .brand span:last-child{
+      background:linear-gradient(90deg,#0b3d3b,#11615e);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .nav{ display:flex; align-items:center; gap:6px }
+    .nav a{
+      position:relative; padding:8px 12px; border-radius:10px;
+      text-decoration:none; color:var(--muted); font-weight:700;
+      transition:color .15s ease, background-color .15s ease, transform .15s ease;
+    }
+    .nav a::after{
+      content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
+      background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
+      border-radius:2px; transform:scaleX(0); transform-origin:left;
+      transition:transform .18s ease;
+    }
+    .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
+    .nav a:hover::after{ transform:scaleX(1) }
+    .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
+    .nav a.active::after{ transform:scaleX(1) }
+
+    @media (max-width:720px){
+      .brand span:last-child{ display:none }
+      .nav a{ padding:8px 10px }
+    }
   </style>
 </head>
 <body>
+
+
+<!-- === 상단바 삽입 === -->
+<header class="appbar" id="appbar">
+  <div class="appbar-inner">
+    <a class="brand" th:href="@{/home}">
+      <span class="logo">드</span>
+      <span>배달의 드론</span>
+    </a>
+    <nav class="nav">
+      <a th:href="@{/reviews}"  th:classappend="${page=='reviews'} ? ' active'">나의리뷰</a>
+      <a th:href="@{/orders}"   th:classappend="${page=='orders'} ? ' active'">주문내역</a>
+      <a th:href="@{/account}"  th:classappend="${page=='account'} ? ' active'">정보보기</a>
+      <a th:href="@{/recharge}" th:classappend="${page=='recharge'} ? ' active'">돈충전</a>
+      <a th:href="@{/logout}">로그아웃</a>
+    </nav>
+  </div>
+</header>
+
 <div class="wrap">
   <h1>📦 실시간 주문 현황</h1>
 
@@ -363,6 +443,16 @@
     refreshStatus(); refreshImage();
     setInterval(refreshStatus, 3000);
     setInterval(refreshImage, 3000);
+  })();
+
+  (function () {
+    const bar = document.getElementById('appbar');
+    const onScroll = () => {
+      if (window.scrollY > 8) bar.classList.add('is-scrolled');
+      else bar.classList.remove('is-scrolled');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive: true});
   })();
 </script>
 </body>
