@@ -26,6 +26,9 @@ public class Product extends BaseEntity {
 
     private String productDescription;
 
+//    @Version
+//    private Long version; // 낙관적 락 버전 관리용
+
     /**
      * Product 1: N ProductOptionGroupLink N: 1 OptionGroup 1: N OptionItems
      * 치킨세트 -> 치킨세트, 사이즈 그룹 ->사이즈 그룹 -> 중간 사이즈
