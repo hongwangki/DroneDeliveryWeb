@@ -39,7 +39,7 @@ public class TestOrderController {
     private final OrderToSendInfoMapper mapper;
     private final OrderSendQueue orderSendQueue;
 
-    @PostMapping("/create-order")
+//    @PostMapping("/create-order")
     public ResponseEntity<String> createOrder(@RequestParam Long memberId,
                                               @RequestParam Long storeId,
                                               @RequestParam(defaultValue = "1") Integer qty) {

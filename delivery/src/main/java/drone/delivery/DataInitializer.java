@@ -110,8 +110,6 @@ public class DataInitializer implements ApplicationRunner {
             u.setPassword("1234");
             u.setMemberType(MemberType.USER);
             u.setMoney(100000000);
-            u.setLongitude(DEFAULT_LNG);
-            u.setLatitude(DEFAULT_LAT);
             u.setAddress(new Address(
                     "서울특별시 종로구 세종대로 175",
                     "서울특별시",
@@ -120,7 +118,7 @@ public class DataInitializer implements ApplicationRunner {
             ));
             return memberRepository.save(u);
         });
-        initMembers();
+//        initMembers();
 
         // 2) 가게 및 메뉴 + ✨상품 설명 세팅
         Store chickenStore = new Store();
