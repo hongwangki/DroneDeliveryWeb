@@ -31,7 +31,8 @@ public class WebConfig implements WebMvcConfigurer {
                 "/css/**", "/js/**", "/images/**", "/uploads/**",
                 "/favicon.ico",
                 "/error", "/error/**",
-                "/drone/**"
+                "/drone/**",
+                "/realtime/**"
         );
 
         registry.addInterceptor(new LoginCheckInterceptor(whitelist))

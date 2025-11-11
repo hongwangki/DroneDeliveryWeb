@@ -302,7 +302,7 @@
     const imgEl = document.getElementById('rt-image');
 
     // API 베이스 구성
-    const API_BASE = `/api/realtime/${encodeURIComponent(ORDER_ID)}`;
+    const API_BASE = `/realtime/orders/${encodeURIComponent(ORDER_ID)}`;
 
     // 단계 키 → 인덱스 매핑
     const STEP_INDEX = { RECEIVED:0, COOKING:1, DELIVERING:2, DONE:3 };
@@ -441,8 +441,10 @@
 
     // 최초 + 주기 갱신
     refreshStatus(); refreshImage();
-    setInterval(refreshStatus, 3000);
-    setInterval(refreshImage, 3000);
+
+    // 변경
+    setInterval(refreshStatus, 1500);
+    setInterval(refreshImage, 1500);
   })();
 
   (function () {

@@ -238,7 +238,17 @@ public class CartController {
                     .toBodilessEntity()
                     .block(Duration.ofSeconds(3));
 
+            log.info("드론 서버 연결 성공");
+            // ✅ 여기에 추가 👇
+            pythonClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/orders/{orderId}/start")
+                            .build(orderId))
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block(Duration.ofSeconds(3));
 
+            log.info("드론 서버와 통신 시작");
             // checkout 성공 직후
             session.setAttribute("currentOrderId", orderId);
             return "redirect:/realtime?orderId=" + orderId;
