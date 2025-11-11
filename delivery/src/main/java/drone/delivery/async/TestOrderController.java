@@ -39,7 +39,7 @@ public class TestOrderController {
     private final OrderToSendInfoMapper mapper;
     private final OrderSendQueue orderSendQueue;
 
-//    @PostMapping("/create-order")
+    @PostMapping("/create-order")
     public ResponseEntity<String> createOrder(@RequestParam Long memberId,
                                               @RequestParam Long storeId,
                                               @RequestParam(defaultValue = "1") Integer qty) {
@@ -58,6 +58,7 @@ public class TestOrderController {
         Long orderId = orderService.order(member, List.of(cartItem));
 
         // 3) 큐 전송
+        log.info("orderId: {}", orderId);
         Order order = orderRepository.findGraphById(orderId)
                 .orElseThrow(() -> new IllegalStateException("order not found: " + orderId));
         SendInfoDTO payload = mapper.map(order);

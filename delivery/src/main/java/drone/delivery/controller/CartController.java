@@ -219,22 +219,9 @@ public class CartController {
             SendInfoDTO payload = mapper.map(order);
             payload.setOrderId(orderId);
 
-            // Python으로 전송 (동기 보장 필요시 block, 2~3초 타임아웃 권장)
-            /*pythonClient.post()
-                    .uri("/orders/webhook")   // 최종: http://localhost:8000/orders/webhook
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(payload)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block(Duration.ofSeconds(3));*/
-
-            pythonClient.post()
-                    .uri("/api/v_a0_0_1/orders/create")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(payload) // { ..., "orderId": 1 }
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block(Duration.ofSeconds(3));
+            // ✅ 비동기 큐에 적재
+            orderSendQueue.enqueue(payload);
+            log.info("📨 enqueue 완료 (orderId={}): 현재 큐 사이즈={}", orderId, orderSendQueue.getQueueSize());
 
             log.info("드론 서버 연결 성공");
 
