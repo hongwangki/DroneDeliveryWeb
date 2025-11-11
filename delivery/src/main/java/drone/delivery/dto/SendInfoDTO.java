@@ -16,6 +16,8 @@ public class SendInfoDTO {
     private Double StoreLatitude;  // 위도
     private Double StoreLongitude; // 경도
 
+    private Long orderId;
+
 
     // 음식과 개수 (여러 개)
     private List<FoodItemDTO> items;

@@ -217,6 +217,7 @@ public class CartController {
                     .orElseThrow(() -> new IllegalStateException("주문을 찾을 수 없습니다."));
 
             SendInfoDTO payload = mapper.map(order);
+            payload.setOrderId(orderId);
 
             // Python으로 전송 (동기 보장 필요시 block, 2~3초 타임아웃 권장)
             /*pythonClient.post()
@@ -227,26 +228,15 @@ public class CartController {
                     .toBodilessEntity()
                     .block(Duration.ofSeconds(3));*/
 
-            // ✅ 드론 웹훅: URI에 orderId 포함 (예: /orders/123/webhook)
             pythonClient.post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/orders/{orderId}/webhook")
-                            .build(orderId))
+                    .uri("/api/v_a0_0_1/orders/create")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(payload)
+                    .bodyValue(payload) // { ..., "orderId": 1 }
                     .retrieve()
                     .toBodilessEntity()
                     .block(Duration.ofSeconds(3));
 
             log.info("드론 서버 연결 성공");
-            // ✅ 여기에 추가 👇
-            pythonClient.post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/orders/{orderId}/start")
-                            .build(orderId))
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block(Duration.ofSeconds(3));
 
             log.info("드론 서버와 통신 시작");
             // checkout 성공 직후
