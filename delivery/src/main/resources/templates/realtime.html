@@ -28,44 +28,23 @@
     .total{display:flex; justify-content:flex-end; gap:18px; padding-top:12px; font-weight:700}
     @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
 
-    /* --- 주문 상태 트래커 --- */
     .tracker{position:relative; padding:18px 20px}
-    .tracker .rail{
-      position:absolute; left:40px; right:40px; top:44px; height:4px;
-      background:#e5e7eb; border-radius:999px;
-    }
-    .tracker .rail .fill{
-      position:absolute; left:0; top:0; height:100%; width:0%;
-      background:#2563eb; border-radius:999px; transition:width .35s ease;
-    }
+    .tracker .rail{position:absolute; left:40px; right:40px; top:44px; height:4px; background:#e5e7eb; border-radius:999px;}
+    .tracker .rail .fill{position:absolute; left:0; top:0; height:100%; width:0%; background:#2563eb; border-radius:999px; transition:width .35s ease;}
     .tracker .steps{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
     .step{display:flex; flex-direction:column; align-items:center; gap:8px; width:25%}
-    .step .dot{
-      width:22px; height:22px; border-radius:50%; background:#d1d5db; border:3px solid #fff;
-      box-shadow:0 0 0 2px #e5e7eb; transition:all .25s ease;
-    }
+    .step .dot{width:22px; height:22px; border-radius:50%; background:#d1d5db; border:3px solid #fff; box-shadow:0 0 0 2px #e5e7eb; transition:all .25s ease;}
     .step .label{font-size:14px; color:#6b7280; font-weight:600}
     .step.done .dot{background:#2563eb; box-shadow:0 0 0 2px #bfdbfe}
     .step.done .label{color:#2563eb}
-    .step.active .dot{
-      background:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.35), 0 0 12px rgba(37,99,235,.45);
-      animation:blink 1.2s ease-in-out infinite;
-    }
+    .step.active .dot{background:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.35), 0 0 12px rgba(37,99,235,.45); animation:blink 1.2s ease-in-out infinite;}
     .step.active .label{color:#111827}
-    @keyframes blink{
-      0%,100%{transform:scale(1); box-shadow:0 0 0 4px rgba(37,99,235,.35), 0 0 10px rgba(37,99,235,.35)}
-      50%{transform:scale(1.08); box-shadow:0 0 0 6px rgba(37,99,235,.25), 0 0 18px rgba(37,99,235,.55)}
-    }
+    @keyframes blink{0%,100%{transform:scale(1); box-shadow:0 0 0 4px rgba(37,99,235,.35), 0 0 10px rgba(37,99,235,.35)}50%{transform:scale(1.08); box-shadow:0 0 0 6px rgba(37,99,235,.25), 0 0 18px rgba(37,99,235,.55)}}
     .tracker .meta{margin-top:12px; text-align:center; color:#6b7280; font-size:13px}
     .tracker .meta b{color:#111827}
 
-    /* --- 배달 완료 모달 --- */
-    .modal-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.45);
-      display:none; align-items:center; justify-content:center; z-index:50;
-    }
-    .modal{width:min(520px, 92vw); background:#fff; border-radius:16px; overflow:hidden;
-      box-shadow:0 20px 60px rgba(0,0,0,.3); border:1px solid #e5e7eb}
+    .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:50;}
+    .modal{width:min(520px, 92vw); background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); border:1px solid #e5e7eb}
     .modal .hd{padding:16px 20px; background:#111827; color:#fff; font-weight:700}
     .modal .bd{padding:22px 20px; color:#111827}
     .modal .ft{padding:14px 20px; display:flex; justify-content:flex-end; gap:10px; background:#f9fafb; border-top:1px solid #eef2f7}
@@ -73,73 +52,27 @@
     .btn.primary{background:#2563eb; color:#fff; border-color:#2563eb}
     .modal-backdrop.show{display:flex}
     .badge-done{display:inline-block; padding:2px 8px; border-radius:999px; background:#dcfce7; color:#065f46; font-size:12px; font-weight:700}
-    /* ===== Appbar ===== */
-    .appbar{
-      position:sticky; top:0; z-index:100;
-      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58));
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
-      border-bottom:1px solid rgba(15,23,42,.06);
-    }
-    .appbar::after{
-      content:""; position:absolute; inset:0 0 auto 0; height:1px;
-      background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent);
-      pointer-events:none;
-    }
-    .appbar-inner{
-      max-width:1200px; margin:0 auto;
-      padding:14px 20px; transition:padding .18s ease;
-      display:flex; align-items:center; justify-content:space-between;
-    }
+    .appbar{position:sticky; top:0; z-index:100; background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.58)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom:1px solid rgba(15,23,42,.06);}
+    .appbar::after{content:""; position:absolute; inset:0 0 auto 0; height:1px; background:linear-gradient(90deg,transparent,rgba(42,193,188,.35),transparent); pointer-events:none;}
+    .appbar-inner{max-width:1200px; margin:0 auto; padding:14px 20px; transition:padding .18s ease; display:flex; align-items:center; justify-content:space-between;}
     .appbar.is-scrolled .appbar-inner{ padding:8px 20px }
-
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      font-weight:900; color:#0b3d3b; text-decoration:none; letter-spacing:-.2px;
-    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:900; color:#0b3d3b; text-decoration:none; letter-spacing:-.2px;}
     .brand:hover{ color:#062f2d }
-    .logo{
-      width:36px; height:36px; border-radius:12px; display:grid; place-items:center;
-      font-weight:900; color:#fff;
-      background:
-              radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.35), transparent 60%),
-              linear-gradient(135deg,#2AC1BC,#16a39e);
-      box-shadow:0 8px 18px rgba(42,193,188,.25), inset 0 0 0 1px rgba(255,255,255,.35);
-      transform:translateZ(0); transition:transform .18s ease, box-shadow .18s ease;
-    }
+    .logo{width:36px; height:36px; border-radius:12px; display:grid; place-items:center; font-weight:900; color:#fff; background: radial-gradient(60% 60% at 30% 30%, rgba(255,255,255,.35), transparent 60%), linear-gradient(135deg,#2AC1BC,#16a39e); box-shadow:0 8px 18px rgba(42,193,188,.25), inset 0 0 0 1px rgba(255,255,255,.35);}
     .brand:hover .logo{ transform:translateY(-1px) scale(1.03) }
-    .brand span:last-child{
-      background:linear-gradient(90deg,#0b3d3b,#11615e);
-      -webkit-background-clip:text; background-clip:text; color:transparent;
-    }
-
+    .brand span:last-child{background:linear-gradient(90deg,#0b3d3b,#11615e); -webkit-background-clip:text; background-clip:text; color:transparent;}
     .nav{ display:flex; align-items:center; gap:6px }
-    .nav a{
-      position:relative; padding:8px 12px; border-radius:10px;
-      text-decoration:none; color:var(--muted); font-weight:700;
-      transition:color .15s ease, background-color .15s ease, transform .15s ease;
-    }
-    .nav a::after{
-      content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
-      background:linear-gradient(90deg,#2AC1BC,#0ea5a0);
-      border-radius:2px; transform:scaleX(0); transform-origin:left;
-      transition:transform .18s ease;
-    }
+    .nav a{position:relative; padding:8px 12px; border-radius:10px; text-decoration:none; color:var(--muted); font-weight:700; transition:color .15s ease, background-color .15s ease, transform .15s ease;}
+    .nav a::after{content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px; background:linear-gradient(90deg,#2AC1BC,#0ea5a0); border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform .18s ease;}
     .nav a:hover{ color:#0b3d3b; background:rgba(42,193,188,.06) }
     .nav a:hover::after{ transform:scaleX(1) }
     .nav a.active{ color:#0b3d3b; background:rgba(42,193,188,.10) }
     .nav a.active::after{ transform:scaleX(1) }
-
-    @media (max-width:720px){
-      .brand span:last-child{ display:none }
-      .nav a{ padding:8px 10px }
-    }
+    @media (max-width:720px){.brand span:last-child{ display:none } .nav a{ padding:8px 10px }}
   </style>
 </head>
 <body>
 
-
-<!-- === 상단바 삽입 === -->
 <header class="appbar" id="appbar">
   <div class="appbar-inner">
     <a class="brand" th:href="@{/home}">
@@ -158,29 +91,17 @@
 
 <div class="wrap">
   <h1>📦 실시간 주문 현황</h1>
-
-  <!-- 상단 중앙 큰 이미지 -->
   <div class="card hero">
     <img id="rt-image" alt="드론 현재 위치 (PNG)" src="">
   </div>
-
-  <!-- 상태 요약 (트래커) -->
   <div class="card section">
     <div class="tracker" id="status-tracker" data-step="RECEIVED">
       <div class="rail"><div class="fill" id="track-fill" style="width:0%"></div></div>
       <div class="steps">
-        <div class="step" data-key="RECEIVED">
-          <div class="dot"></div><div class="label">주문 접수</div>
-        </div>
-        <div class="step" data-key="COOKING">
-          <div class="dot"></div><div class="label">조리 중</div>
-        </div>
-        <div class="step" data-key="DELIVERING">
-          <div class="dot"></div><div class="label">배달 중</div>
-        </div>
-        <div class="step" data-key="DONE">
-          <div class="dot"></div><div class="label">배달 완료</div>
-        </div>
+        <div class="step" data-key="RECEIVED"><div class="dot"></div><div class="label">주문 접수</div></div>
+        <div class="step" data-key="COOKING"><div class="dot"></div><div class="label">조리 중</div></div>
+        <div class="step" data-key="DELIVERING"><div class="dot"></div><div class="label">배달 중</div></div>
+        <div class="step" data-key="DONE"><div class="dot"></div><div class="label">배달 완료</div></div>
       </div>
       <div class="meta">
         주문번호 <b><span id="chip-orderId" th:text="${orderId}">-</span></b> ·
@@ -191,271 +112,136 @@
     </div>
   </div>
 
-  <!-- 메타 + 품목 -->
   <div class="grid section">
-    <!-- 주문 메타 -->
     <div class="cell">
       <h3>주문 정보</h3>
-
-      <div class="kv"><span class="muted">주문번호</span>
-        <span th:text="${order != null ? order.id : orderId}">-</span>
-      </div>
-
-      <div class="kv"><span class="muted">주문 시간</span>
-        <span th:text="${order != null ? #temporals.format(order.createdDate,'yyyy-MM-dd HH:mm') : '-'}">-</span>
-      </div>
-
-      <div class="kv"><span class="muted">주문자</span>
-        <span th:text="${(order != null and order.member != null) ? order.member.name : '-'}">-</span>
-      </div>
-
-      <div class="kv"><span class="muted">매장</span>
-        <span th:text="${(order != null and order.orderItems != null and !#lists.isEmpty(order.orderItems)
+      <div class="kv"><span class="muted">주문번호</span><span th:text="${order != null ? order.id : orderId}">-</span></div>
+      <div class="kv"><span class="muted">주문 시간</span><span th:text="${order != null ? #temporals.format(order.createdDate,'yyyy-MM-dd HH:mm') : '-'}">-</span></div>
+      <div class="kv"><span class="muted">주문자</span><span th:text="${(order != null and order.member != null) ? order.member.name : '-'}">-</span></div>
+      <div class="kv"><span class="muted">매장</span><span th:text="${(order != null and order.orderItems != null and !#lists.isEmpty(order.orderItems)
                           and order.orderItems[0].product != null
                           and order.orderItems[0].product.store != null)
-                          ? order.orderItems[0].product.store.name : '-'}">-</span>
-      </div>
-
+                          ? order.orderItems[0].product.store.name : '-'}">-</span></div>
       <div class="kv"><span class="muted">현재 상태</span><span id="meta-state">-</span></div>
       <div class="kv"><span class="muted">단계 코드</span><span id="meta-phase">-</span></div>
       <div class="kv"><span class="muted">ETA</span><span id="meta-eta">-</span></div>
     </div>
 
-    <!-- 품목/가격 -->
     <div class="cell">
       <h3>주문 품목 및 가격</h3>
-
       <ul class="items">
         <li class="item" th:each="it : ${order != null ? order.orderItems : #lists.list()}">
-          <span>
-            <strong th:text="${it.product.foodName}">메뉴</strong>
-            <span class="muted" th:text="| x ${it.quantity}|"> x 1</span>
-          </span>
+          <span><strong th:text="${it.product.foodName}">메뉴</strong><span class="muted" th:text="| x ${it.quantity}|"> x 1</span></span>
           <span class="muted right" th:text="|${#numbers.formatInteger(it.product.foodPrice, 0, 'COMMA')}원/개|">0원/개</span>
           <span class="right" th:text="|${#numbers.formatInteger(it.product.foodPrice * it.quantity, 0, 'COMMA')}원|">0원</span>
         </li>
       </ul>
-
-      <div class="total">
-        <span class="muted">총 결제금액</span>
-        <span th:text="${order != null ? #numbers.formatInteger(order.totalPrice, 0, 'COMMA') + '원' : '-'}">-</span>
-      </div>
-
-      <!-- 디버그: 수신 원본 -->
+      <div class="total"><span class="muted">총 결제금액</span><span th:text="${order != null ? #numbers.formatInteger(order.totalPrice, 0, 'COMMA') + '원' : '-'}">-</span></div>
       <pre id="rt-raw" style="white-space:pre-wrap;word-break:break-all;color:#6b7280;font-size:12px;margin:12px 0 0;"></pre>
     </div>
   </div>
 </div>
 
-<!-- 페이지 메타 (주문 생성시각 ISO) -->
-<div id="page-data"
-     th:attr="data-created=${order != null ? #temporals.format(order.createdDate,'yyyy-MM-dd''T''HH:mm:ss') : ''}"></div>
+<div id="page-data" th:attr="data-created=${order != null ? #temporals.format(order.createdDate,'yyyy-MM-dd''T''HH:mm:ss') : ''}"></div>
 
-<!-- 배달 완료 모달 -->
 <div id="done-backdrop" class="modal-backdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="done-title">
     <div class="hd" id="done-title">배달 완료</div>
     <div class="bd">
-      <p style="margin:0 0 10px">
-        <span class="badge-done">완료</span>
-        <strong style="margin-left:8px">배달이 완료되었습니다!</strong>
-      </p>
+      <p style="margin:0 0 10px"><span class="badge-done">완료</span><strong style="margin-left:8px">배달이 완료되었습니다!</strong></p>
       <p id="elapsed-text" style="margin:0 0 6px; color:#374151"></p>
       <p style="margin:0; color:#6b7280">리뷰를 작성하시겠어요?</p>
     </div>
-    <div class="ft">
-      <button type="button" class="btn" id="done-later">나중에</button>
-      <button type="button" class="btn primary" id="done-confirm">확인</button>
-    </div>
+    <div class="ft"><button type="button" class="btn" id="done-later">나중에</button><button type="button" class="btn primary" id="done-confirm">확인</button></div>
   </div>
 </div>
 
 <script>
   (function(){
-    // === ORDER_ID 안전 획득 ===
     const qs = new URLSearchParams(location.search);
     let ORDER_ID = qs.get('orderId');
-    if (!ORDER_ID) {
-      const chip = document.getElementById('chip-orderId');
-      if (chip) ORDER_ID = (chip.textContent || '').trim();
+    if(!ORDER_ID){
+      const chip=document.getElementById('chip-orderId');
+      if(chip) ORDER_ID=(chip.textContent||'').trim();
     }
+    const rawEl=document.getElementById('rt-raw');
+    if(!ORDER_ID){ console.warn('No orderId'); if(rawEl) rawEl.textContent='최근 주문을 찾을 수 없습니다.'; return; }
 
-    // 디버그 영역
-    const rawEl = document.getElementById('rt-raw');
+    const chipState=document.getElementById('chip-state');
+    const chipPhase=document.getElementById('chip-phase');
+    const chipEta=document.getElementById('chip-eta');
+    const metaState=document.getElementById('meta-state');
+    const metaPhase=document.getElementById('meta-phase');
+    const metaEta=document.getElementById('meta-eta');
+    const imgEl=document.getElementById('rt-image');
 
-    // 없으면 폴링 비활성화 + 안내 후 종료
-    if (!ORDER_ID) {
-      console.warn('No orderId in realtime page.');
-      if (rawEl) rawEl.textContent = '최근 주문을 찾을 수 없습니다.';
-      return;
-    }
+    // ✅ 실시간 API 베이스
+    const API_BASE=`/realtime/orders/${encodeURIComponent(ORDER_ID)}`;
 
-    // ====== 요소 핸들 ======
-    const chipState = document.getElementById('chip-state');
-    const chipPhase = document.getElementById('chip-phase');
-    const chipEta   = document.getElementById('chip-eta');
+    const STEP_INDEX={RECEIVED:0,COOKING:1,DELIVERING:2,DONE:3};
+    const STEP_ORDER=["RECEIVED","COOKING","DELIVERING","DONE"];
 
-    const metaState = document.getElementById('meta-state');
-    const metaPhase = document.getElementById('meta-phase');
-    const metaEta   = document.getElementById('meta-eta');
-
-    const imgEl = document.getElementById('rt-image');
-
-    // API 베이스 구성
-    const API_BASE = `/realtime/orders/${encodeURIComponent(ORDER_ID)}`;
-
-    // 단계 키 → 인덱스 매핑
-    const STEP_INDEX = { RECEIVED:0, COOKING:1, DELIVERING:2, DONE:3 };
-    const STEP_ORDER = ["RECEIVED","COOKING","DELIVERING","DONE"];
-
-    // 드론 상태/phase → 단계 키 변환
     function computeStepKey(data){
-      const phase = (data.phase || "").toUpperCase();
-      const state = (data.state || "").replace(/\s+/g,'').toUpperCase();
-
-      if (phase === "DELIVERED" || state.includes("완료")) return "DONE";
-      if (phase === "IN_FLIGHT" || phase === "DELIVERING" || state.includes("배달중") || state.includes("배달")) return "DELIVERING";
-      if (phase === "COOKING" || state.includes("조리")) return "COOKING";
-      return "RECEIVED";
+      const phase=(data.phase||"").toUpperCase();
+      const state=(data.state||"").replace(/\s+/g,'').toUpperCase();
+      if(phase==="DELIVERED"||state.includes("완료"))return"DONE";
+      if(phase==="IN_FLIGHT"||phase==="DELIVERING"||state.includes("배달중")||state.includes("배달"))return"DELIVERING";
+      if(phase==="COOKING"||state.includes("조리"))return"COOKING";
+      return"RECEIVED";
     }
-
     function updateTracker(stepKey){
-      const idx = STEP_INDEX[stepKey] ?? 0;
-      const steps = document.querySelectorAll('.tracker .step');
-      steps.forEach((el,i)=>{
-        el.classList.toggle('active', i === idx);
-        el.classList.toggle('done', i <= idx);
-      });
-      const fill = document.getElementById('track-fill');
-      const pct = (idx / (STEP_ORDER.length-1)) * 100;
-      fill.style.width = pct + '%';
+      const idx=STEP_INDEX[stepKey]??0;
+      const steps=document.querySelectorAll('.tracker .step');
+      steps.forEach((el,i)=>{el.classList.toggle('active',i===idx);el.classList.toggle('done',i<=idx);});
+      document.getElementById('track-fill').style.width=(idx/(STEP_ORDER.length-1))*100+'%';
     }
 
-    // 모달 핸들
-    const backdrop = document.getElementById('done-backdrop');
-    const btnLater = document.getElementById('done-later');
-    const btnOK    = document.getElementById('done-confirm');
-    const elapsedEl= document.getElementById('elapsed-text');
+    const backdrop=document.getElementById('done-backdrop');
+    const btnLater=document.getElementById('done-later');
+    const btnOK=document.getElementById('done-confirm');
+    const elapsedEl=document.getElementById('elapsed-text');
 
-    function reviewWriteUrl(orderId){
-      return `/reviews/new?orderId=${encodeURIComponent(orderId)}`;
-    }
+    function reviewWriteUrl(orderId){return`/reviews/new?orderId=${encodeURIComponent(orderId)}`;}
+    function showDoneModal(elapsedStr){elapsedEl.textContent=elapsedStr?`걸린 시간: ${elapsedStr}`:'';backdrop.classList.add('show');}
+    function hideDoneModal(){backdrop.classList.remove('show');}
+    btnLater?.addEventListener('click',hideDoneModal);
+    btnOK?.addEventListener('click',async()=>{try{await fetch(`/orders/deliver/${encodeURIComponent(ORDER_ID)}`,{method:'POST'})}catch(e){}window.location.href=reviewWriteUrl(ORDER_ID);});
 
-    function showDoneModal(elapsedStr){
-      elapsedEl.textContent = elapsedStr ? `걸린 시간: ${elapsedStr}` : '';
-      backdrop.classList.add('show');
-      backdrop.setAttribute('aria-hidden','false');
-    }
-    function hideDoneModal(){
-      backdrop.classList.remove('show');
-      backdrop.setAttribute('aria-hidden','true');
-    }
-    btnLater?.addEventListener('click', hideDoneModal);
-    btnOK?.addEventListener('click', async () => {
-      try {
-        const res = await fetch(`/orders/deliver/${encodeURIComponent(ORDER_ID)}`, { method: 'POST' });
-        if (!res.ok) console.warn('deliver POST failed with status', res.status);
-      } catch (e) {
-        console.warn('deliver POST error', e);
-      }
-      window.location.href = reviewWriteUrl(ORDER_ID);
-    });
+    const pageDataEl=document.getElementById('page-data');
+    const createdIso=pageDataEl?.dataset?.created||null;
+    const createdAt=createdIso?new Date(createdIso):null;
+    function doneKey(orderId){return`done-modal-shown-${orderId}`;}
+    function formatDuration(ms){const s=Math.max(0,Math.floor(ms/1000));const hh=Math.floor(s/3600);const mm=Math.floor((s%3600)/60);const ss=s%60;if(hh>0)return`${hh}시간 ${mm}분 ${ss}초`;if(mm>0)return`${mm}분 ${ss}초`;return`${ss}초`;}
 
-    // 경과 시간 포맷
-    function formatDuration(ms){
-      const s = Math.max(0, Math.floor(ms/1000));
-      const hh = Math.floor(s/3600);
-      const mm = Math.floor((s%3600)/60);
-      const ss = s%60;
-      if(hh>0) return `${hh}시간 ${mm}분 ${ss}초`;
-      if(mm>0) return `${mm}분 ${ss}초`;
-      return `${ss}초`;
-    }
-
-    // 페이지 주입된 주문 생성시각
-    const pageDataEl = document.getElementById('page-data');
-    const createdIso = pageDataEl?.dataset?.created || null;
-    const createdAt  = createdIso ? new Date(createdIso) : null;
-
-    // 완료 모달은 세션 스토리지 기준 주문별 1회만 표시
-    function doneKey(orderId){ return `done-modal-shown-${orderId}`; }
-
-    // 상태 폴링
     async function refreshStatus(){
       try{
-        const res = await fetch(`${API_BASE}/status`, {cache:'no-store'});
-        if(!res.ok) throw new Error('status http ' + res.status);
-        const data = await res.json();
-
-        const state = data.state ?? '-';
-        const phase = data.phase ?? '-';
-        const eta   = data.eta ? new Date(data.eta).toLocaleString() : '-';
-
-        chipState.textContent = state;
-        chipPhase.textContent = phase;
-        chipEta.textContent   = eta;
-
-        metaState.textContent = state;
-        metaPhase.textContent = phase;
-        metaEta.textContent   = eta;
-
-        rawEl.textContent = JSON.stringify(data, null, 2);
-
-        const stepKey = computeStepKey(data);
-        updateTracker(stepKey);
-
-        if(stepKey === 'DONE'){
-          if(sessionStorage.getItem(doneKey(ORDER_ID)) !== '1'){
-            const finishedAt = data.eta ? new Date(data.eta) : new Date();
-            let elapsedStr = '';
-            try{
-              const start = createdAt || new Date();
-              elapsedStr = formatDuration(finishedAt - start);
-            }catch(e){ /* noop */ }
-            showDoneModal(elapsedStr);
-            sessionStorage.setItem(doneKey(ORDER_ID),'1');
-          }
-        }
-      }catch(e){
-        chipState.textContent = '연결 대기';
-        chipPhase.textContent = '-';
-        chipEta.textContent = '-';
-        metaState.textContent = '연결 대기';
-        metaPhase.textContent = '-';
-        metaEta.textContent = '-';
-        updateTracker("RECEIVED");
-        console.debug(e);
-      }
+        const res=await fetch(`${API_BASE}/status`,{cache:'no-store'});
+        if(!res.ok)throw new Error('status http '+res.status);
+        const data=await res.json();
+        const state=data.state??'-',phase=data.phase??'-',eta=data.eta?new Date(data.eta).toLocaleString():'-';
+        chipState.textContent=state;chipPhase.textContent=phase;chipEta.textContent=eta;
+        metaState.textContent=state;metaPhase.textContent=phase;metaEta.textContent=eta;
+        rawEl.textContent=JSON.stringify(data,null,2);
+        const stepKey=computeStepKey(data);updateTracker(stepKey);
+        if(stepKey==='DONE'&&sessionStorage.getItem(doneKey(ORDER_ID))!=='1'){const finishedAt=data.eta?new Date(data.eta):new Date();let elapsedStr='';try{const start=createdAt||new Date();elapsedStr=formatDuration(finishedAt-start);}catch(e){}showDoneModal(elapsedStr);sessionStorage.setItem(doneKey(ORDER_ID),'1');}
+      }catch(e){chipState.textContent='연결 대기';chipPhase.textContent='-';chipEta.textContent='-';metaState.textContent='연결 대기';metaPhase.textContent='-';metaEta.textContent='-';updateTracker("RECEIVED");}
     }
 
     async function refreshImage(){
       try{
-        const t = Date.now();
-        const res = await fetch(`${API_BASE}/image.png?t=${t}`, {cache:'no-store'});
-        if(!res.ok) throw new Error('image http ' + res.status);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        imgEl.src = url;
-      }catch(e){ console.debug(e); }
+        const t=Date.now();
+        const res=await fetch(`${API_BASE}/image.png?t=${t}`,{cache:'no-store'});
+        if(!res.ok)throw new Error('image http '+res.status);
+        const blob=await res.blob();
+        imgEl.src=URL.createObjectURL(blob);
+      }catch(e){}
     }
 
-    // 최초 + 주기 갱신
-    refreshStatus(); refreshImage();
-
-    // 변경
-    setInterval(refreshStatus, 1500);
-    setInterval(refreshImage, 1500);
+    refreshStatus();refreshImage();
+    setInterval(refreshStatus,1500);
+    setInterval(refreshImage,1500);
   })();
-
-  (function () {
-    const bar = document.getElementById('appbar');
-    const onScroll = () => {
-      if (window.scrollY > 8) bar.classList.add('is-scrolled');
-      else bar.classList.remove('is-scrolled');
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, {passive: true});
-  })();
+  (function(){const bar=document.getElementById('appbar');const onScroll=()=>{if(window.scrollY>8)bar.classList.add('is-scrolled');else bar.classList.remove('is-scrolled');};onScroll();window.addEventListener('scroll',onScroll,{passive:true});})();
 </script>
 </body>
 </html>
