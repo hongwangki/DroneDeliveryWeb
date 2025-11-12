@@ -118,7 +118,7 @@ public class DataInitializer implements ApplicationRunner {
             ));
             return memberRepository.save(u);
         });
-//        initMembers();
+        initMembers();
 
         // 2) 가게 및 메뉴 + ✨상품 설명 세팅
         Store chickenStore = new Store();

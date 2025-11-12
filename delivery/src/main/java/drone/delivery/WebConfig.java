@@ -33,6 +33,8 @@ public class WebConfig implements WebMvcConfigurer {
                 "/error", "/error/**",
                 "/drone/**",
                 "/realtime/**"
+                , "/test/**"// 에러 페이지는 항상 제외
+
         );
 
         registry.addInterceptor(new LoginCheckInterceptor(whitelist))
@@ -41,7 +43,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/css/**", "/js/**", "/images/**", "/uploads/**",
                         "/favicon.ico",
-                        "/error", "/error/**"              // 에러 페이지는 항상 제외
+                        "/error", "/error/**"
+                        , "/test/**"// 에러 페이지는 항상 제외
                 );
     }
 
