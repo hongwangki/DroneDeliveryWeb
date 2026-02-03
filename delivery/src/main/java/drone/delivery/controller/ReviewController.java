@@ -34,7 +34,7 @@ public class ReviewController {
 
     private final OrderService orderService;
     private final ReviewService reviewService;
-    private final ReviewImageService reviewImageService; // ★ 추가
+    private final ReviewImageService reviewImageService;
     private final StoreRepository storeRepository;
     private final StoreService storeService;
     private final ReviewQueryService reviewQueryService;
@@ -44,7 +44,7 @@ public class ReviewController {
                             @RequestParam Long orderId,
                             Model model) {
         Member member = (Member) session.getAttribute("loginMember");
-        if (member == null) { // ★ 방어코드
+        if (member == null) {
             return "redirect:/login?redirect=/reviews/new?orderId=" + orderId;
         }
         Long memberId = member.getId();
@@ -81,7 +81,7 @@ public class ReviewController {
                          RedirectAttributes ra,
                          Model model) {
         Member member = (Member) session.getAttribute("loginMember");
-        if (member == null) { // ★ 방어코드
+        if (member == null) {
             return "redirect:/login?redirect=/reviews/new?orderId=" + form.getOrderId();
         }
         Long memberId = member.getId();
@@ -128,6 +128,92 @@ public class ReviewController {
         return "redirect:/reviews/" + reviewId;
     }
 
+    // 리뷰 수정 폼 표시
+    @GetMapping("/{reviewId}/edit")
+    public String editForm(@PathVariable Long reviewId,
+                           HttpSession session,
+                           Model model) {
+        Member member = (Member) session.getAttribute("loginMember");
+        if (member == null) {
+            return "redirect:/login?redirect=/reviews/" + reviewId + "/edit";
+        }
+
+        log.info("리뷰 수정 진입");
+
+        Review review = reviewQueryService.getDetail(reviewId);
+        if (review == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다.");
+        }
+
+        // 로그인 사용자가 작성자가 아니면 접근 금지
+        if (!review.getMember().getId().equals(member.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 리뷰만 수정할 수 있습니다.");
+        }
+
+        // 폼 데이터 세팅
+        ReviewCreateForm form = new ReviewCreateForm();
+        form.setOrderId(review.getOrder().getId());
+        form.setStoreId(review.getStore().getId());
+        form.setContent(review.getContent());
+        form.setRating(review.getRating());
+
+        model.addAttribute("form", form);
+        model.addAttribute("reviewId", reviewId);
+        model.addAttribute("storeName", review.getStore().getName());
+        model.addAttribute("order", review.getOrder());
+
+        return "reviews-edit"; // 같은 폼 재사용
+    }
+
+    // 리뷰 수정 처리
+    @PostMapping("/{reviewId}/edit")
+    public String update(@PathVariable Long reviewId,
+                         HttpSession session,
+                         @Valid @ModelAttribute("form") ReviewCreateForm form,
+                         BindingResult binding,
+                         @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                         RedirectAttributes ra,
+                         Model model) {
+        Member member = (Member) session.getAttribute("loginMember");
+        if (member == null) {
+            return "redirect:/login?redirect=/reviews/" + reviewId + "/edit";
+        }
+
+        Review review = reviewQueryService.getDetail(reviewId);
+        if (review == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다.");
+        }
+
+        if (!review.getMember().getId().equals(member.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 리뷰만 수정할 수 있습니다.");
+        }
+
+        if (binding.hasErrors()) {
+            model.addAttribute("reviewId", reviewId);
+            model.addAttribute("storeName", review.getStore().getName());
+            model.addAttribute("order", review.getOrder());
+            return "reviews-edit";
+        }
+
+        // 리뷰 수정 수행
+        reviewService.updateReview(reviewId, form.getContent(), form.getRating());
+
+        // 이미지 재업로드가 있다면 기존 삭제 후 교체 가능
+        if (files != null && !files.isEmpty()) {
+            try {
+                reviewImageService.replaceImages(reviewId, member.getId(), files);
+            } catch (IOException e) {
+                log.error("이미지 수정 실패", e);
+                ra.addFlashAttribute("message", "리뷰 수정은 완료되었으나 이미지 업로드에 실패했습니다.");
+                return "redirect:/reviews/" + reviewId;
+            }
+        }
+
+        ra.addFlashAttribute("message", "리뷰가 수정되었습니다.");
+        return "redirect:/reviews/" + reviewId;
+    }
+
+
     @GetMapping
     public String reviewList(HttpSession session, Model model) {
         Member member = (Member) session.getAttribute("loginMember");
@@ -138,7 +224,7 @@ public class ReviewController {
         return "review-list";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public String detail(@PathVariable("id") Long reviewId,
                          HttpSession session,
                          Model model) {
@@ -162,4 +248,36 @@ public class ReviewController {
         dto.setOrder(order);
         return dto;
     }
+
+
+    // ✅ 리뷰 삭제 기능 추가
+    @PostMapping("/{reviewId}/delete")
+    public String delete(@PathVariable Long reviewId,
+                         HttpSession session,
+                         RedirectAttributes ra) {
+        Member member = (Member) session.getAttribute("loginMember");
+        if (member == null) {
+            return "redirect:/login?redirect=/reviews/" + reviewId;
+        }
+
+        Review review = reviewQueryService.getDetail(reviewId);
+        if (review == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다.");
+        }
+
+        if (!review.getMember().getId().equals(member.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인 리뷰만 삭제할 수 있습니다.");
+        }
+
+        try {
+            reviewService.deleteReview(reviewId); // ❗ reviewService에 deleteReview(Long id) 메서드 필요
+            ra.addFlashAttribute("message", "리뷰가 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("리뷰 삭제 실패", e);
+            ra.addFlashAttribute("message", "리뷰 삭제 중 오류가 발생했습니다.");
+        }
+
+        return "redirect:/reviews";
+    }
+
 }

@@ -180,10 +180,14 @@
                 <a class="btn" th:if="${r.store != null}" th:href="@{|/delivery/${r.store.id}|}">가게 보기</a>
                 <a class="btn" th:href="@{|/reviews/${r.id}/edit|}">수정</a>
 
-                <form th:action="@{|/reviews/${r.id}|}" method="post" style="display:inline">
-                    <input type="hidden" name="_method" value="DELETE">
+                <form th:action="@{|/reviews/${r.id}/delete|}"
+                      method="post"
+                      style="display:inline"
+                      onsubmit="return confirm('정말 이 리뷰를 삭제하시겠습니까?');">
                     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button type="submit" class="btn">삭제</button>
+                    <button type="submit" class="btn" style="background:#fff3f3; border-color:#fecaca; color:#b91c1c;">
+                        삭제
+                    </button>
                 </form>
             </div>
         </article>

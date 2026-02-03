@@ -51,4 +51,19 @@ public class ReviewService {
     public List<Review> findAllByMember(Member member) {
         return reviewRepository.findAllByMember(member);
     }
+
+    @Transactional
+    public void updateReview(Long reviewId, String content, Integer rating) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+        review.setContent(content);
+        review.setRating(rating);
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found"));
+        reviewRepository.delete(review);
+    }
 }

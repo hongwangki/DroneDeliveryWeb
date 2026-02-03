@@ -94,6 +94,7 @@
   <div class="card hero">
     <img id="rt-image" alt="드론 현재 위치 (PNG)" src="">
   </div>
+
   <div class="card section">
     <div class="tracker" id="status-tracker" data-step="RECEIVED">
       <div class="rail"><div class="fill" id="track-fill" style="width:0%"></div></div>
@@ -137,7 +138,6 @@
         </li>
       </ul>
       <div class="total"><span class="muted">총 결제금액</span><span th:text="${order != null ? #numbers.formatInteger(order.totalPrice, 0, 'COMMA') + '원' : '-'}">-</span></div>
-      <pre id="rt-raw" style="white-space:pre-wrap;word-break:break-all;color:#6b7280;font-size:12px;margin:12px 0 0;"></pre>
     </div>
   </div>
 </div>
@@ -152,7 +152,10 @@
       <p id="elapsed-text" style="margin:0 0 6px; color:#374151"></p>
       <p style="margin:0; color:#6b7280">리뷰를 작성하시겠어요?</p>
     </div>
-    <div class="ft"><button type="button" class="btn" id="done-later">나중에</button><button type="button" class="btn primary" id="done-confirm">확인</button></div>
+    <div class="ft">
+      <button type="button" class="btn" id="done-later">나중에</button>
+      <button type="button" class="btn primary" id="done-confirm">확인</button>
+    </div>
   </div>
 </div>
 
@@ -161,87 +164,145 @@
     const qs = new URLSearchParams(location.search);
     let ORDER_ID = qs.get('orderId');
     if(!ORDER_ID){
-      const chip=document.getElementById('chip-orderId');
-      if(chip) ORDER_ID=(chip.textContent||'').trim();
+      const chip = document.getElementById('chip-orderId');
+      if(chip) ORDER_ID = (chip.textContent || '').trim();
     }
-    const rawEl=document.getElementById('rt-raw');
-    if(!ORDER_ID){ console.warn('No orderId'); if(rawEl) rawEl.textContent='최근 주문을 찾을 수 없습니다.'; return; }
+    if(!ORDER_ID){ console.warn('No orderId'); return; }
 
-    const chipState=document.getElementById('chip-state');
-    const chipPhase=document.getElementById('chip-phase');
-    const chipEta=document.getElementById('chip-eta');
-    const metaState=document.getElementById('meta-state');
-    const metaPhase=document.getElementById('meta-phase');
-    const metaEta=document.getElementById('meta-eta');
-    const imgEl=document.getElementById('rt-image');
+    const chipState = document.getElementById('chip-state');
+    const chipPhase = document.getElementById('chip-phase');
+    const chipEta   = document.getElementById('chip-eta');
+    const metaState = document.getElementById('meta-state');
+    const metaPhase = document.getElementById('meta-phase');
+    const metaEta   = document.getElementById('meta-eta');
+    const imgEl     = document.getElementById('rt-image');
 
-    // ✅ 실시간 API 베이스
-    const API_BASE=`/realtime/orders/${encodeURIComponent(ORDER_ID)}`;
+    const API_BASE = `/realtime/orders/${encodeURIComponent(ORDER_ID)}`;
 
-    const STEP_INDEX={RECEIVED:0,COOKING:1,DELIVERING:2,DONE:3};
-    const STEP_ORDER=["RECEIVED","COOKING","DELIVERING","DONE"];
+    const STEP_INDEX = { RECEIVED:0, COOKING:1, DELIVERING:2, DONE:3 };
+    const STEP_ORDER = ["RECEIVED","COOKING","DELIVERING","DONE"];
 
     function computeStepKey(data){
-      const phase=(data.phase||"").toUpperCase();
-      const state=(data.state||"").replace(/\s+/g,'').toUpperCase();
-      if(phase==="DELIVERED"||state.includes("완료"))return"DONE";
-      if(phase==="IN_FLIGHT"||phase==="DELIVERING"||state.includes("배달중")||state.includes("배달"))return"DELIVERING";
-      if(phase==="COOKING"||state.includes("조리"))return"COOKING";
-      return"RECEIVED";
+      const phase = (data.phase || "").toUpperCase();
+      const state = (data.state || "").replace(/\s+/g,'').toUpperCase();
+      if (phase === "DELIVERED" || state.includes("완료")) return "DONE";
+      if (phase === "IN_FLIGHT" || phase === "DELIVERING" || state.includes("배달중") || state.includes("배달")) return "DELIVERING";
+      if (phase === "COOKING" || state.includes("조리")) return "COOKING";
+      return "RECEIVED";
     }
+
     function updateTracker(stepKey){
-      const idx=STEP_INDEX[stepKey]??0;
-      const steps=document.querySelectorAll('.tracker .step');
-      steps.forEach((el,i)=>{el.classList.toggle('active',i===idx);el.classList.toggle('done',i<=idx);});
-      document.getElementById('track-fill').style.width=(idx/(STEP_ORDER.length-1))*100+'%';
+      const idx = STEP_INDEX[stepKey] ?? 0;
+      const steps = document.querySelectorAll('.tracker .step');
+      steps.forEach((el,i)=>{
+        el.classList.toggle('active', i === idx);
+        el.classList.toggle('done', i <= idx);
+      });
+      const fill = document.getElementById('track-fill');
+      if(fill) fill.style.width = (idx/(STEP_ORDER.length-1))*100 + '%';
     }
 
-    const backdrop=document.getElementById('done-backdrop');
-    const btnLater=document.getElementById('done-later');
-    const btnOK=document.getElementById('done-confirm');
-    const elapsedEl=document.getElementById('elapsed-text');
+    // Done modal
+    const backdrop  = document.getElementById('done-backdrop');
+    const btnLater  = document.getElementById('done-later');
+    const btnOK     = document.getElementById('done-confirm');
+    const elapsedEl = document.getElementById('elapsed-text');
 
-    function reviewWriteUrl(orderId){return`/reviews/new?orderId=${encodeURIComponent(orderId)}`;}
-    function showDoneModal(elapsedStr){elapsedEl.textContent=elapsedStr?`걸린 시간: ${elapsedStr}`:'';backdrop.classList.add('show');}
-    function hideDoneModal(){backdrop.classList.remove('show');}
-    btnLater?.addEventListener('click',hideDoneModal);
-    btnOK?.addEventListener('click',async()=>{try{await fetch(`/orders/deliver/${encodeURIComponent(ORDER_ID)}`,{method:'POST'})}catch(e){}window.location.href=reviewWriteUrl(ORDER_ID);});
+    function reviewWriteUrl(orderId){ return `/reviews/new?orderId=${encodeURIComponent(orderId)}`; }
+    function showDoneModal(elapsedStr){
+      if (elapsedEl) elapsedEl.textContent = elapsedStr ? `걸린 시간: ${elapsedStr}` : '';
+      backdrop?.classList.add('show');
+    }
+    function hideDoneModal(){ backdrop?.classList.remove('show'); }
+    btnLater?.addEventListener('click', hideDoneModal);
+    btnOK?.addEventListener('click', async () => {
+      try{ await fetch(`/orders/deliver/${encodeURIComponent(ORDER_ID)}`, { method:'POST' }); }catch(e){}
+      window.location.href = reviewWriteUrl(ORDER_ID);
+    });
 
-    const pageDataEl=document.getElementById('page-data');
-    const createdIso=pageDataEl?.dataset?.created||null;
-    const createdAt=createdIso?new Date(createdIso):null;
-    function doneKey(orderId){return`done-modal-shown-${orderId}`;}
-    function formatDuration(ms){const s=Math.max(0,Math.floor(ms/1000));const hh=Math.floor(s/3600);const mm=Math.floor((s%3600)/60);const ss=s%60;if(hh>0)return`${hh}시간 ${mm}분 ${ss}초`;if(mm>0)return`${mm}분 ${ss}초`;return`${ss}초`;}
+    // 시작 시간 (서버가 내려준 createdDate)
+    const pageDataEl = document.getElementById('page-data');
+    const createdIso = pageDataEl?.dataset?.created || null;
+    const createdAt  = createdIso ? new Date(createdIso) : null;
+
+    function doneKey(orderId){ return `done-modal-shown-${orderId}`; }
+    function formatDuration(ms){
+      const s = Math.max(0, Math.floor(ms/1000));
+      const hh = Math.floor(s/3600);
+      const mm = Math.floor((s%3600)/60);
+      const ss = s % 60;
+      if(hh>0) return `${hh}시간 ${mm}분 ${ss}초`;
+      if(mm>0) return `${mm}분 ${ss}초`;
+      return `${ss}초`;
+    }
 
     async function refreshStatus(){
       try{
-        const res=await fetch(`${API_BASE}/status`,{cache:'no-store'});
-        if(!res.ok)throw new Error('status http '+res.status);
-        const data=await res.json();
-        const state=data.state??'-',phase=data.phase??'-',eta=data.eta?new Date(data.eta).toLocaleString():'-';
-        chipState.textContent=state;chipPhase.textContent=phase;chipEta.textContent=eta;
-        metaState.textContent=state;metaPhase.textContent=phase;metaEta.textContent=eta;
-        rawEl.textContent=JSON.stringify(data,null,2);
-        const stepKey=computeStepKey(data);updateTracker(stepKey);
-        if(stepKey==='DONE'&&sessionStorage.getItem(doneKey(ORDER_ID))!=='1'){const finishedAt=data.eta?new Date(data.eta):new Date();let elapsedStr='';try{const start=createdAt||new Date();elapsedStr=formatDuration(finishedAt-start);}catch(e){}showDoneModal(elapsedStr);sessionStorage.setItem(doneKey(ORDER_ID),'1');}
-      }catch(e){chipState.textContent='연결 대기';chipPhase.textContent='-';chipEta.textContent='-';metaState.textContent='연결 대기';metaPhase.textContent='-';metaEta.textContent='-';updateTracker("RECEIVED");}
+        const res = await fetch(`${API_BASE}/status`, { cache:'no-store' });
+        if(!res.ok) throw new Error('status http ' + res.status);
+        const data = await res.json();
+
+        const state = data.state ?? '-';
+        const phase = data.phase ?? '-';
+        const eta   = data.eta ? new Date(data.eta).toLocaleString() : '-';
+
+        chipState.textContent = state;
+        chipPhase.textContent = phase;
+        chipEta.textContent   = eta;
+        metaState.textContent = state;
+        metaPhase.textContent = phase;
+        metaEta.textContent   = eta;
+
+        const stepKey = computeStepKey(data);
+        updateTracker(stepKey);
+
+        if(stepKey === 'DONE' && sessionStorage.getItem(doneKey(ORDER_ID)) !== '1'){
+          const finishedAt = data.eta ? new Date(data.eta) : new Date();
+          let elapsedStr = '';
+          try{
+            const start = createdAt || new Date();
+            elapsedStr = formatDuration(finishedAt - start);
+          }catch(e){}
+          showDoneModal(elapsedStr);
+          sessionStorage.setItem(doneKey(ORDER_ID), '1');
+        }
+      }catch(e){
+        chipState.textContent = '연결 대기';
+        chipPhase.textContent = '-';
+        chipEta.textContent   = '-';
+        metaState.textContent = '연결 대기';
+        metaPhase.textContent = '-';
+        metaEta.textContent   = '-';
+        updateTracker("RECEIVED");
+      }
     }
 
     async function refreshImage(){
       try{
-        const t=Date.now();
-        const res=await fetch(`${API_BASE}/image.png?t=${t}`,{cache:'no-store'});
-        if(!res.ok)throw new Error('image http '+res.status);
-        const blob=await res.blob();
-        imgEl.src=URL.createObjectURL(blob);
+        const t = Date.now();
+        const res = await fetch(`${API_BASE}/image.png?t=${t}`, { cache:'no-store' });
+        if(!res.ok) throw new Error('image http ' + res.status);
+        const blob = await res.blob();
+        imgEl.src = URL.createObjectURL(blob);
       }catch(e){}
     }
 
-    refreshStatus();refreshImage();
-    setInterval(refreshStatus,1500);
-    setInterval(refreshImage,1500);
+    refreshStatus();
+    refreshImage();
+    setInterval(refreshStatus, 1500);
+    setInterval(refreshImage, 1500);
   })();
-  (function(){const bar=document.getElementById('appbar');const onScroll=()=>{if(window.scrollY>8)bar.classList.add('is-scrolled');else bar.classList.remove('is-scrolled');};onScroll();window.addEventListener('scroll',onScroll,{passive:true});})();
+
+  // Appbar scroll effect
+  (function(){
+    const bar = document.getElementById('appbar');
+    const onScroll = () => {
+      if(window.scrollY > 8) bar.classList.add('is-scrolled');
+      else bar.classList.remove('is-scrolled');
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive:true });
+  })();
 </script>
 </body>
 </html>
